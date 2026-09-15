@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.VectorImage
 
 Item {
     id: root
@@ -38,23 +39,23 @@ Item {
         border.width: 0
     }
 
-    Image {
+    VectorImage {
         anchors.centerIn: parent
         width: root.visual.shape === 0 ? 36 : 80
         height: root.visual.shape === 0 ? 36 : 80
         source: root.shapeSource(root.visual.shape)
-        fillMode: Image.PreserveAspectFit
-        asynchronous: false
+        fillMode: VectorImage.PreserveAspectFit
+        preferredRendererType: VectorImage.CurveRenderer
         visible: root.isShapeMode()
     }
 
-    Image {
+    VectorImage {
         objectName: "enterBlinker"
         anchors.centerIn: parent
         width: 27
         height: 27
         source: Qt.resolvedUrl("../assets/blinker-enter-glyph.svg")
-        asynchronous: false
+        preferredRendererType: VectorImage.CurveRenderer
         visible: root.visual.mode === "caretEnter"
     }
 

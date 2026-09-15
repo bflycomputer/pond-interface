@@ -1,9 +1,11 @@
 import QtQuick
+import QtQuick.Window
 
 Item {
     id: root
     required property var backgroundTexture
     required property size backgroundSize
+    property real pixelScale: Window.window?.devicePixelRatio ?? 1
     property alias text: ink.text
     property alias font: ink.font
     property alias wrapMode: ink.wrapMode
@@ -11,12 +13,15 @@ Item {
     implicitHeight: ink.implicitHeight
 
     Text {
+        renderType: Text.CurveRendering
         id: ink
         width: root.width
         color: "white"
     }
     ShaderEffectSource {
         id: inkSource
+        textureSize: Qt.size(Math.ceil(ink.width * root.pixelScale),
+                             Math.ceil(ink.height * root.pixelScale))
         sourceItem: ink
         hideSource: true
         visible: false

@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import QtQuick.VectorImage
 
 Item {
     id: root
@@ -29,13 +30,14 @@ Item {
         width: 80
         height: 80
 
-        Image {
+        VectorImage {
             objectName: action.objectName + "Icon"
             anchors.fill: parent
             source: Qt.resolvedUrl("assets/" + action.iconName + (action.hovered ? "-hover" : "") + ".svg")
-            asynchronous: false
+            preferredRendererType: VectorImage.CurveRenderer
         }
         Text {
+            renderType: Text.CurveRendering
             objectName: action.objectName + "Label"
             x: -10 - width
             y: 26

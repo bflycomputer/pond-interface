@@ -1,5 +1,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import QtQuick.Window
+import QtQuick.VectorImage
 import "RevealLayout.js" as Layout
 
 Item {
@@ -11,6 +13,7 @@ Item {
     property string revealText: ""
     property bool interactive: true
     property real displayScale: 1
+    readonly property real pixelScale: displayScale * (Window.window?.devicePixelRatio ?? 1)
     property int characterRevision: 0
     property string displayPhase: "radial"
     property real elapsedMs: 0
@@ -95,6 +98,7 @@ Item {
                 Behavior on x { enabled: root.displayPhase === "revealed"; NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
                 Behavior on y { enabled: root.displayPhase === "revealed"; NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
                 Text {
+                    renderType: Text.CurveRendering
                     objectName: "revealedText" + character.index
                     anchors.centerIn: parent
                     text: root.revealContentVisible ? root.revealText.charAt(character.index) : ""
@@ -111,7 +115,8 @@ Item {
             color: root.theme.orange
             opacity: root.displayPhase === "revealIn" ? Layout.revealFade(root.elapsedMs, 10)
                 : root.displayPhase === "revealOut" ? 1 - Layout.progress(root.elapsedMs, 40, 120) : 1
-            Image {
+            VectorImage {
+                preferredRendererType: VectorImage.CurveRenderer
                 anchors.centerIn: parent
                 width: 22; height: 22
                 source: Qt.resolvedUrl("../assets/enter-glyph.svg")
@@ -126,9 +131,9 @@ Item {
         RevealOutline {
             objectName: "revealOutline"
             boxes: root.outlineBoxes(root.characterRevision)
-            pixelScale: root.displayScale * root.revealScale * Screen.devicePixelRatio
-            originX: revealed.x * root.displayScale * Screen.devicePixelRatio
-            originY: revealed.y * root.displayScale * Screen.devicePixelRatio
+            pixelScale: root.pixelScale * root.revealScale
+            originX: revealed.x * root.pixelScale
+            originY: revealed.y * root.pixelScale
         }
     }
 }

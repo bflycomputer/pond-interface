@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import QtQuick.VectorImage
 
 Item {
     id: root
@@ -20,6 +21,7 @@ Item {
         height: 40
         color: root.theme.lavender
         Text {
+            renderType: Text.CurveRendering
             id: displayNameText
             objectName: "displayNameLabel"
             anchors.centerIn: parent
@@ -41,13 +43,13 @@ Item {
         width: 40; height: 40
         visible: root.multipleUsers
         color: hovered ? Qt.rgba(root.theme.lavender.r, root.theme.lavender.g, root.theme.lavender.b, 0.2) : "transparent"
-        Image {
+        VectorImage {
             anchors.centerIn: parent
             width: 24; height: 24
             source: Qt.resolvedUrl("assets/user-chevron.svg")
             rotation: arrow.direction > 0 ? -90 : 90
             opacity: arrow.hovered ? 1 : 0.7
-            asynchronous: false
+            preferredRendererType: VectorImage.CurveRenderer
         }
         MouseArea {
             id: mouse

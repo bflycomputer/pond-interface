@@ -1,4 +1,6 @@
 import QtQuick
+import QtQuick.Window
+import QtQuick.VectorImage
 import "form"
 
 Item {
@@ -38,6 +40,8 @@ Item {
     // Uniform scaling keeps the lock centered while wide layouts retain true
     // physical screen edges for the reveal/power controls and footer copy.
     readonly property real layoutScale: Math.min(height / canvasHeight, width / 960)
+    // A window can have a fractional scale even when Screen reports a rounded one.
+    readonly property real pixelScale: layoutScale * (Window.window?.devicePixelRatio ?? 1)
 
     onInteractiveChanged: {
         if (!interactive)
@@ -108,6 +112,7 @@ Item {
         ShaderEffectSource {
             id: backdropTexture
             anchors.fill: parent
+            textureSize: Qt.size(Math.ceil(canvas.width * root.pixelScale), Math.ceil(canvas.height * root.pixelScale))
             sourceItem: backdrop
             hideSource: true
             // Keep the texture available to the footer blend during handoff.
@@ -143,6 +148,7 @@ Item {
             }
 
             Text {
+                renderType: Text.CurveRendering
                 objectName: "lockDate"
                 opacity: lockDisplay.dateTimeVisible ? 1 : 0
                 Behavior on opacity { NumberAnimation { duration: 150 } }
@@ -156,6 +162,7 @@ Item {
             }
 
             Text {
+                renderType: Text.CurveRendering
                 objectName: "lockTime"
                 opacity: lockDisplay.dateTimeVisible ? 1 : 0
                 Behavior on opacity { NumberAnimation { duration: 150 } }
@@ -168,14 +175,14 @@ Item {
                 font.pixelSize: 20
             }
 
-            Image {
+            VectorImage {
                 objectName: "wifiStatus"
                 x: canvas.width - 34
                 y: 10
                 width: 24
                 height: 24
                 source: Qt.resolvedUrl("assets/wifi.svg")
-                asynchronous: false
+                preferredRendererType: VectorImage.CurveRenderer
                 visible: root.wifiConnected
             }
 
@@ -186,11 +193,11 @@ Item {
                 width: 80
                 height: 80
 
-                Image {
+                VectorImage {
                     anchors.fill: parent
                     source: Qt.resolvedUrl(revealMouse.containsMouse ? "assets/reveal-hover.svg"
                         : root.showPassword ? "assets/reveal-open.svg" : "assets/reveal.svg")
-                    asynchronous: false
+                    preferredRendererType: VectorImage.CurveRenderer
                 }
 
                 MouseArea {
@@ -226,6 +233,7 @@ Item {
             }
 
             SoftLightText {
+                pixelScale: root.pixelScale
                 backgroundTexture: backdropTexture
                 backgroundSize: Qt.size(canvas.width, canvas.height)
                 x: 10
@@ -238,6 +246,7 @@ Item {
             }
 
             SoftLightText {
+                pixelScale: root.pixelScale
                 backgroundTexture: backdropTexture
                 backgroundSize: Qt.size(canvas.width, canvas.height)
                 x: canvas.width - 240
@@ -277,6 +286,7 @@ Item {
             visible: noticeText.text.length > 0
 
             Text {
+                renderType: Text.CurveRendering
                 id: noticeText
                 anchors.centerIn: parent
                 text: {
