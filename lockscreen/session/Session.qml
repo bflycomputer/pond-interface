@@ -12,8 +12,6 @@ Item {
     property string displayName: ""
     property bool wifiConnected: false
     property list<string> presentationOutputs: []
-    property bool countdownEnabled: true
-    property int countdownDuration: 10000
     readonly property bool secure: lockSession.secure
     readonly property bool configuredOutputPresent: Quickshell.screens.some(screen => presentationOutputs.includes(screen.name))
 
@@ -37,8 +35,6 @@ Item {
         id: ui
         powerBackend: root.powerBackend
         inputBlocked: !auth.pamReady
-        countdownEnabled: root.countdownEnabled
-        countdownDuration: root.countdownDuration
     }
     SessionController {
         id: flow

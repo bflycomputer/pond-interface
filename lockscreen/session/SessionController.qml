@@ -51,7 +51,6 @@ Item {
         handoffDeadline.stop();
         transition.active = false;
         frontend.active = false;
-        frontend.powerActions.cancel();
         frontend.currentText = "";
         authentication.reset();
         if (needsRelease)

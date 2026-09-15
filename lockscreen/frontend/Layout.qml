@@ -23,9 +23,6 @@ Item {
     property bool multipleUsers: false
     property var compositors: []
     property int compositorIndex: -1
-    property bool powerCountdownActive: false
-    property int powerCountdownRemainingMs: 0
-    property string powerAction: "shutdown"
     property date now: new Date()
     property Component backgroundComponent: Component {
         Daylight.Sky {
@@ -277,32 +274,6 @@ Item {
             showPassword: root.showPassword
             interactive: root.interactive
             onSubmitRequested: root.submitRequested()
-        }
-
-        Rectangle {
-            anchors.horizontalCenter: parent.horizontalCenter
-            y: 970
-            width: noticeText.implicitWidth + 36
-            height: 40
-            color: "#e6643957"
-            border.width: 1
-            border.color: theme.lavender
-            visible: noticeText.text.length > 0
-
-            Text {
-                renderType: Text.CurveRendering
-                id: noticeText
-                anchors.centerIn: parent
-                text: {
-                    if (root.powerCountdownActive)
-                        return (root.powerAction === "restart" ? "Restart in " : "Power off in ")
-                            + Math.max(1, Math.ceil(root.powerCountdownRemainingMs / 1000)) + "s — click again to confirm";
-                    return "";
-                }
-                color: theme.lavender
-                font.family: theme.uiFont
-                font.pixelSize: 13
-            }
         }
     }
 

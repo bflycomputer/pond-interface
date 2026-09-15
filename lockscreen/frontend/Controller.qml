@@ -12,9 +12,6 @@ Item {
     readonly property bool acceptingInput: active && !authenticationPending && !inputBlocked && grid.acceptingInput
     property alias controller: grid
     property alias exitTransition: exit
-    property alias powerActions: power
-    property alias countdownEnabled: power.countdownEnabled
-    property alias countdownDuration: power.countdownDuration
 
     signal submitRequested(string credential)
     signal successAnimationFinished
@@ -26,7 +23,6 @@ Item {
         if (!acceptingInput || !currentText.length)
             return;
         const credential = currentText;
-        power.cancel();
         authenticationPending = true;
         grid.beginAuthentication(credential.length);
         currentText = "";
@@ -48,12 +44,15 @@ Item {
 
     function authenticationSucceeded() {
         grid.authenticationSucceeded();
-        power.cancel();
     }
 
     function requestPower(action) {
-        if (active)
-            power.request(action);
+        if (!active)
+            return;
+        if (action === "shutdown")
+            powerBackend.shutdown();
+        else if (action === "restart")
+            powerBackend.reboot();
     }
 
     Form.AnimationController {
@@ -70,5 +69,4 @@ Item {
         animationPaused: true
         onFinished: root.finished()
     }
-    PowerActions { id: power; backend: root.powerBackend }
 }

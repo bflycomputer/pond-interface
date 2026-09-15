@@ -23,7 +23,6 @@ Item {
         inputBlocked: !root.controller.acceptingInput
         maximumLength: root.maximumLength
         onSubmitRequested: root.controller.submit()
-        onCancelRequested: root.controller.powerActions.cancel()
     }
     Layout {
         id: view
@@ -36,9 +35,6 @@ Item {
         interactive: root.controller.acceptingInput
         powerInteractive: root.controller.active
         restartInteractive: root.controller.active
-        powerCountdownActive: root.controller.powerActions.active
-        powerCountdownRemainingMs: root.controller.powerActions.remaining
-        powerAction: root.controller.powerActions.action
         onSubmitRequested: root.controller.submit()
         onShutdownRequested: root.controller.requestPower("shutdown")
         onRestartRequested: root.controller.requestPower("restart")

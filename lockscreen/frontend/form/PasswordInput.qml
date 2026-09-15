@@ -8,7 +8,6 @@ TextInput {
     property bool inputBlocked: false
 
     signal submitRequested
-    signal cancelRequested
 
     // Keep the native editor in the focus tree while making it visually
     // absent. `visible: false` can revoke active focus in Qt Quick.
@@ -25,9 +24,6 @@ TextInput {
     Keys.onPressed: event => {
         if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
             submitRequested();
-            event.accepted = true;
-        } else if (event.key === Qt.Key_Escape) {
-            cancelRequested();
             event.accepted = true;
         }
     }
