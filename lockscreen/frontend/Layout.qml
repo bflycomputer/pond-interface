@@ -1,7 +1,9 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Window
 import QtQuick.VectorImage
 import "form"
+import Pond.Daylight as Daylight
 
 Item {
     id: root
@@ -26,8 +28,14 @@ Item {
     property string powerAction: "shutdown"
     property string statusMessage: ""
     property date now: new Date()
-    property Component backgroundComponent: null
-    readonly property Item background: (backgroundLoader.item as Item) || staticBackground
+    property Component backgroundComponent: Component {
+        Daylight.Sky {
+            live: false
+            now: root.now
+            pixelRatio: root.pixelScale
+        }
+    }
+    readonly property Item background: backgroundLoader.item as Item
 
     signal submitRequested
     signal shutdownRequested
@@ -84,12 +92,6 @@ Item {
         Item {
             id: backdrop
             anchors.fill: parent
-            Image {
-                id: staticBackground
-                anchors.fill: parent
-                source: Qt.resolvedUrl("assets/lock-background.png")
-                fillMode: Image.PreserveAspectCrop
-            }
             Loader {
                 id: backgroundLoader
                 objectName: "background"
