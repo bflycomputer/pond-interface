@@ -11,7 +11,7 @@ Item {
     property int compositorIndex: -1
     signal userStepRequested(int direction)
     signal compositorRequested(int index)
-    height: Math.max(40, 8 + compositors.length * 30)
+    height: 40
 
     Rectangle {
         id: nameplate
@@ -70,43 +70,71 @@ Item {
         direction: 1
     }
 
-    Column {
-        x: 8; y: 8
-        Repeater {
-            model: root.compositors
-            delegate: Item {
-                id: row
-                required property string modelData
-                required property int index
-                readonly property bool selected: index === root.compositorIndex
-                objectName: "compositor" + index
-                width: Math.max(120, label.implicitWidth + 24)
-                height: 30
-                opacity: selected ? 1 : mouse.containsMouse && enabled ? 0.8 : 0.5
-                Rectangle {
-                    x: 4; y: 11
-                    width: 6; height: 6; radius: 3
-                    color: row.selected ? root.theme.lavender : "transparent"
-                    border.color: root.theme.lavender
-                    border.width: 1
-                }
-                Text {
-                    id: label
-                    x: 16
-                    text: row.modelData
-                    color: root.theme.lavender
-                    font.family: root.theme.displayFont
-                    font.styleName: "Book"
-                    font.pixelSize: 20
-                    lineHeightMode: Text.FixedHeight
-                    lineHeight: 28
-                }
-                MouseArea {
-                    id: mouse
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: root.compositorRequested(row.index)
+    Rectangle {
+        x: 44; y: 14
+        width: 1; height: 16
+        visible: root.compositors.length > 0
+        color: root.theme.lavender
+        opacity: 0.5
+    }
+    Item {
+        id: selector
+        x: 54; y: 8
+        width: Math.max(110, selectedName.implicitWidth + 26, alternatives.implicitWidth)
+        height: expanded ? alternatives.y + alternatives.height : 28
+        visible: root.compositors.length > 0
+        readonly property bool expanded: root.enabled && hover.hovered
+        HoverHandler { id: hover }
+        Text {
+            renderType: Text.CurveRendering
+            id: selectedName
+            text: root.compositors[root.compositorIndex] || ""
+            color: root.theme.lavender
+            font.family: root.theme.displayFont
+            font.styleName: "Book"
+            font.pixelSize: 20
+            lineHeightMode: Text.FixedHeight
+            lineHeight: 28
+        }
+        VectorImage {
+            preferredRendererType: VectorImage.CurveRenderer
+            x: selectedName.implicitWidth + 2; y: 2
+            width: 24; height: 24
+            source: Qt.resolvedUrl("assets/compositor-chevron.svg")
+        }
+        Column {
+            id: alternatives
+            y: 32
+            visible: selector.expanded
+            Repeater {
+                model: root.compositors
+                delegate: Item {
+                    id: row
+                    required property string modelData
+                    required property int index
+                    objectName: "compositor" + index
+                    visible: index !== root.compositorIndex
+                    width: Math.max(110, label.implicitWidth + 26)
+                    height: visible ? 32 : 0
+                    Text {
+                        renderType: Text.CurveRendering
+                        id: label
+                        text: row.modelData
+                        opacity: choice.containsMouse ? 1 : 0.5
+                        color: root.theme.lavender
+                        font.family: root.theme.displayFont
+                        font.styleName: "Book"
+                        font.pixelSize: 20
+                        lineHeightMode: Text.FixedHeight
+                        lineHeight: 28
+                    }
+                    MouseArea {
+                        id: choice
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: root.compositorRequested(row.index)
+                    }
                 }
             }
         }

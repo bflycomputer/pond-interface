@@ -180,7 +180,7 @@ Item {
 
             VectorImage {
                 objectName: "wifiStatus"
-                x: canvas.width - 34
+                x: 10
                 y: 10
                 width: 24
                 height: 24
