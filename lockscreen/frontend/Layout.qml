@@ -26,7 +26,6 @@ Item {
     property bool powerCountdownActive: false
     property int powerCountdownRemainingMs: 0
     property string powerAction: "shutdown"
-    property string statusMessage: ""
     property date now: new Date()
     property Component backgroundComponent: Component {
         Daylight.Sky {
@@ -298,7 +297,7 @@ Item {
                     if (root.powerCountdownActive)
                         return (root.powerAction === "restart" ? "Restart in " : "Power off in ")
                             + Math.max(1, Math.ceil(root.powerCountdownRemainingMs / 1000)) + "s — click again to confirm";
-                    return root.statusMessage;
+                    return "";
                 }
                 color: theme.lavender
                 font.family: theme.uiFont

@@ -36,12 +36,6 @@ Item {
         dispatch({ type: "RESET", seed: Date.now() });
     }
 
-    // Restore the finished grid on a new surface without replaying success.
-    function restoreSuccess(inputLength) {
-        authResultHandled = true;
-        animationState = GridState.createSucceededState(inputLength, Date.now());
-    }
-
     function syncLength(inputLength) {
         dispatch({ type: "SYNC_LENGTH", length: inputLength });
     }

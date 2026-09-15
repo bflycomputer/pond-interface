@@ -56,13 +56,6 @@ function createState(seed) {
     };
 }
 
-function createSucceededState(inputLength, seed) {
-    const state = createState(seed);
-    state.inputLength = normalizeLength(inputLength);
-    state.animationPhase = "succeeded";
-    return state;
-}
-
 function copyState(state) {
     const copy = Object.assign({}, state);
     for (const key of Object.keys(copy)) {
