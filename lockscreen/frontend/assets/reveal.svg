@@ -1,0 +1,9 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Eye icon">
+<rect width="80" height="80" fill="#D1C9FF"/>
+<circle id="Ellipse 5219" cx="40" cy="40" r="24" fill="#F0E5FF"/>
+<g id="tabler:eye-closed">
+<path id="Vector" d="M49 37C46.6 39.6667 43.6 41 40 41C36.4 41 33.4 39.6667 31 37M31 43L33.5 39.2M49 42.976L46.508 39.2M37 45L37.5 41M43 45L42.5 41" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+</g>
+</svg>

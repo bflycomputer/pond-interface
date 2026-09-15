@@ -1,0 +1,14 @@
+<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="80" height="80" fill="#141414"/>
+<g id="Eye icon - hover">
+<rect width="80" height="80" fill="#FF9F67"/>
+<circle id="Ellipse 5219" cx="40" cy="40" r="24" fill="#632B0F"/>
+<g id="tabler:eye-closed">
+<g id="Group 2147209473">
+<path id="Vector" d="M49 39.6342C49 39.6342 46.037 38.4316 40.2679 38.4316C34.4989 38.4316 31 39.6342 31 39.6342" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Subtract" d="M44.1704 41C44.0169 41.842 43.6121 42.6247 42.9985 43.2383C42.2035 44.0334 41.1249 44.4794 40.0005 44.4795C38.8761 44.4795 37.7976 44.0332 37.0024 43.2383C36.3888 42.6247 35.983 41.842 35.8296 41H44.1704Z" fill="white"/>
+<path id="Vector_2" d="M31 37.6343L32.9968 39.1343M48.9968 37.6343L46.9968 39.1343M35.9968 35.6343L37.4968 38.1343M43.3528 35.6343L42.1086 37.9343" stroke="white" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+</g>
+</g>
+</svg>
