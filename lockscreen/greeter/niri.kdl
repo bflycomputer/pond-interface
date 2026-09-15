@@ -1,0 +1,7 @@
+prefer-no-csd
+hotkey-overlay { skip-at-startup; }
+animations { off; }
+window-rule {
+    match app-id="^sddm-greeter"
+    open-fullscreen true
+}
