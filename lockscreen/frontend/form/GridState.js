@@ -376,7 +376,7 @@ function cellVisual(state, cellIndex, exitStep = 0) {
     if (!exitCellVisible(state, cellIndex, exitStep))
         return { mode: "hidden", shape: -1 };
 
-    if (state.animationPhase === "succeeded")
+    if (state.animationPhase === "succeeded" || exitStep > 0)
         return { mode: cellIndex < activeCellCount(state) ? "successFill" : "successOutline", shape: -1 };
 
     if (state.animationPhase === "deleting") {

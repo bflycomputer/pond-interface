@@ -1,11 +1,12 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import QtQuick.Window
 
 Item {
     id: root
 
     required property var exitTransition
-    property url wallpaperSource: Qt.resolvedUrl("assets/lock-background.png")
+    property Item background: null
     property color coverColor: "#1a1409"
 
     readonly property int splitX: Math.round(width * 1000 / 1920)
@@ -17,6 +18,14 @@ Item {
         Qt.rect(splitX, splitY, width - splitX, height - splitY),
         Qt.rect(splitX, 0, width - splitX, splitY)
     ]
+
+    ShaderEffectSource {
+        id: backgroundTexture
+        sourceItem: root.background
+        textureSize: Qt.size(Math.ceil(root.width * (Window.window?.devicePixelRatio ?? 1)),
+            Math.ceil(root.height * (Window.window?.devicePixelRatio ?? 1)))
+        visible: false
+    }
 
     Repeater {
         model: 4
@@ -30,11 +39,11 @@ Item {
             color: root.coverColor
             clip: true
             visible: root.exitTransition.revealedQuadrantCount < index + 1
-            Image {
+            ShaderEffect {
                 x: -parent.x; y: -parent.y
                 width: root.width; height: root.height
-                source: root.wallpaperSource
-                fillMode: Image.PreserveAspectCrop
+                property var source: backgroundTexture
+                visible: root.background !== null
             }
         }
     }

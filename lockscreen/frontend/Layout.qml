@@ -20,19 +20,20 @@ Item {
     property string displayName: ""
     property bool multipleUsers: false
     property var compositors: []
-    property string selectedCompositor: ""
+    property int compositorIndex: -1
     property bool powerCountdownActive: false
     property int powerCountdownRemainingMs: 0
     property string powerAction: "shutdown"
     property string statusMessage: ""
     property date now: new Date()
     property Component backgroundComponent: null
+    readonly property Item background: (backgroundLoader.item as Item) || staticBackground
 
     signal submitRequested
     signal shutdownRequested
     signal restartRequested
     signal userStepRequested(int direction)
-    signal compositorRequested(string name)
+    signal compositorRequested(int index)
 
     clip: true
 
@@ -84,11 +85,13 @@ Item {
             id: backdrop
             anchors.fill: parent
             Image {
+                id: staticBackground
                 anchors.fill: parent
                 source: Qt.resolvedUrl("assets/lock-background.png")
                 fillMode: Image.PreserveAspectCrop
             }
             Loader {
+                id: backgroundLoader
                 objectName: "background"
                 anchors.fill: parent
                 active: root.backgroundComponent !== null
@@ -141,10 +144,10 @@ Item {
                 displayName: root.displayName
                 multipleUsers: root.multipleUsers
                 compositors: root.compositors
-                selectedCompositor: root.selectedCompositor
+                compositorIndex: root.compositorIndex
                 enabled: root.interactive
                 onUserStepRequested: direction => root.userStepRequested(direction)
-                onCompositorRequested: name => root.compositorRequested(name)
+                onCompositorRequested: index => root.compositorRequested(index)
             }
 
             Text {

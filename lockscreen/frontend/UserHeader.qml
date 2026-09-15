@@ -8,9 +8,9 @@ Item {
     property string displayName: ""
     property bool multipleUsers: false
     property var compositors: []
-    property string selectedCompositor: ""
+    property int compositorIndex: -1
     signal userStepRequested(int direction)
-    signal compositorRequested(string name)
+    signal compositorRequested(int index)
     height: Math.max(40, 8 + compositors.length * 30)
 
     Rectangle {
@@ -78,7 +78,7 @@ Item {
                 id: row
                 required property string modelData
                 required property int index
-                readonly property bool selected: modelData === root.selectedCompositor
+                readonly property bool selected: index === root.compositorIndex
                 objectName: "compositor" + index
                 width: Math.max(120, label.implicitWidth + 24)
                 height: 30
@@ -106,7 +106,7 @@ Item {
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: root.compositorRequested(row.modelData)
+                    onClicked: root.compositorRequested(row.index)
                 }
             }
         }
