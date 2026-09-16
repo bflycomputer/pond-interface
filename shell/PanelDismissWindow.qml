@@ -12,7 +12,7 @@ PanelWindow {
   required property var bar
 
   screen: bar.screen
-  visible: true
+  visible: bar.panelOpen
   color: "transparent"
 
   anchors {
@@ -29,17 +29,13 @@ PanelWindow {
   WlrLayershell.exclusionMode: ExclusionMode.Ignore
 
   mask: Region {
-    x: root.bar && root.bar.panelOpen
-        ? Math.max(0, Math.min(root.width, root.bar.implicitWidth)) : 0
-    y: 0
-    width: root.bar && root.bar.panelOpen
-        ? Math.max(0, root.width - x) : 0
-    height: root.bar && root.bar.panelOpen ? root.height : 0
+    x: Math.min(root.width, root.bar.implicitWidth)
+    width: root.width - x
+    height: root.height
   }
 
   MouseArea {
     anchors.fill: parent
-    enabled: root.bar && root.bar.panelOpen
     acceptedButtons: Qt.LeftButton | Qt.MiddleButton | Qt.RightButton
     onClicked: root.bar.dismissPanels()
   }

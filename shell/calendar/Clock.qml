@@ -84,7 +84,7 @@ Shell.Card {
       radius: 6
       color: "transparent"
       border.width: 1
-      border.color: Shell.Theme.sidebarV3Border
+      border.color: Shell.Theme.daylight ? Shell.Theme.sidebarInnerOutline : Shell.Theme.sidebarV3Border
       antialiasing: true
 
       FontMetrics { id: dateMetrics; font: weekdayText.font }

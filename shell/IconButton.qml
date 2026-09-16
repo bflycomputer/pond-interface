@@ -2,10 +2,12 @@ import QtQuick
 
 Item {
   id: root
+  property alias iconSourceSize: glyph.sourceSize
   property url iconSource
   property real iconWidth: 14
   property real iconHeight: 14
   property real restingOpacity: 0.6
+  property int hoverEasing: Easing.OutCubic
   property string accessibleName: ""
   readonly property bool hovered: pointer.containsMouse
   property real glyphOpacity: hovered ? 1 : restingOpacity
@@ -13,9 +15,10 @@ Item {
 
   implicitWidth: 24
   implicitHeight: 24
-  Behavior on glyphOpacity { HoverAnimation {} }
+  Behavior on glyphOpacity { HoverAnimation { easing.type: root.hoverEasing } }
 
   Image {
+    id: glyph
     anchors.centerIn: parent
     width: root.iconWidth
     height: root.iconHeight

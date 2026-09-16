@@ -14,6 +14,7 @@ Card {
 
   property bool wifiOpen: false
   property bool soundOpen: false
+  property bool settingsOpen: false
   property bool wifiHoverRetained: false
   property bool keyboardVolumeVisible: false
   // Wi-Fi metrics and the compact sound control share the same staged exit:
@@ -25,6 +26,7 @@ Card {
   readonly property string requestedReveal: wifiPresentationRequested ? "wifi"
       : soundSliderRequested ? "sound" : ""
   signal wifiClicked
+  signal settingsClicked
   signal soundClicked
 
   property bool wifiButtonHovered: false
@@ -98,7 +100,7 @@ Card {
     }
   }
 
-  Audio.Slider {
+  Slider {
     id: compactSoundSlider
     z: 2
     x: 12
@@ -225,12 +227,12 @@ Card {
       y: vertical ? 4 + slot * 40 : Theme.lerp(root.expandedControlsY, 4, root.widthProgress)
       width: vertical ? 40 : Theme.lerp(slot === 0 || slot === 3 ? 38 : 36, 40, root.widthProgress)
       height: 40
-      enabled: slot !== 2 && opacity > 0.5
+      enabled: opacity > 0.5
       onHoveredChanged: {
         if (slot === 0) root.wifiButtonHovered = hovered;
         else if (slot === 1) root.soundButtonHovered = hovered;
       }
-      readonly property bool selected: slot === 0 ? root.wifiOpen : slot === 1 && root.soundOpen
+      readonly property bool selected: slot === 0 ? root.wifiOpen : slot === 1 ? root.soundOpen : slot === 2 && root.settingsOpen
       restingOpacity: selected || (slot === 1 && root.keyboardVolumeVisible) ? 1 : 0.6
       iconSource: modelData.icon ? Qt.resolvedUrl("assets/" + modelData.icon) : ""
       iconWidth: modelData.width
@@ -238,12 +240,12 @@ Card {
       onClicked: {
         if (slot === 0) root.wifiClicked();
         else if (slot === 1) root.soundClicked();
+        else if (slot === 2) root.settingsClicked();
         else root.collapseClicked();
       }
       Accessible.role: Accessible.Button
       Accessible.name: slot === 0 ? "Wi-Fi" : slot === 1 ? "Sound"
-          : root.collapseProgress < 0.5 ? "Collapse sidebar" : "Expand sidebar"
-      Accessible.ignored: slot === 2
+          : slot === 2 ? "Settings" : root.collapseProgress < 0.5 ? "Collapse sidebar" : "Expand sidebar"
       Accessible.onPressAction: action.clicked()
 
       Rectangle {
@@ -255,7 +257,8 @@ Card {
         bottomLeftRadius: action.slot === 0 ? Theme.lerp(12, 4, root.collapseProgress)
             : action.slot === 3 ? Theme.lerp(4, 12, root.collapseProgress) : 4
         bottomRightRadius: action.slot === 3 ? 12 : 4
-        color: action.selected ? "#303030" : action.hovered ? "#262626" : Qt.rgba(38/255, 38/255, 38/255, 0)
+        color: Theme.daylight ? (action.selected || action.hovered ? Theme.sidebarHoverFill : Theme.sidebarClearFill)
+            : action.selected ? "#303030" : action.hovered ? "#262626" : Qt.rgba(38/255, 38/255, 38/255, 0)
         Behavior on color { ColorAnimation { duration: 120; easing.type: Easing.OutCubic } }
       }
 

@@ -1,9 +1,33 @@
 pragma Singleton
 import QtQuick
+import QtCore
+import Quickshell
+import Quickshell.Io
 
-QtObject {
-  readonly property color sidebarInnerOutline: sidebarV3Control
-  readonly property color sidebarControlHover: sidebarV3Control
+Singleton {
+  id: root
+  property string name: "unthemed"
+  readonly property bool daylight: name === "daylight"
+  readonly property color sidebarCardOutline: Qt.rgba(1, 1, 1, 0.10)
+  readonly property color sidebarHoverFill: Qt.rgba(1, 1, 1, 0.04)
+  readonly property color sidebarClearFill: Qt.rgba(1, 1, 1, 0)
+
+  function reload() { themeFile.reload(); }
+
+  FileView {
+    id: themeFile
+    path: StandardPaths.writableLocation(StandardPaths.ConfigLocation) + "/pond-interface/theme.json"
+    watchChanges: true
+    printErrors: false
+    onFileChanged: reload()
+    onLoaded: {
+      try { root.name = JSON.parse(text()).theme === "daylight" ? "daylight" : "unthemed"; }
+      catch (error) { console.warn("Could not read theme selection:", error); }
+    }
+  }
+
+  readonly property color sidebarInnerOutline: daylight ? Qt.rgba(1, 1, 1, 0.20) : sidebarV3Control
+  readonly property color sidebarControlHover: daylight ? sidebarHoverFill : sidebarV3Control
   readonly property int sidebarOuterMargin: 10
   readonly property int sidebarCardExpandedWidth: 156
   readonly property int sidebarCardCollapsedWidth: 48
@@ -16,8 +40,8 @@ QtObject {
   readonly property color sidebarV3Border: "#303030"
   readonly property color sidebarV3Divider: "#383838"
   readonly property color sidebarV3WorkspaceActive: "#242424"
-  readonly property color workspaceLauncherActive: "#262626"
-  readonly property color workspaceActiveIndicatorColor: "#262626"
+  readonly property color workspaceLauncherActive: daylight ? sidebarHoverFill : "#262626"
+  readonly property color workspaceActiveIndicatorColor: daylight ? sidebarHoverFill : "#262626"
   readonly property color sidebarV3Control: "#303030"
   readonly property color sidebarV3Foreground: "#F8F9F9"
   readonly property color mediaHoverBackground: "#262626"

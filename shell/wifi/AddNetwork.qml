@@ -3,6 +3,8 @@ import ".."
 
 Item {
   id: root
+  readonly property real headerDividerY: 63.5
+  readonly property bool headerDividerVisible: !dropdownVisible
   property var stackController
   property bool interactive: true
   property bool dropdownOpen: false

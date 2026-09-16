@@ -29,7 +29,9 @@ Item {
     width: root.surfaceWidth
     height: root.height
     radius: 16
-    color: root.inlinePreview && root.hovered ? Notifications.Style.hover : Shell.Theme.sidebarV3Background
+    color: root.inlinePreview && Shell.Theme.daylight
+        ? (root.hovered ? Shell.Theme.sidebarHoverFill : Shell.Theme.sidebarClearFill)
+        : root.inlinePreview && root.hovered ? Notifications.Style.hover : Shell.Theme.sidebarV3Background
     antialiasing: true
     Behavior on color { ColorAnimation { duration: 120; easing.type: Easing.OutCubic } }
   }

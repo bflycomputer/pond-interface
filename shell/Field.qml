@@ -1,5 +1,4 @@
 import QtQuick
-import ".."
 
 Rectangle {
   id: root
@@ -68,41 +67,24 @@ Rectangle {
     onTapped: editor.forceActiveFocus(Qt.MouseFocusReason)
   }
 
-  Rectangle {
+  IconButton {
     id: eyeButton
     visible: root.password
-    x: root.width - 36
-    y: 8
-    width: 28
-    height: 28
-    radius: 4
+    x: root.width - 36; y: 8; width: 28; height: 28
     z: 2
-    color: eyePointer.containsMouse ? PanelStyle.pressed
-        : Qt.rgba(48 / 255, 48 / 255, 48 / 255, 0)
+    iconWidth: 20; iconHeight: 20
+    iconSourceSize: Qt.size(20, 20)
+    restingOpacity: 0.7
+    hoverEasing: Easing.Linear
+    iconSource: Qt.resolvedUrl(root.revealed ? "assets/eye-open.svg" : "assets/eye-closed.svg")
+    onClicked: root.revealed = !root.revealed
 
-    Behavior on color {
-      ColorAnimation { duration: PanelStyle.controlDuration }
-    }
-
-    Image {
-      anchors.centerIn: parent
-      width: 20
-      height: 20
-      source: root.revealed
-          ? Qt.resolvedUrl("../assets/eye-open.svg")
-          : Qt.resolvedUrl("../assets/eye-closed.svg")
-      opacity: eyePointer.containsMouse ? 1 : 0.7
-
-      Behavior on opacity {
-        NumberAnimation { duration: PanelStyle.controlDuration }
-      }
-    }
-    MouseArea {
-      id: eyePointer
+    Rectangle {
       anchors.fill: parent
-      hoverEnabled: true
-      cursorShape: Qt.PointingHandCursor
-      onClicked: root.revealed = !root.revealed
+      z: -1
+      radius: 4
+      color: eyeButton.hovered ? PanelStyle.pressed : Qt.rgba(48 / 255, 48 / 255, 48 / 255, 0)
+      Behavior on color { ColorAnimation { duration: PanelStyle.controlDuration } }
     }
   }
 }

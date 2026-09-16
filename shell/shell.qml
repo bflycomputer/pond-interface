@@ -2,6 +2,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import "calendar" as Calendar
+import "settings" as Settings
 import "notifications" as Notifications
 
 ShellRoot {
@@ -27,6 +28,7 @@ ShellRoot {
       Notifications.CenterWindow { bar: sidebar }
       Calendar.Window { bar: sidebar }
       PanelDismissWindow { bar: sidebar }
+      Settings.Window { menuScreen: modelData }
     }
   }
 }

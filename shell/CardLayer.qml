@@ -1,15 +1,13 @@
 import QtQuick
-import ".."
 
-// One persistent card instance in the Wi-Fi stack. The stack changes
+// One persistent card instance in the stack. The stack changes
 // only this wrapper's geometry and reveal values, so a card keeps its own form
 // state while moving between front, back, hidden, and front again.
 Item {
   id: root
 
   property Component cardComponent
-  property string page: ""
-  property var network: ({})
+  property var selection: ({})
   property var stackController
   property bool interactive: false
   property real backingAmount: 0
@@ -19,11 +17,8 @@ Item {
       ? cardLoader.item.implicitHeight : 0
   readonly property bool ready: cardLoader.status === Loader.Ready
   readonly property real cardScale: width / PanelStyle.width
-  readonly property bool hasHeaderDivider: page !== "status"
-  readonly property bool securityMenuVisible: page === "add"
-      && cardLoader.item !== null && cardLoader.item.dropdownVisible
-  readonly property real dividerY:
-      page === "drawer" || page === "details" ? 59.5 : 63.5
+  readonly property real dividerY: cardLoader.item?.headerDividerY ?? 59.5
+  readonly property bool hasHeaderDivider: cardLoader.item?.headerDividerVisible ?? true
 
   clip: false
 
@@ -89,13 +84,13 @@ Item {
       width: 276 * root.cardScale
       height: 1
       z: 2
-      visible: root.hasHeaderDivider && !root.securityMenuVisible
+      visible: root.hasHeaderDivider
       color: PanelStyle.border
       antialiasing: false
     }
   }
 
-  onNetworkChanged: configureCard()
+  onSelectionChanged: configureCard()
   onInteractiveChanged: configureCard()
 
   function configureCard() {
@@ -104,8 +99,8 @@ Item {
       return;
     item.stackController = root.stackController;
     item.interactive = root.interactive;
-    if (root.page === "join" || root.page === "details")
-      item.network = root.network || ({});
+    if ("selection" in item)
+      item.selection = root.selection || ({});
   }
 
 }

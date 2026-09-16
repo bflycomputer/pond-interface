@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 pragma Singleton
 
 import QtQuick
@@ -23,8 +24,8 @@ Singleton {
                  locked: n.security !== WifiSecurityType.Open, connected: n.connected}))
       .sort((a, b) => Number(b.connected) - Number(a.connected)
           || b.signal - a.signal || a.ssid.localeCompare(b.ssid))
-  property string uploadRate: "0KB"
-  property string downloadRate: "0KB"
+  readonly property string uploadRate: txCounter.rate
+  readonly property string downloadRate: rxCounter.rate
   property string phase: "idle"
   property string statusText: ""
   property string pendingSsid: ""
@@ -38,9 +39,6 @@ Singleton {
   property string gateway: "—"
   property string dns: "—"
 
-  property real _lastTx: -1
-  property real _lastRx: -1
-  property double _lastByteTime: 0
   property string _actionKind: ""
   property string _actionError: ""
   property var _actionQueue: []
@@ -63,8 +61,6 @@ Singleton {
     refreshDetails();
   }
 
-  onSamplingRatesChanged: resetRates()
-
   function setRateConsumer(consumer, active) {
     const next = rateConsumers.filter(item => item !== consumer);
     if (active)
@@ -73,28 +69,21 @@ Singleton {
   }
 
   onDeviceChanged: {
-    resetRates();
     connectedUuid = "";
     linkSpeed = band = "—";
     ipv4 = gateway = dns = "—";
     refreshDetails();
   }
 
-  function resetRates() {
-    _lastTx = -1;
-    _lastRx = -1;
-    _lastByteTime = 0;
-    uploadRate = "0B";
-    downloadRate = "0B";
-  }
-
   function formatRate(bytesPerSecond) {
-    const value = Math.max(0, Number(bytesPerSecond) || 0);
-    if (value >= 1048576)
-      return (value / 1048576).toFixed(value >= 10485760 ? 0 : 1) + "MB";
-    if (value >= 1024)
-      return (value / 1024).toFixed(value >= 10240 ? 0 : 1) + "KB";
-    return Math.round(value) + "B";
+    const value = Math.max(0, Number(bytesPerSecond) || 0) * 8;
+    if (value >= 1e9)
+      return (value / 1e9).toFixed(value >= 1e10 ? 0 : 1) + "Gb";
+    if (value >= 1e6)
+      return (value / 1e6).toFixed(value >= 1e7 ? 0 : 1) + "Mb";
+    if (value >= 1e3)
+      return (value / 1e3).toFixed(value >= 1e4 ? 0 : 1) + "Kb";
+    return Math.round(value) + "b";
   }
 
   function setWifiEnabled(value) {
@@ -185,13 +174,12 @@ Singleton {
               connectedSsid);
   }
 
-  function forget(ssid) {
-    const target = String(ssid || connectedSsid);
-    if (target !== connectedSsid || connectedUuid === "")
+  function forget() {
+    if (connectedUuid === "")
       return;
     runAction("forget",
               ["/usr/bin/nmcli", "connection", "delete", "uuid", connectedUuid],
-              target);
+              connectedSsid);
   }
 
   function runAction(kind, command, ssid) {
@@ -221,34 +209,27 @@ Singleton {
     linkQuery.running = true;
   }
 
-  Process {
-    id: byteQuery
-    property string sampledDevice: ""
-    onStarted: sampledDevice = root.device
-    command: root.device === "" ? []
-        : ["/usr/bin/cat",
-           "/sys/class/net/" + root.device + "/statistics/tx_bytes",
-           "/sys/class/net/" + root.device + "/statistics/rx_bytes"]
-    stdout: StdioCollector {
-      onStreamFinished: {
-        if (!root.samplingRates || byteQuery.sampledDevice !== root.device)
-          return;
-        const values = text.trim().split(/\s+/).map(Number);
-        if (values.length < 2 || !Number.isFinite(values[0])
-            || !Number.isFinite(values[1]))
-          return;
-        const now = Date.now();
-        if (root._lastTx >= 0 && root._lastByteTime > 0) {
-          const seconds = Math.max(0.05, (now - root._lastByteTime) / 1000);
-          root.uploadRate = root.formatRate((values[0] - root._lastTx) / seconds);
-          root.downloadRate = root.formatRate((values[1] - root._lastRx) / seconds);
-        }
-        root._lastTx = values[0];
-        root._lastRx = values[1];
-        root._lastByteTime = now;
-      }
+  component Counter: FileView {
+    required property string counterName
+    property real previous: -1
+    property double previousTime: 0
+    property string rate: "0b"
+    path: root.samplingRates
+        ? "/sys/class/net/" + root.device + "/statistics/" + counterName : ""
+    printErrors: false
+    onPathChanged: { previous = -1; previousTime = 0; rate = "0b"; }
+    onLoaded: {
+      const bytes = Number(text().trim());
+      if (!root.samplingRates || !Number.isFinite(bytes)) return;
+      const now = Date.now();
+      if (previous >= 0)
+        rate = root.formatRate((bytes - previous) / Math.max(0.05, (now - previousTime) / 1000));
+      previous = bytes;
+      previousTime = now;
     }
   }
+  Counter { id: txCounter; counterName: "tx_bytes" }
+  Counter { id: rxCounter; counterName: "rx_bytes" }
 
   Process {
     id: detailQuery
@@ -285,7 +266,7 @@ Singleton {
             const speed = value.match(/^([0-9.]+)\s+MBit\/s/i);
             const channelWidth = value.match(/([0-9]+)MHz/i);
             if (speed)
-              linkSpeed = speed[1] + " Mbit/s";
+              linkSpeed = speed[1] + " Mbps";
             if (channelWidth)
               width = channelWidth[1] + " MHz";
           }
@@ -345,9 +326,6 @@ Singleton {
     interval: 1000
     repeat: true
     running: root.samplingRates
-    triggeredOnStart: true
-    onTriggered: {
-      byteQuery.running = true;
-    }
+    onTriggered: { txCounter.reload(); rxCounter.reload(); }
   }
 }

@@ -2,6 +2,8 @@ import QtQuick
 import Quickshell
 import Quickshell.Wayland
 import "audio" as Audio
+import "bluetooth" as Bluetooth
+import "settings" as Settings
 import "wifi" as Wifi
 import "calendar" as Calendar
 import "media" as Media
@@ -21,41 +23,59 @@ PanelWindow {
       && Notifications.State.panelOutputName === screen.name ? 0.6 : 1
 
   readonly property real panelX: Theme.sidebarOuterMargin + cardWidth + Theme.sidebarCardGap
-  readonly property bool panelOpen: wifiPanel.opened || audioPanel.opened
-  readonly property var activePanel: wifiPanel.opened ? wifiPanel : audioPanel.opened ? audioPanel : null
+  readonly property bool panelOpen: wifiPanel.opened || audioPanel.opened || bluetoothPanel.opened
+  readonly property var activePanel: wifiPanel.opened ? wifiPanel : audioPanel.opened ? audioPanel : bluetoothPanel.opened ? bluetoothPanel : null
   property string pendingPanel: ""
+  readonly property var panels: ({wifi: wifiPanel, audio: audioPanel, bluetooth: bluetoothPanel})
 
   function dismissPanels() {
     panelSwitchDelay.stop();
     pendingPanel = "";
-    wifiPanel.closeAll();
-    audioPanel.closeAll();
+    for (const panel of Object.values(panels)) panel.closeAll();
   }
 
   function togglePanel(name) {
-    const wasOpen = name === "wifi" ? wifiPanel.opened : audioPanel.opened;
-    const wasVisible = wifiPanel.visible || audioPanel.visible;
+    const panel = panels[name];
+    if (!panel) return;
+    const wasOpen = panel.opened;
+    const wasVisible = Object.values(panels).some(item => item.visible);
     dismissPanels();
     if (wasOpen) return;
+    Settings.State.close();
     calendarOpen = false;
     Notifications.State.closePanel();
     if (wasVisible) {
       pendingPanel = name;
       panelSwitchDelay.restart();
-    } else if (name === "wifi") wifiPanel.openDrawer();
-    else audioPanel.open();
+    } else panel.open();
   }
 
   Timer {
     id: panelSwitchDelay
     interval: 200
     onTriggered: {
-      if (root.pendingPanel === "wifi") wifiPanel.openDrawer();
-      else if (root.pendingPanel === "audio") audioPanel.open();
+      const panel = root.panels[root.pendingPanel];
+      if (panel) panel.open();
       root.pendingPanel = "";
     }
   }
 
+  Connections {
+    target: Settings.State
+    function onOpening() {
+      root.dismissPanels();
+      root.calendarOpen = false;
+      Notifications.State.closePanel();
+    }
+  }
+  Connections {
+    target: Bluetooth.State
+    function onPanelCommand(command, outputName) {
+      if (outputName !== root.screen.name) return;
+      if (command === "close") bluetoothPanel.closeAll();
+      else if (command === "toggle" || !bluetoothPanel.opened) root.togglePanel("bluetooth");
+    }
+  }
   Connections {
     target: Audio.State
     function onKeyboardOutputVolumeChanged(value) {
@@ -68,7 +88,8 @@ PanelWindow {
   // Keep compositor resizes out of the card animation; only the input area shrinks.
   implicitWidth: Math.ceil(Math.max(Theme.sidebarOuterMargin + Theme.sidebarCardExpandedWidth + 8,
       wifiPanel.visible ? panelX + wifiPanel.width + 67 : 0,
-      audioPanel.visible ? panelX + audioPanel.width + 67 : 0))
+      audioPanel.visible ? panelX + audioPanel.width + 67 : 0,
+      bluetoothPanel.visible ? panelX + bluetoothPanel.width + 67 : 0))
   mask: Region {
     width: root.panelOpen ? root.implicitWidth : Math.ceil(Theme.sidebarOuterMargin + Math.max(root.cardWidth,
         workspacesCard.width, mediaCard.width, controls.width) + 8)
@@ -162,6 +183,14 @@ PanelWindow {
     anchors.bottomMargin: Theme.sidebarOuterMargin
   }
 
+  Bluetooth.Panel {
+    id: bluetoothPanel
+    x: root.panelX
+    z: 80
+    anchors.bottom: parent.bottom
+    anchors.bottomMargin: Theme.sidebarOuterMargin
+  }
+
   Item {
     id: bottomStack
     x: Theme.sidebarOuterMargin
@@ -175,8 +204,10 @@ PanelWindow {
       collapseProgress: root.collapseProgress
       wifiOpen: wifiPanel.opened
       soundOpen: audioPanel.opened
+      settingsOpen: Settings.State.opened && Settings.State.outputName === root.screen.name
       onWifiClicked: root.togglePanel("wifi")
       onSoundClicked: root.togglePanel("audio")
+      onSettingsClicked: Settings.State.toggle(root.screen.name)
       onCollapseClicked: root.toggleRequested()
     }
   }

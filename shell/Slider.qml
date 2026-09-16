@@ -1,6 +1,5 @@
 import QtQuick
 import QtQuick.Templates as T
-import ".."
 
 T.Slider {
   id: root
@@ -9,6 +8,9 @@ T.Slider {
   property bool persistentHandle: false
   property bool showInlineValue: true
   property bool interactive: true
+  signal dragStarted
+  signal dragFinished
+  onPressedChanged: pressed ? dragStarted() : dragFinished()
 
   from: 0; to: 1
   leftPadding: 1; rightPadding: 1

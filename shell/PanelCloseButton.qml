@@ -1,5 +1,4 @@
 import QtQuick
-import ".."
 
 Item {
   id: root
@@ -19,7 +18,7 @@ Item {
       anchors.centerIn: parent
       width: 20
       height: 20
-      source: Qt.resolvedUrl("../assets/wifi/close.svg")
+      source: Qt.resolvedUrl("assets/wifi/close.svg")
     }
   }
 

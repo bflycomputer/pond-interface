@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import Quickshell
 import "." as Audio
 import ".."
 
@@ -94,7 +95,7 @@ Item {
       width: PanelStyle.rowWidth
       height: parent.height - y
       interactive: root.deviceCount > 4
-      model: root.devices
+      model: ScriptModel { values: root.devices }
       topMargin: 8
       bottomMargin: 8
 

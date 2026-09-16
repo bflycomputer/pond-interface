@@ -3,8 +3,9 @@ import ".."
 
 Item {
   id: root
+  readonly property real headerDividerY: 63.5
   property var stackController
-  property var network: ({})
+  property var selection: ({})
   property bool interactive: true
   readonly property bool canConnect: password.text.length > 0
 
@@ -26,7 +27,7 @@ Item {
       y: 19.5
       width: 260
       elide: Text.ElideRight
-      text: "Join “" + String(root.network.ssid || "Wifi Network") + "”"
+      text: "Join “" + String(root.selection.ssid || "Wifi Network") + "”"
       color: "white"
       font.family: Theme.titleFontFamily
       font.weight: Font.Normal
@@ -64,7 +65,7 @@ Item {
       function trigger() {
         if (root.canConnect)
           root.stackController.connectNetwork(
-              String(root.network.ssid || ""), password.text, false);
+              String(root.selection.ssid || ""), password.text, false);
       }
 
       Behavior on opacity {

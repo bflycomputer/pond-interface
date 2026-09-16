@@ -4,6 +4,7 @@ import ".."
 
 Item {
   id: root
+  readonly property bool headerDividerVisible: false
   property var stackController
   property bool interactive: true
   implicitWidth: PanelStyle.width
