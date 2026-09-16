@@ -164,14 +164,12 @@ PanelWindow {
     opacity: root.reveal
     z: 3
 
-    ListView {
+    Shell.ScrollList {
       id: notificationList
       width: 288
       height: listClip.height
-      clip: true
       model: Notifications.State.historyNotifications
       interactive: contentHeight > height
-      boundsBehavior: Flickable.StopAtBounds
       onContentHeightChanged: {
         if (contentHeight > 0 || root.itemCount === 0) {
           root.measuredListHeight = contentHeight;

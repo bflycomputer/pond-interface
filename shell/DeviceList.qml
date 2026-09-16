@@ -35,7 +35,6 @@ Item {
     }
     Loader { x: 241.5; y: 19.5; width: 54; height: 28; sourceComponent: root.headerControl }
     ScrollList {
-      rowHeight: PanelStyle.rowHeight
       id: deviceList
       x: 8; y: root.listTop; width: PanelStyle.rowWidth
       height: root.viewportHeight - y - root.listBottomPadding

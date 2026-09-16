@@ -2,7 +2,6 @@ import QtQuick
 
 ListView {
   id: root
-  property real rowHeight: 40
   clip: true
   boundsBehavior: Flickable.StopAtBounds
 
@@ -14,14 +13,15 @@ ListView {
     target: null
     enabled: root.interactive
     onWheel: event => {
-      // Keep touchpad pixel deltas native; wheel notches advance whole rows.
+      // Keep touchpad pixel deltas native.
       if (event.phase !== Qt.NoScrollPhase || event.angleDelta.y === 0) {
         event.accepted = false;
         return;
       }
       root.cancelFlick();
       const start = wheelMotion.running ? wheelMotion.to : root.contentY;
-      const delta = event.angleDelta.y / 120 * Qt.styleHints.wheelScrollLines * root.rowHeight;
+      // Each scroll line is 40 logical pixels, independent of card height.
+      const delta = event.angleDelta.y / 120 * Qt.styleHints.wheelScrollLines * 40;
       wheelMotion.from = root.contentY;
       const minimum = root.originY - root.topMargin;
       const maximum = Math.max(minimum, root.originY + root.contentHeight - root.height + root.bottomMargin);
