@@ -11,7 +11,6 @@ Singleton {
   property var dragOrigin: null
   property var _windows: ({})
   property var _appInfoCache: ({})
-  property int sidebarWidth: 166
   property ListModel workspaceRows: ListModel {}
   readonly property string focusedOutputName: {
     for (const workspace of workspaces) {
@@ -215,6 +214,7 @@ Singleton {
     } else if (ev.WorkspacesChanged) {
       const list = ev.WorkspacesChanged.workspaces.map(w => ({
         id: w.id, idx: w.idx, name: w.name || "", output: w.output || "",
+        activeWindowId: w.active_window_id,
         isActive: !!w.is_active, isFocused: !!w.is_focused, isUrgent: !!w.is_urgent
       }));
       list.sort((a, b) => {
@@ -229,6 +229,10 @@ Singleton {
         isActive: target && w.output === target.output ? w.id === a.id : w.isActive,
         isFocused: a.focused ? w.id === a.id : w.isFocused
       }));
+    } else if (ev.WorkspaceActiveWindowChanged) {
+      const a = ev.WorkspaceActiveWindowChanged;
+      workspaces = workspaces.map(w => w.id === a.workspace_id
+          ? Object.assign({}, w, { activeWindowId: a.active_window_id }) : w);
     } else if (ev.WindowsChanged) {
       const wins = {};
       for (const w of ev.WindowsChanged.windows)
@@ -237,18 +241,11 @@ Singleton {
     } else if (ev.WindowOpenedOrChanged) {
       const w = _mapWindow(ev.WindowOpenedOrChanged.window);
       const wins = Object.assign({}, _windows);
-      if (w.isFocused)
-        for (const id in wins) wins[id].isFocused = false;
       wins[w.id] = w;
       _windows = wins;
     } else if (ev.WindowClosed) {
       const wins = Object.assign({}, _windows);
       delete wins[ev.WindowClosed.id];
-      _windows = wins;
-    } else if (ev.WindowFocusChanged) {
-      const fid = ev.WindowFocusChanged.id;
-      const wins = Object.assign({}, _windows);
-      for (const id in wins) wins[id].isFocused = (wins[id].id === fid);
       _windows = wins;
     } else if (ev.WindowLayoutsChanged) {
       const wins = Object.assign({}, _windows);
@@ -266,7 +263,7 @@ Singleton {
 
   function _mapWindow(w) {
     return {
-      id: w.id, workspaceId: w.workspace_id, isFocused: w.is_focused,
+      id: w.id, workspaceId: w.workspace_id,
       isFloating: w.is_floating, layout: w.layout, appId: w.app_id || ""
     };
   }
@@ -298,43 +295,6 @@ Singleton {
   function _layoutPos(w) {
     return w.layout && w.layout.pos_in_scrolling_layout
       ? w.layout.pos_in_scrolling_layout : [999, 999];
-  }
-
-  function _outputSize(outputName) {
-    for (let i = 0; i < Quickshell.screens.length; i++) {
-      const screen = Quickshell.screens[i];
-      if (!outputName || screen.name === outputName)
-        return { width: screen.width, height: screen.height };
-    }
-    return { width: 1920, height: 1080 };
-  }
-
-  function _isWindowVisible(w, workspaceActive, outputName) {
-    if (!workspaceActive)
-      return false;
-
-    const layout = w.layout || {};
-    const pos = layout.tile_pos_in_workspace_view;
-    const size = layout.tile_size || layout.window_size;
-
-    // Niri does not expose workspace-view geometry for every floating window.
-    // Floating windows on the active workspace are therefore visible unless a
-    // concrete rectangle proves otherwise.
-    if (!pos || !size)
-      return w.isFloating || w.isFocused;
-
-    const viewport = _outputSize(outputName);
-    const centerX = pos[0] + size[0] / 2;
-    const centerY = pos[1] + size[1] / 2;
-
-    // Niri leaves neighboring columns a few pixels inside the output while
-    // they are effectively off-screen. Treat a tile as visible when its
-    // center is inside the usable view, which maps the markers to the columns
-    // the user can actually see instead of counting those edge slivers.
-    return centerX >= sidebarWidth
-        && centerX < viewport.width
-        && centerY >= 0
-        && centerY < viewport.height;
   }
 
   function _compareWindows(a, b) {
@@ -433,34 +393,14 @@ Singleton {
 
       const wsWindows = windowsByWorkspace[ws.id] || [];
       const windowRecords = [];
-      let visibleCount = 0;
-      let focusedIndex = 0;
 
       for (const w of wsWindows) {
         const info = _appInfo(w.appId);
-        const isVisible = _isWindowVisible(w, ws.isActive, ws.output);
-        if (w.isFocused) focusedIndex = windowRecords.length;
-        if (isVisible)
-          visibleCount++;
         windowRecords.push({
           winId: w.id,
           iconName: info.iconName,
-          iconSource: info.iconSource,
-          isVisible: isVisible
+          iconSource: info.iconSource
         });
-      }
-
-      // During startup or a compositor transition, layout geometry can be
-      // momentarily absent. Keep the focused (or first) window represented as
-      // visible rather than flashing every marker to the outlined state.
-      if (ws.isActive && windowRecords.length > 0 && visibleCount === 0) {
-        windowRecords[focusedIndex].isVisible = true;
-      }
-
-      let lastVisible = -1;
-      for (let i = 0; i < windowRecords.length; i++) {
-        if (windowRecords[i].isVisible)
-          lastVisible = i;
       }
 
       const outputName = ws.output || "";
@@ -479,10 +419,8 @@ Singleton {
         workspaceIndex: ws.idx,
         outputName: outputName,
         isActive: !!ws.isActive,
+        activeWindowId: ws.activeWindowId ?? -1,
         windowsJson: JSON.stringify(windowRecords),
-        carouselStart: ws.isActive
-            && lastVisible >= Theme.workspaceGridColumns
-            ? lastVisible - Theme.workspaceGridColumns + 1 : 0,
         sidebarRowOrdinal: rowOrdinal,
         sidebarWorkspaceNumber: workspaceNumber
       });

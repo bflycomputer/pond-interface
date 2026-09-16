@@ -13,13 +13,6 @@ ShellRoot {
     function toggle() { root.expanded = !root.expanded; }
   }
 
-  Binding {
-    target: NiriMsg
-    property: "sidebarWidth"
-    value: Theme.sidebarOuterMargin + (root.expanded
-        ? Theme.sidebarCardExpandedWidth : Theme.sidebarCardCollapsedWidth)
-  }
-
   Variants {
     model: Quickshell.screens
     delegate: Scope {

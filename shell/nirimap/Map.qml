@@ -135,9 +135,25 @@ Shell.Card {
               return [];
             }
           }
-          readonly property int windowStart: Math.min(
-              Math.max(0, Number(expandedWorkspace.model.carouselStart) || 0),
-              Math.max(0, windowItems.length - Shell.Theme.workspaceGridColumns))
+          readonly property var activeWindowId: model.activeWindowId
+          property int windowStart: 0
+          property var firstWindowId: null
+
+          onWindowItemsChanged: Qt.callLater(updateWindowStart)
+          onActiveWindowIdChanged: Qt.callLater(updateWindowStart)
+
+          function updateWindowStart() {
+            const columns = Shell.Theme.workspaceGridColumns;
+            // Preserve the first icon when windows before it close or move.
+            const first = windowItems.findIndex(w => w.winId === firstWindowId);
+            let start = first < 0 ? windowStart : first;
+            const active = windowItems.findIndex(w => w.winId === activeWindowId);
+            if (active >= 0)
+              start = Math.max(active - columns + 1, Math.min(start, active));
+            windowStart = Math.max(0, Math.min(start, windowItems.length - columns));
+            firstWindowId = windowItems[windowStart]?.winId ?? null;
+          }
+
           readonly property int carouselSlotCount: Math.max(
               Shell.Theme.workspaceGridColumns, windowItems.length + 1)
           readonly property int workspaceNumber:
@@ -210,8 +226,7 @@ Shell.Card {
               Behavior on x { Shell.Motion { duration: 220 } }
 
               Repeater {
-                // Keep a real slot for every window so the row can slide as
-                // Niri's horizontal viewport advances.
+                // Keep every window instantiated as the displayed range slides.
                 model: expandedWorkspace.carouselSlotCount
 
                 delegate: Item {
