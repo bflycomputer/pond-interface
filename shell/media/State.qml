@@ -8,8 +8,9 @@ Singleton {
 
   property var currentPlayer: null
   readonly property var available: Mpris.players.values.filter(player =>
-      player.isPlaying || clean(player.trackTitle) !== ""
-      || clean(player.trackArtist) !== "" || clean(player.trackAlbum) !== "")
+      [clean(player.trackTitle),
+       clean(player.trackArtist) || clean(player.trackAlbum),
+       clean(player.trackArtUrl)].filter(field => field !== "").length >= 2)
   readonly property var playing: available.filter(player => player.isPlaying)
   readonly property bool hasPlayer: currentPlayer !== null
   readonly property bool isPlaying: currentPlayer?.isPlaying ?? false
