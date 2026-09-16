@@ -1,6 +1,8 @@
 import QtQuick
 import Quickshell
 import Quickshell.Wayland
+import "audio" as Audio
+import "wifi" as Wifi
 import "calendar" as Calendar
 import "media" as Media
 import "nirimap" as Nirimap
@@ -18,19 +20,65 @@ PanelWindow {
   property real siblingOpacity: Notifications.State.panelOpen
       && Notifications.State.panelOutputName === screen.name ? 0.6 : 1
 
+  readonly property real panelX: Theme.sidebarOuterMargin + cardWidth + Theme.sidebarCardGap
+  readonly property bool panelOpen: wifiPanel.opened || audioPanel.opened
+  readonly property var activePanel: wifiPanel.opened ? wifiPanel : audioPanel.opened ? audioPanel : null
+  property string pendingPanel: ""
+
+  function dismissPanels() {
+    panelSwitchDelay.stop();
+    pendingPanel = "";
+    wifiPanel.closeAll();
+    audioPanel.closeAll();
+  }
+
+  function togglePanel(name) {
+    const wasOpen = name === "wifi" ? wifiPanel.opened : audioPanel.opened;
+    const wasVisible = wifiPanel.visible || audioPanel.visible;
+    dismissPanels();
+    if (wasOpen) return;
+    calendarOpen = false;
+    Notifications.State.closePanel();
+    if (wasVisible) {
+      pendingPanel = name;
+      panelSwitchDelay.restart();
+    } else if (name === "wifi") wifiPanel.openDrawer();
+    else audioPanel.open();
+  }
+
+  Timer {
+    id: panelSwitchDelay
+    interval: 200
+    onTriggered: {
+      if (root.pendingPanel === "wifi") wifiPanel.openDrawer();
+      else if (root.pendingPanel === "audio") audioPanel.open();
+      root.pendingPanel = "";
+    }
+  }
+
+  Connections {
+    target: Audio.State
+    function onKeyboardOutputVolumeChanged(value) {
+      if (NiriMsg.focusedOutputName === "" || root.screen.name === NiriMsg.focusedOutputName)
+        controls.showKeyboardVolume();
+    }
+  }
+
   color: "transparent"
   // Keep compositor resizes out of the card animation; only the input area shrinks.
-  implicitWidth: Theme.sidebarOuterMargin + Theme.sidebarCardExpandedWidth + 8
+  implicitWidth: Math.ceil(Math.max(Theme.sidebarOuterMargin + Theme.sidebarCardExpandedWidth + 8,
+      wifiPanel.visible ? panelX + wifiPanel.width + 67 : 0,
+      audioPanel.visible ? panelX + audioPanel.width + 67 : 0))
   mask: Region {
-    width: Math.ceil(Theme.sidebarOuterMargin + Math.max(root.cardWidth,
+    width: root.panelOpen ? root.implicitWidth : Math.ceil(Theme.sidebarOuterMargin + Math.max(root.cardWidth,
         workspacesCard.width, mediaCard.width, controls.width) + 8)
     height: root.height
   }
   anchors { left: true; top: true; bottom: true }
   WlrLayershell.layer: WlrLayer.Top
   WlrLayershell.namespace: "pond-sidebar"
-  WlrLayershell.keyboardFocus: workspacesCard.dragSession.active
-      ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+  WlrLayershell.keyboardFocus: wifiPanel.keyboardInputActive || workspacesCard.dragSession.active
+      ? WlrKeyboardFocus.Exclusive : panelOpen ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
   WlrLayershell.exclusionMode: ExclusionMode.Normal
   exclusiveZone: Theme.sidebarOuterMargin + (expanded
       ? Theme.sidebarCardExpandedWidth : Theme.sidebarCardCollapsedWidth)
@@ -49,6 +97,7 @@ PanelWindow {
       collapseProgress: root.collapseProgress
       opacity: root.siblingOpacity
       onClicked: {
+        root.dismissPanels();
         Notifications.State.closePanel();
         root.calendarOpen = !root.calendarOpen;
       }
@@ -77,8 +126,40 @@ PanelWindow {
       id: notificationCard
       width: root.cardWidth
       collapseProgress: root.collapseProgress
-      onPanelRequested: Notifications.State.togglePanel(root.screen.name)
+      onPanelRequested: { root.dismissPanels(); Notifications.State.togglePanel(root.screen.name); }
     }
+  }
+
+  TapHandler {
+    enabled: root.panelOpen
+    acceptedButtons: Qt.LeftButton | Qt.MiddleButton | Qt.RightButton
+    gesturePolicy: TapHandler.DragThreshold
+    property var panelAtPress: null
+    onPressedChanged: if (pressed) panelAtPress = root.activePanel
+    onTapped: eventPoint => {
+      const panel = root.activePanel;
+      if (!panel || panel !== panelAtPress) return;
+      const x = eventPoint.position.x - panel.x;
+      const y = eventPoint.position.y - panel.y;
+      if (x < 0 || x > panel.width || y < 0 || y > panel.height)
+        root.dismissPanels();
+    }
+  }
+
+  Wifi.Panel {
+    id: wifiPanel
+    x: root.panelX
+    z: 80
+    anchors.bottom: parent.bottom
+    anchors.bottomMargin: Theme.sidebarOuterMargin
+  }
+
+  Audio.Panel {
+    id: audioPanel
+    x: root.panelX
+    z: 80
+    anchors.bottom: parent.bottom
+    anchors.bottomMargin: Theme.sidebarOuterMargin
   }
 
   Item {
@@ -92,6 +173,14 @@ PanelWindow {
     BottomControls {
       id: controls
       collapseProgress: root.collapseProgress
+      wifiOpen: wifiPanel.opened
+      soundOpen: audioPanel.opened
+      soundVolume: Audio.State.outputVolume
+      uploadRate: Wifi.State.uploadRate
+      downloadRate: Wifi.State.downloadRate
+      onWifiClicked: root.togglePanel("wifi")
+      onSoundClicked: root.togglePanel("audio")
+      onSoundVolumeMoved: value => Audio.State.setOutputVolume(value)
       onCollapseClicked: root.toggleRequested()
     }
   }

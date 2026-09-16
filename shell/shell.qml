@@ -26,6 +26,7 @@ ShellRoot {
       Notifications.ToastWindow { bar: sidebar }
       Notifications.CenterWindow { bar: sidebar }
       Calendar.Window { bar: sidebar }
+      PanelDismissWindow { bar: sidebar }
     }
   }
 }
