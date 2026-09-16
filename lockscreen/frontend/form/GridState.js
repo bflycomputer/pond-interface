@@ -26,14 +26,9 @@ var ANIMATION_INTERVALS_MS = {
     successOutline: 27.5
 };
 
-function normalizeSeed(seed) {
-    return (Number(seed) >>> 0) || 0x6d2b79f5;
-}
-
-function createState(seed) {
+function createState() {
     return {
         animationPhase: "idle",
-        seed: normalizeSeed(seed),
         inputLength: 0,
         cellShapes: Array(CELL_COUNT).fill(-1),
         pendingInputLength: -1,
@@ -65,23 +60,10 @@ function copyState(state) {
     return copy;
 }
 
-function nextRandom(state) {
-    let value = state.seed >>> 0;
-    value ^= value << 13;
-    value ^= value >>> 17;
-    value ^= value << 5;
-    state.seed = normalizeSeed(value);
-    return state.seed / 4294967296;
-}
-
-function randomInt(state, upperExclusive) {
-    return Math.floor(nextRandom(state) * upperExclusive);
-}
-
-function shuffled(state, values) {
+function shuffled(values) {
     const result = values.slice();
     for (let i = result.length - 1; i > 0; i--) {
-        const j = randomInt(state, i + 1);
+        const j = Math.floor(Math.random() * (i + 1));
         const temporary = result[i];
         result[i] = result[j];
         result[j] = temporary;
@@ -120,7 +102,7 @@ function applyInputLength(state, inputLength) {
     const newVisibleCount = Math.min(CELL_COUNT, normalizedLength);
     for (let i = 0; i < newVisibleCount; i++) {
         if (i >= oldVisibleCount || state.cellShapes[i] < 0)
-            state.cellShapes[i] = randomInt(state, SHAPE_COUNT);
+            state.cellShapes[i] = Math.floor(Math.random() * SHAPE_COUNT);
     }
     for (let clear = newVisibleCount; clear < CELL_COUNT; clear++)
         state.cellShapes[clear] = -1;
@@ -153,7 +135,7 @@ function startError(state) {
     state.blinkOn = false;
     state.idleDots = [];
     state.pendingInputLength = -1;
-    state.errorFillQueue = shuffled(state, range(activeCellCount(state)));
+    state.errorFillQueue = shuffled(range(activeCellCount(state)));
     state.errorFillCells = [];
     state.errorOutlineQueue = [];
     state.errorOutlineCells = [];
@@ -167,8 +149,8 @@ function startSuccess(state) {
     state.blinkOn = false;
     state.idleDots = [];
     state.pendingInputLength = -1;
-    state.successFillQueue = shuffled(state, active);
-    state.successOutlineQueue = shuffled(state, inactiveCells(state));
+    state.successFillQueue = shuffled(active);
+    state.successOutlineQueue = shuffled(inactiveCells(state));
     state.successFillCells = [];
     state.successOutlineCells = [];
     return state;
@@ -212,10 +194,8 @@ function reduce(state, event) {
     if (!state || !event || typeof event.type !== "string")
         return state;
 
-    if (event.type === "RESET") {
-        return createState(event.seed === undefined
-            ? (state.seed + 0x9e3779b9) >>> 0 : event.seed);
-    }
+    if (event.type === "RESET")
+        return createState();
 
     if (event.type === "SYNC_LENGTH")
         return syncLength(state, event.length);
@@ -247,7 +227,7 @@ function reduce(state, event) {
             if (next.idleIndex >= sequence.length) {
                 next.idleStage = "remove";
                 next.idleIndex = 0;
-                next.idleRemovalOrder = shuffled(next, sequence);
+                next.idleRemovalOrder = shuffled(sequence);
             }
         } else if (next.idleStage === "remove") {
             next.idleDots = next.idleDots.filter(value => value !== next.idleRemovalOrder[next.idleIndex]);
@@ -287,7 +267,7 @@ function reduce(state, event) {
     }
 
     if (next.animationPhase === "errorHold") {
-        next.errorOutlineQueue = shuffled(next, inactiveCells(next));
+        next.errorOutlineQueue = shuffled(inactiveCells(next));
         next.animationPhase = "errorOutline";
         return next;
     }
@@ -296,7 +276,7 @@ function reduce(state, event) {
         if (moveNextCell(next.errorOutlineQueue, next.errorOutlineCells))
             return next;
         const clearable = range(activeCellCount(next)).slice(1);
-        next.errorClearQueue = shuffled(next, clearable);
+        next.errorClearQueue = shuffled(clearable);
         next.animationPhase = "errorClear";
         return next;
     }
@@ -314,7 +294,7 @@ function reduce(state, event) {
     }
 
     if (next.animationPhase === "errorCenter")
-        return createState(next.seed);
+        return createState();
 
     if (next.animationPhase === "successFill") {
         if (!moveNextCell(next.successFillQueue, next.successFillCells))

@@ -9,7 +9,7 @@ Item {
     property real speed: 1.0
     property bool animationPaused: false
     property bool authResultHandled: false
-    property var animationState: GridState.createState(Date.now())
+    property var animationState: GridState.createState()
 
     readonly property int visibleCellCount: GridState.visibleCellCount(animationState.inputLength)
     readonly property string animationPhase: animationState.animationPhase
@@ -33,7 +33,7 @@ Item {
 
     function reset() {
         authResultHandled = false;
-        dispatch({ type: "RESET", seed: Date.now() });
+        dispatch({ type: "RESET" });
     }
 
     function syncLength(inputLength) {
