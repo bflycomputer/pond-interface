@@ -58,8 +58,6 @@ Item {
       x: 19.5
       y: 100.5
       placeholderText: "Enter network name"
-      onEditingStarted: if (root.stackController)
-        root.stackController.beginTextInput()
     }
 
     Text {
@@ -121,15 +119,15 @@ Item {
       font.weight: Font.Medium
       font.pixelSize: 13
     }
-    PasswordField {
+    Field {
+      password: true
+      placeholderText: "Enter password"
       id: password
       x: 19.5
       y: 270.5
       visible: root.needsPassword
       enabled: root.interactive
       onAccepted: if (root.canConnect) connectButton.trigger()
-      onEditingStarted: if (root.stackController)
-        root.stackController.beginTextInput()
     }
 
     CheckBox {

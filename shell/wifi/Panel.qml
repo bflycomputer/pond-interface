@@ -11,7 +11,6 @@ Item {
 
   property bool opened: false
   property bool transitionRunning: false
-  property bool keyboardInputActive: false
   property string transitionOperation: ""
   property real transitionProgress: 1
   property real transitionFromHeight: 0
@@ -69,11 +68,6 @@ Item {
     return cardDepth > 1 ? 32 : 22;
   }
 
-  function layerAt(index) {
-    return index >= 0 && index < depth
-        ? layerRepeater.itemAt(index) : null;
-  }
-
   function openDrawer() {
     if (opened) {
       closeAll();
@@ -84,7 +78,6 @@ Item {
     transitionRunning = false;
     transitionOperation = "";
     transitionProgress = 1;
-    keyboardInputActive = false;
     stackModel.clear();
     stackModel.append({ entryPage: "drawer", entryNetwork: ({}) });
     opened = true;
@@ -95,15 +88,6 @@ Item {
   function push(page, network) {
     if (transitionRunning)
       return;
-    if (!opened) {
-      openDrawer();
-      const queuedPage = page;
-      const queuedNetwork = network || ({});
-      Qt.callLater(function() { root.push(queuedPage, queuedNetwork); });
-      return;
-    }
-
-    keyboardInputActive = false;
 
     transitionFromInset = insetForDepth(depth);
     transitionFromHeight = frontHeight + transitionFromInset;
@@ -118,7 +102,7 @@ Item {
   }
 
   function beginPush() {
-    const incoming = layerAt(depth - 1);
+    const incoming = layerRepeater.itemAt(depth - 1);
     if (!incoming || !incoming.ready || incoming.naturalHeight <= 0) {
       transitionStart.restart();
       return;
@@ -135,9 +119,7 @@ Item {
       return;
     }
 
-    keyboardInputActive = false;
-
-    const returning = layerAt(depth - 2);
+    const returning = layerRepeater.itemAt(depth - 2);
     if (!returning || returning.naturalHeight <= 0)
       return;
     transitionFromInset = insetForDepth(depth);
@@ -154,7 +136,6 @@ Item {
     if (transitionOperation === "pop" && depth > 0)
       stackModel.remove(depth - 1);
     transitionOperation = "";
-    keyboardInputActive = false;
     transitionProgress = 1;
     transitionRunning = false;
   }
@@ -166,16 +147,12 @@ Item {
     transitionStart.stop();
     transitionRunning = false;
     transitionOperation = "";
-    keyboardInputActive = false;
     opened = false;
     closeDelay.stop();
     Wifi.State.panelOpen = false;
     closeCleanup.restart();
   }
 
-  function beginTextInput() {
-    keyboardInputActive = true;
-  }
   Timer {
     id: transitionStart
     interval: 1
@@ -218,36 +195,15 @@ Item {
       stackController: root
       interactive: !root.transitionRunning && relativeIndex === 0
 
-      x: pushBack
-          ? Theme.lerp(0, 16, root.transitionProgress)
-          : popBack
-            ? Theme.lerp(16, 0, root.transitionProgress)
-            : relativeIndex === 0 ? 0 : 16
-      y: pushBack
-          ? Theme.lerp(root.transitionFromInset, 16,
-                       root.transitionProgress)
-          : popBack
-            ? Theme.lerp(16, root.transitionToInset,
-                         root.transitionProgress)
-            : relativeIndex === 0 ? root.frontInset : 16
-      width: pushBack
-          ? Theme.lerp(PanelStyle.width, 284,
-                       root.transitionProgress)
-          : popBack
-            ? Theme.lerp(284, PanelStyle.width,
-                         root.transitionProgress)
-            : relativeIndex === 0 ? PanelStyle.width : 284
-      height: pushBack
-          ? Theme.lerp(naturalHeight, 90, root.transitionProgress)
-          : popBack
-            ? Theme.lerp(90, naturalHeight, root.transitionProgress)
-            : relativeIndex === 0 ? naturalHeight : 90
+      x: 16 * backingAmount
+      y: Theme.lerp(pushBack ? root.transitionFromInset
+          : popBack ? root.transitionToInset : root.frontInset, 16, backingAmount)
+      width: Theme.lerp(PanelStyle.width, 284, backingAmount)
+      height: Theme.lerp(naturalHeight, 90, backingAmount)
       backingAmount: pushBack ? root.transitionProgress
           : popBack ? 1 - root.transitionProgress
           : relativeIndex === 0 ? 0 : 1
-      cardOpacity: pushBack ? 1 - root.transitionProgress
-          : popBack ? 1
-          : relativeIndex === 0 ? 1 : 0
+      cardOpacity: popBack ? 1 : 1 - backingAmount
       opacity: pushFront ? root.transitionProgress
           : popFront ? 1
           : relativeIndex <= 1 ? 1 : 0
@@ -279,12 +235,6 @@ Item {
     onFinished: root.finishTransition()
   }
 
-  function openJoin(network) { push("join", network); }
-  function openAddNetwork() { push("add", null); }
-  function openDetails(network) {
-    Wifi.State.refreshDetails();
-    push("details", network);
-  }
   function showStatus() {
     if (currentPage !== "status")
       push("status", null);

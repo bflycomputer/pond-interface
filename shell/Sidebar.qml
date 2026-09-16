@@ -77,7 +77,7 @@ PanelWindow {
   anchors { left: true; top: true; bottom: true }
   WlrLayershell.layer: WlrLayer.Top
   WlrLayershell.namespace: "pond-sidebar"
-  WlrLayershell.keyboardFocus: wifiPanel.keyboardInputActive || workspacesCard.dragSession.active
+  WlrLayershell.keyboardFocus: workspacesCard.dragSession.active
       ? WlrKeyboardFocus.Exclusive : panelOpen ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
   WlrLayershell.exclusionMode: ExclusionMode.Normal
   exclusiveZone: Theme.sidebarOuterMargin + (expanded
@@ -175,12 +175,8 @@ PanelWindow {
       collapseProgress: root.collapseProgress
       wifiOpen: wifiPanel.opened
       soundOpen: audioPanel.opened
-      soundVolume: Audio.State.outputVolume
-      uploadRate: Wifi.State.uploadRate
-      downloadRate: Wifi.State.downloadRate
       onWifiClicked: root.togglePanel("wifi")
       onSoundClicked: root.togglePanel("audio")
-      onSoundVolumeMoved: value => Audio.State.setOutputVolume(value)
       onCollapseClicked: root.toggleRequested()
     }
   }

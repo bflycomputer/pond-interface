@@ -3,18 +3,26 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
-import "Networks.js" as NetworkUtils
+import Quickshell.Networking
 
-// NetworkManager-backed authority for the custom Wi-Fi panel. All commands
-// are argv arrays, so SSIDs and passwords never pass through a shell.
+// Network objects update through NetworkManager signals. Commands remain for
+// operations requiring completion/error replies and details absent from the API.
 Singleton {
   id: root
 
-  property bool enabled: true
-  property string device: ""
-  property string connectedSsid: ""
+  readonly property bool enabled: Networking.wifiEnabled
+  readonly property var adapters: Networking.devices.values.filter(d => d.type === DeviceType.Wifi)
+  readonly property var adapter: adapters.find(d => d.connected) || adapters[0] || null
+  readonly property string device: adapter ? adapter.name : ""
+  readonly property string connectedSsid: networks.find(n => n.connected)?.ssid || ""
   property string connectedUuid: ""
-  property var networks: []
+  readonly property var networks: (adapter ? adapter.networks.values : [])
+      .filter(n => n.connected || n.signalStrength > 0)
+      .map(n => ({ssid: n.name, signal: n.signalStrength * 100,
+                 bars: n.signalStrength >= 0.6 ? 3 : n.signalStrength >= 0.35 ? 2 : 1,
+                 locked: n.security !== WifiSecurityType.Open, connected: n.connected}))
+      .sort((a, b) => Number(b.connected) - Number(a.connected)
+          || b.signal - a.signal || a.ssid.localeCompare(b.ssid))
   property string uploadRate: "0KB"
   property string downloadRate: "0KB"
   property string phase: "idle"
@@ -24,16 +32,11 @@ Singleton {
   property var rateConsumers: []
   readonly property bool ratesRequested: panelOpen || rateConsumers.length > 0
   readonly property bool samplingRates: ratesRequested && device !== ""
-  property string linkWidth: "—"
-  property string negotiatedRate: "—"
-  property var details: ({
-    linkSpeed: "—",
-    ipv4: "—",
-    band: "—",
-    gateway: "—",
-    dns: "—",
-    interfaceName: "—"
-  })
+  property string linkSpeed: "—"
+  property string band: "—"
+  property string ipv4: "—"
+  property string gateway: "—"
+  property string dns: "—"
 
   property real _lastTx: -1
   property real _lastRx: -1
@@ -45,13 +48,19 @@ Singleton {
 
   signal actionFinished(string kind, bool success, string message)
 
-  Component.onCompleted: refreshAll()
+  Binding {
+    target: root.adapter
+    property: "scannerEnabled"
+    value: root.panelOpen
+    when: root.adapter !== null
+    restoreMode: Binding.RestoreBindingOrValue
+  }
 
-  onPanelOpenChanged: {
-    if (panelOpen) {
-      refreshAll();
-      refreshDetails();
-    }
+  onPanelOpenChanged: refreshDetails()
+  onConnectedSsidChanged: {
+    connectedUuid = "";
+    linkSpeed = band = ipv4 = gateway = dns = "—";
+    refreshDetails();
   }
 
   onSamplingRatesChanged: resetRates()
@@ -65,10 +74,10 @@ Singleton {
 
   onDeviceChanged: {
     resetRates();
-    linkWidth = "—";
-    negotiatedRate = "—";
-    details = { linkSpeed: "—", ipv4: "—", band: "—",
-                gateway: "—", dns: "—", interfaceName: device || "—" };
+    connectedUuid = "";
+    linkSpeed = band = "—";
+    ipv4 = gateway = dns = "—";
+    refreshDetails();
   }
 
   function resetRates() {
@@ -79,35 +88,6 @@ Singleton {
     downloadRate = "0B";
   }
 
-  Process {
-    id: networkMonitor
-    command: ["/usr/bin/nmcli", "monitor"]
-    environment: ({ "LC_ALL": "C" })
-    running: true
-    stdout: SplitParser {
-      onRead: networkRefresh.restart()
-    }
-    onExited: monitorRestart.restart()
-  }
-
-  Timer {
-    id: networkRefresh
-    interval: 100
-    onTriggered: root.refreshAll()
-  }
-
-  Timer {
-    id: monitorRestart
-    interval: 2000
-    onTriggered: networkMonitor.running = true
-  }
-
-  function refreshAll() {
-    if (!radioQuery.running) radioQuery.running = true;
-    if (!deviceQuery.running) deviceQuery.running = true;
-    if (!networkQuery.running) networkQuery.running = true;
-  }
-
   function formatRate(bytesPerSecond) {
     const value = Math.max(0, Number(bytesPerSecond) || 0);
     if (value >= 1048576)
@@ -115,14 +95,6 @@ Singleton {
     if (value >= 1024)
       return (value / 1024).toFixed(value >= 10240 ? 0 : 1) + "KB";
     return Math.round(value) + "B";
-  }
-
-  function currentNetwork() {
-    for (const network of networks) {
-      if (network.connected)
-        return network;
-    }
-    return null;
   }
 
   function setWifiEnabled(value) {
@@ -242,83 +214,11 @@ Singleton {
     actionProcess.running = true;
   }
 
-  function parseNetworks(raw) {
-    networks = NetworkUtils.parseNetworks(raw);
-    const active = currentNetwork();
-    connectedSsid = active ? active.ssid : "";
-    updateBandDetails();
-  }
-
-  function updateBandDetails() {
-    const current = currentNetwork();
-    const frequency = current ? parseFloat(current.frequency) : 0;
-    const band = NetworkUtils.bandForFrequency(frequency);
-    const channel = current && current.channel !== ""
-        ? current.channel : "—";
-    const rate = negotiatedRate !== "—" ? negotiatedRate
-        : current && current.rate !== "" ? current.rate : "—";
-    details = Object.assign({}, details, {
-      linkSpeed: rate,
-      band: band + " / " + channel + " / " + linkWidth,
-      interfaceName: device || "—"
-    });
-  }
-
   function refreshDetails() {
     if (!panelOpen || device === "")
       return;
-    if (!detailQuery.running)
-      detailQuery.running = true;
-    if (!linkQuery.running)
-      linkQuery.running = true;
-  }
-
-  Process {
-    id: radioQuery
-    command: ["/usr/bin/nmcli", "-t", "-f", "WIFI", "general"]
-    environment: ({ "LC_ALL": "C" })
-    stdout: StdioCollector {
-      onStreamFinished: root.enabled = text.trim().toLowerCase() === "enabled"
-    }
-  }
-
-  Process {
-    id: deviceQuery
-    command: ["/usr/bin/nmcli", "-t", "--escape", "yes", "-f",
-              "DEVICE,TYPE,STATE,CON-UUID", "device", "status"]
-    environment: ({ "LC_ALL": "C" })
-    stdout: StdioCollector {
-      onStreamFinished: {
-        let fallback = "";
-        for (const line of text.split("\n")) {
-          const fields = NetworkUtils.splitNmcli(line.trim());
-          if (fields.length < 3 || fields[1] !== "wifi")
-            continue;
-          if (fallback === "")
-            fallback = fields[0];
-          if (fields[2] === "connected") {
-            root.device = fields[0];
-            root.connectedUuid = fields[3] || "";
-            root.refreshDetails();
-            return;
-          }
-        }
-        root.device = fallback;
-        root.connectedUuid = "";
-        root.refreshDetails();
-      }
-    }
-  }
-
-  Process {
-    id: networkQuery
-    command: ["/usr/bin/nmcli", "-t", "--escape", "yes", "-f",
-              "IN-USE,SSID,SIGNAL,SECURITY,CHAN,FREQ,RATE",
-              "device", "wifi", "list", "--rescan", "no"]
-    environment: ({ "LC_ALL": "C" })
-    stdout: StdioCollector {
-      onStreamFinished: root.parseNetworks(text)
-    }
+    detailQuery.running = true;
+    linkQuery.running = true;
   }
 
   Process {
@@ -353,33 +253,16 @@ Singleton {
   Process {
     id: detailQuery
     command: root.device === "" ? []
-        : ["/usr/bin/nmcli", "-t", "--escape", "yes", "-f",
-           "IP4.ADDRESS,IP4.GATEWAY,IP4.DNS", "device", "show", root.device]
+        : ["/usr/bin/nmcli", "--escape", "no", "-g",
+           "IP4.ADDRESS,IP4.GATEWAY,IP4.DNS,GENERAL.CON-UUID", "device", "show", root.device]
     environment: ({ "LC_ALL": "C" })
     stdout: StdioCollector {
       onStreamFinished: {
-        let ipv4 = "—";
-        let gateway = "—";
-        let dns = "—";
-        for (const line of text.split("\n")) {
-          const split = line.indexOf(":");
-          if (split < 0)
-            continue;
-          const key = line.slice(0, split);
-          const value = line.slice(split + 1).replace(/\\:/g, ":");
-          if (key.indexOf("IP4.ADDRESS") === 0 && ipv4 === "—")
-            ipv4 = value.split("/")[0];
-          else if (key === "IP4.GATEWAY")
-            gateway = value || "—";
-          else if (key.indexOf("IP4.DNS") === 0 && dns === "—")
-            dns = value || "—";
-        }
-        root.details = Object.assign({}, root.details, {
-          ipv4: ipv4,
-          gateway: gateway,
-          dns: dns,
-          interfaceName: root.device || "—"
-        });
+        const [address = "", gateway = "", dns = "", uuid = ""] = text.split("\n");
+        root.connectedUuid = uuid === "--" ? "" : uuid;
+        root.ipv4 = address.split(" | ")[0].split("/")[0] || "—";
+        root.gateway = gateway || "—";
+        root.dns = dns.split(" | ")[0] || "—";
       }
     }
   }
@@ -393,8 +276,10 @@ Singleton {
       onStreamFinished: {
         let linkSpeed = "—";
         let width = "—";
+        let frequency = 0;
         for (const line of text.split("\n")) {
           const trimmed = line.trim();
+          if (trimmed.startsWith("freq:")) frequency = Number(trimmed.slice(5));
           if (trimmed.indexOf("rx bitrate:") === 0) {
             const value = trimmed.slice(11).trim();
             const speed = value.match(/^([0-9.]+)\s+MBit\/s/i);
@@ -405,9 +290,15 @@ Singleton {
               width = channelWidth[1] + " MHz";
           }
         }
-        root.linkWidth = width;
-        root.negotiatedRate = linkSpeed;
-        root.updateBandDetails();
+        root.linkSpeed = linkSpeed;
+        const band = frequency >= 5925 ? "6 GHz" : frequency >= 4900 ? "5 GHz"
+            : frequency >= 2400 ? "2.4 GHz" : "—";
+        const channel = frequency === 2484 ? 14 : frequency === 5935 ? 2
+            : frequency >= 5950 ? (frequency - 5950) / 5
+            : frequency >= 5000 ? (frequency - 5000) / 5
+            : frequency >= 4910 ? (frequency - 4000) / 5
+            : frequency >= 2400 ? (frequency - 2407) / 5 : "—";
+        root.band = band + " / " + channel + " / " + width;
       }
     }
   }
@@ -439,15 +330,15 @@ Singleton {
           : (root._actionError !== "" ? root._actionError
                                        : "Unable to update Wi-Fi");
       root.actionFinished(root._actionKind, success, root.statusText);
-      root.refreshAll();
+      root.refreshDetails();
     }
   }
 
   Timer {
-    interval: root.panelOpen ? 5000 : 30000
+    interval: 5000
     repeat: true
-    running: true
-    onTriggered: root.refreshAll()
+    running: root.panelOpen
+    onTriggered: root.refreshDetails()
   }
 
   Timer {
@@ -456,8 +347,7 @@ Singleton {
     running: root.samplingRates
     triggeredOnStart: true
     onTriggered: {
-      if (!byteQuery.running)
-        byteQuery.running = true;
+      byteQuery.running = true;
     }
   }
 }

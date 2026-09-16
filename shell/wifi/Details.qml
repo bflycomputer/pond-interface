@@ -9,12 +9,12 @@ Item {
   property var network: ({})
   property bool interactive: true
   readonly property var detailRows: [
-    {label: "Link Speed", value: Wifi.State.details.linkSpeed},
-    {label: "IPv4 Address", value: Wifi.State.details.ipv4},
-    {label: "Band / Channel / Width", value: Wifi.State.details.band},
-    {label: "Default Gateway", value: Wifi.State.details.gateway},
-    {label: "DNS Server", value: Wifi.State.details.dns},
-    {label: "Network Interface", value: Wifi.State.details.interfaceName}
+    {label: "Link Speed", value: Wifi.State.linkSpeed},
+    {label: "IPv4 Address", value: Wifi.State.ipv4},
+    {label: "Band / Channel / Width", value: Wifi.State.band},
+    {label: "Default Gateway", value: Wifi.State.gateway},
+    {label: "DNS Server", value: Wifi.State.dns},
+    {label: "Network Interface", value: (Wifi.State.device || "—")}
   ]
   Component.onCompleted: Wifi.State.refreshDetails()
   implicitWidth: PanelStyle.width

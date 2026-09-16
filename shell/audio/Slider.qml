@@ -1,26 +1,29 @@
 import QtQuick
+import QtQuick.Templates as T
 import ".."
 
-Item {
+T.Slider {
   id: root
 
-  property real value: 0
+  property real externalValue: 0
   property bool persistentHandle: false
   property bool showInlineValue: true
   property bool interactive: true
-  property real dragValue: value
-  signal moved(real value)
 
-  readonly property real visualValue: pointer.pressed
-      ? dragValue : Math.max(0, Math.min(1, value))
-  readonly property real handleCenterX: 1
-      + visualValue * Math.max(0, width - 2)
-  readonly property bool hovered: pointer.containsMouse
-  readonly property bool pressed: pointer.pressed
+  from: 0; to: 1
+  leftPadding: 1; rightPadding: 1
+  enabled: interactive
+  hoverEnabled: true
+  focusPolicy: Qt.NoFocus
+  handle: Item { width: 0; height: 0 }
+  // Device updates resume driving the handle after the drag ends.
+  Binding on value { value: root.externalValue; when: !root.pressed; restoreMode: Binding.RestoreNone }
+  readonly property real visualValue: position
+  readonly property real handleCenterX: leftPadding + visualPosition * availableWidth
   readonly property bool showHandle: persistentHandle || hovered
   readonly property bool handleHovered: showHandle && hovered
-      && Math.abs(pointer.mouseX - handleCenterX) <= 13
-      && pointer.mouseY >= 3 && pointer.mouseY <= 31
+      && Math.abs(pointer.point.position.x - handleCenterX) <= 13
+      && pointer.point.position.y >= 3 && pointer.point.position.y <= 31
   readonly property real handleSize: pressed ? 20
       : handleHovered || persistentHandle ? 26 : 24
   readonly property real handleTop: pressed ? 8
@@ -28,11 +31,6 @@ Item {
 
   implicitHeight: 32
   clip: false
-
-  onValueChanged: {
-    if (!pointer.pressed)
-      dragValue = Math.max(0, Math.min(1, value));
-  }
 
   Rectangle {
     x: 0
@@ -133,26 +131,9 @@ Item {
     }
   }
 
-  MouseArea {
+  HoverHandler {
     id: pointer
-    anchors.fill: parent
-    enabled: root.interactive
-    hoverEnabled: true
-    preventStealing: true
-    cursorShape: pressed ? Qt.ClosedHandCursor
+    cursorShape: root.pressed ? Qt.ClosedHandCursor
         : root.handleHovered ? Qt.OpenHandCursor : Qt.PointingHandCursor
-
-    onPressed: mouse => root.updateFromPosition(mouse.x)
-    onPositionChanged: mouse => {
-      if (pressed)
-        root.updateFromPosition(mouse.x);
-    }
-  }
-
-  function updateFromPosition(positionX) {
-    const next = Math.max(0, Math.min(1,
-        (positionX - 1) / Math.max(1, width - 2)));
-    dragValue = next;
-    moved(next);
   }
 }

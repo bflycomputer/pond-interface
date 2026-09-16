@@ -41,14 +41,14 @@ Item {
       font.weight: Font.Medium
       font.pixelSize: 15
     }
-    PasswordField {
+    Field {
+      password: true
+      placeholderText: "Enter password"
       id: password
       x: 19.5
       y: 102.5
       enabled: root.interactive
       onAccepted: if (root.canConnect) connectButton.trigger()
-      onEditingStarted: if (root.stackController)
-        root.stackController.beginTextInput()
     }
     Rectangle {
       id: connectButton

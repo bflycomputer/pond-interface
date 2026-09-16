@@ -7,11 +7,10 @@ Rectangle {
   property string placeholderText: ""
   property bool password: false
   property bool revealed: false
-  property real rightPadding: 14
+  property real rightPadding: password ? 52 : 14
   property bool readOnly: false
   property bool highlighted: false
   signal accepted
-  signal editingStarted
 
   readonly property bool hovered: fieldHover.hovered
   readonly property bool focused: editor.activeFocus
@@ -62,17 +61,48 @@ Rectangle {
     activeFocusOnTab: true
     clip: true
     onAccepted: root.accepted()
-    onActiveFocusChanged: if (activeFocus) root.editingStarted()
   }
 
   HoverHandler { id: fieldHover; cursorShape: Qt.IBeamCursor }
   TapHandler {
-    onTapped: root.activateEditor(Qt.MouseFocusReason)
+    onTapped: editor.forceActiveFocus(Qt.MouseFocusReason)
   }
 
-  function activateEditor(reason) {
-    root.editingStarted();
-    editor.forceActiveFocus(reason === undefined
-                            ? Qt.OtherFocusReason : reason);
+  Rectangle {
+    id: eyeButton
+    visible: root.password
+    x: root.width - 36
+    y: 8
+    width: 28
+    height: 28
+    radius: 4
+    z: 2
+    color: eyePointer.containsMouse ? PanelStyle.pressed
+        : Qt.rgba(48 / 255, 48 / 255, 48 / 255, 0)
+
+    Behavior on color {
+      ColorAnimation { duration: PanelStyle.controlDuration }
+    }
+
+    Image {
+      anchors.centerIn: parent
+      width: 20
+      height: 20
+      source: root.revealed
+          ? Qt.resolvedUrl("../assets/eye-open.svg")
+          : Qt.resolvedUrl("../assets/eye-closed.svg")
+      opacity: eyePointer.containsMouse ? 1 : 0.7
+
+      Behavior on opacity {
+        NumberAnimation { duration: PanelStyle.controlDuration }
+      }
+    }
+    MouseArea {
+      id: eyePointer
+      anchors.fill: parent
+      hoverEnabled: true
+      cursorShape: Qt.PointingHandCursor
+      onClicked: root.revealed = !root.revealed
+    }
   }
 }

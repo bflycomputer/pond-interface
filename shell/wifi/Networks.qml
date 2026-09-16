@@ -40,9 +40,9 @@ Item {
         onDisconnectClicked: Wifi.State.disconnect()
         onRowClicked: {
           if (modelData.connected)
-            root.stackController.openDetails(modelData);
+            root.stackController.push("details", modelData);
           else if (modelData.locked)
-            root.stackController.openJoin(modelData);
+            root.stackController.push("join", modelData);
           else
             root.stackController.connectNetwork(modelData.ssid, "", false);
         }
@@ -88,19 +88,10 @@ Item {
           enabled: root.interactive
           hoverEnabled: true
           cursorShape: Qt.PointingHandCursor
-          onClicked: root.stackController.openAddNetwork()
+          onClicked: root.stackController.push("add", null)
         }
       }
     }
-    Rectangle {
-      x: 0; y: 60; width: parent.width; height: 16
-      visible: deviceList.contentY > 0.5
-      opacity: visible ? 1 : 0
-      gradient: Gradient {
-        GradientStop { position: 0; color: Qt.rgba(0, 0, 0, 0.20) }
-        GradientStop { position: 1; color: "transparent" }
-      }
-      Behavior on opacity { NumberAnimation { duration: PanelStyle.controlDuration } }
-    }
+    ScrollShade { view: deviceList; x: 0; y: 60; width: parent.width }
   }
 }

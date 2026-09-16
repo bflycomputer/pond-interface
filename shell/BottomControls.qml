@@ -18,16 +18,14 @@ Card {
   property bool keyboardVolumeVisible: false
   // Wi-Fi metrics and the compact sound control share the same staged exit:
   // fade the content, hold the shell, then collapse its height.
-  property bool wifiHeightRetained: false
-  property bool wifiContentVisible: false
-  property bool soundSliderHeightRetained: false
-  property bool soundSliderContentVisible: false
-  property real soundVolume: 0
-  property string uploadRate: "0KB"
-  property string downloadRate: "0KB"
+  property bool hoverHeightRetained: false
+  property string displayedReveal: ""
+  readonly property bool wifiContentVisible: displayedReveal === "wifi"
+  readonly property bool soundSliderContentVisible: displayedReveal === "sound"
+  readonly property string requestedReveal: wifiPresentationRequested ? "wifi"
+      : soundSliderRequested ? "sound" : ""
   signal wifiClicked
   signal soundClicked
-  signal soundVolumeMoved(real value)
 
   property bool wifiButtonHovered: false
   property bool soundButtonHovered: false
@@ -47,7 +45,7 @@ Card {
       && collapseProgress < 0.5
       && (soundHovered || keyboardVolumeVisible)
   readonly property int openExpandedHeight:
-      wifiHeightRetained || soundSliderHeightRetained ? 80 : 48
+      hoverHeightRetained ? 80 : 48
   // While the expanded card grows for Wi-Fi metrics or the sound slider, use
   // its rendered height rather than the final 80px target. Because this card
   // is bottom-anchored, that keeps the four controls fixed on the baseline
@@ -74,42 +72,22 @@ Card {
     }
   }
 
-  onWifiPresentationRequestedChanged: {
-    if (wifiPresentationRequested) {
-      wifiExitTimer.stop();
-      wifiHeightRetained = true;
-      // When crossing directly from sound, let its slider finish the short
-      // exit fade before drawing Wi-Fi metrics in the same top region.
-      if (compactSoundSlider.opacity > 0.001) {
-        wifiContentVisible = false;
-        wifiEnterTimer.restart();
-      } else {
-        wifiContentVisible = true;
-      }
-    } else {
-      wifiEnterTimer.stop();
-      wifiContentVisible = false;
-      wifiExitTimer.restart();
+  // Moving controls can transfer hover twice in one event; use the final target.
+  onRequestedRevealChanged: Qt.callLater(syncReveal)
+  function syncReveal() {
+    revealEnter.stop();
+    if (requestedReveal === "") {
+      displayedReveal = "";
+      revealExit.restart();
+      return;
     }
-  }
-
-  onSoundSliderRequestedChanged: {
-    if (soundSliderRequested) {
-      soundSliderExitTimer.stop();
-      soundSliderHeightRetained = true;
-      // Wi-Fi metrics and the slider occupy the same top region. Sequence the
-      // crossover instead of briefly painting both components on each other.
-      if (wifiMetrics.opacity > 0.001) {
-        soundSliderContentVisible = false;
-        soundSliderEnterTimer.restart();
-      } else {
-        soundSliderContentVisible = true;
-      }
-    } else {
-      soundSliderEnterTimer.stop();
-      soundSliderContentVisible = false;
-      soundSliderExitTimer.restart();
-    }
+    revealExit.stop();
+    hoverHeightRetained = true;
+    const outgoingOpacity = requestedReveal === "wifi" ? compactSoundSlider.opacity : wifiMetrics.opacity;
+    if (outgoingOpacity > 0.001) {
+      displayedReveal = "";
+      revealEnter.restart();
+    } else displayedReveal = requestedReveal;
   }
 
   HoverHandler {
@@ -127,13 +105,13 @@ Card {
     y: 4
     width: 132
     height: 32
-    value: root.soundVolume
+    externalValue: Audio.State.outputVolume
     persistentHandle: false
     showInlineValue: false
     interactive: root.soundSliderRequested
     visible: opacity > 0.001
     opacity: root.soundSliderContentVisible ? 1 : 0
-    onMoved: value => root.soundVolumeMoved(value)
+    onMoved: Audio.State.setOutputVolume(compactSoundSlider.value)
 
     Behavior on opacity {
       NumberAnimation {
@@ -186,7 +164,7 @@ Card {
       }
       Text {
         height: 19
-        text: root.uploadRate
+        text: Wifi.State.uploadRate
         color: "white"
         font.family: Theme.fontFamily
         font.weight: Font.Medium
@@ -215,7 +193,7 @@ Card {
       }
       Text {
         height: 19
-        text: root.downloadRate
+        text: Wifi.State.downloadRate
         color: "white"
         font.family: Theme.fontFamily
         font.weight: Font.Medium
@@ -302,39 +280,14 @@ Card {
     }
   }
   Timer {
-    id: wifiExitTimer
+    id: revealExit
     interval: PanelStyle.hoverCollapseDelay
-    onTriggered: {
-      if (!root.wifiPresentationRequested)
-        root.wifiHeightRetained = false;
-    }
+    onTriggered: if (root.requestedReveal === "") root.hoverHeightRetained = false
   }
-
   Timer {
-    id: wifiEnterTimer
+    id: revealEnter
     interval: PanelStyle.hoverExitDuration
-    onTriggered: {
-      if (root.wifiPresentationRequested)
-        root.wifiContentVisible = true;
-    }
-  }
-
-  Timer {
-    id: soundSliderExitTimer
-    interval: PanelStyle.hoverCollapseDelay
-    onTriggered: {
-      if (!root.soundSliderRequested)
-        root.soundSliderHeightRetained = false;
-    }
-  }
-
-  Timer {
-    id: soundSliderEnterTimer
-    interval: PanelStyle.hoverExitDuration
-    onTriggered: {
-      if (root.soundSliderRequested)
-        root.soundSliderContentVisible = true;
-    }
+    onTriggered: root.displayedReveal = root.requestedReveal
   }
 
   Timer {

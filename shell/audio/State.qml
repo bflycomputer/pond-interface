@@ -12,32 +12,11 @@ Singleton {
 
   readonly property var sink: Pipewire.ready
       ? Pipewire.defaultAudioSink : null
-  readonly property var source: {
-    if (!Pipewire.ready)
-      return null;
-    const candidate = Pipewire.defaultAudioSource;
-    return candidate && !candidate.isSink && candidate.audio
-        ? candidate : null;
-  }
-
-  readonly property var deviceNodes: Pipewire.ready
-      ? Pipewire.nodes.values.reduce(function(result, node) {
-          if (!node || node.isStream)
-            return result;
-          const nodeName = String(node.name || "");
-          const mediaName = String(node.properties
-              ? node.properties["media.name"] || "" : "");
-          if (nodeName === "quickshell" || mediaName === "quickshell")
-            return result;
-          if (node.isSink)
-            result.outputs.push(node);
-          else if (node.audio)
-            result.inputs.push(node);
-          return result;
-        }, { outputs: [], inputs: [] })
-      : ({ outputs: [], inputs: [] })
-  readonly property var outputDevices: deviceNodes.outputs
-  readonly property var inputDevices: deviceNodes.inputs
+  readonly property var source: Pipewire.ready ? Pipewire.defaultAudioSource : null
+  readonly property var deviceNodes: Pipewire.ready ? Pipewire.nodes.values.filter(node =>
+      !node.isStream && node.name !== "quickshell" && node.properties["media.name"] !== "quickshell") : []
+  readonly property var outputDevices: deviceNodes.filter(node => node.isSink)
+  readonly property var inputDevices: deviceNodes.filter(node => !node.isSink && node.audio)
 
   readonly property real outputVolume: clampVolume(
       sink && sink.audio ? sink.audio.volume : 0)

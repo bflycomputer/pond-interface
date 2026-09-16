@@ -67,14 +67,14 @@ Item {
       y: 55
       width: PanelStyle.fieldWidth
       height: 32
-      value: root.selectedVolume
+      externalValue: root.selectedVolume
       persistentHandle: true
       interactive: root.interactive && root.selectedAudioAvailable
-      onMoved: value => {
+      onMoved: {
         if (root.selectedTab === "output")
-          Audio.State.setOutputVolume(value);
+          Audio.State.setOutputVolume(volumeSlider.value);
         else
-          Audio.State.setInputVolume(value);
+          Audio.State.setInputVolume(volumeSlider.value);
       }
     }
 
@@ -134,25 +134,6 @@ Item {
       verticalAlignment: Text.AlignVCenter
     }
 
-    Rectangle {
-      x: 0
-      y: 98
-      z: 3
-      width: parent.width
-      height: 16
-      visible: deviceList.contentY > 0.5
-      opacity: visible ? 1 : 0
-      gradient: Gradient {
-        GradientStop { position: 0; color: Qt.rgba(0, 0, 0, 0.20) }
-        GradientStop { position: 1; color: "transparent" }
-      }
-
-      Behavior on opacity {
-        NumberAnimation {
-          duration: PanelStyle.controlDuration
-          easing.type: Easing.OutCubic
-        }
-      }
-    }
+    ScrollShade { view: deviceList; x: 0; y: 98; z: 3; width: parent.width; easingType: Easing.OutCubic }
   }
 }
