@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Effects
 import Quickshell.Widgets
 import ".." as Shell
 
@@ -11,6 +12,7 @@ Item {
   property var windowData: ({})
   property real controlSize: Shell.Theme.workspaceControlSize
   property bool interactive: true
+  property bool lifted: false
   signal activated(var windowId)
 
   readonly property bool hovered: pointer.containsMouse
@@ -23,11 +25,20 @@ Item {
     radius: width / 2
     antialiasing: true
     // Fade alpha without interpolating the fill through transparent black.
-    color: root.hovered ? Shell.Theme.sidebarControlHover
+    color: root.lifted ? "#292929" : root.hovered ? Shell.Theme.sidebarControlHover
         : Qt.rgba(Shell.Theme.sidebarControlHover.r, Shell.Theme.sidebarControlHover.g,
                   Shell.Theme.sidebarControlHover.b, 0)
-    border.color: Shell.Theme.sidebarInnerOutline
+    border.color: root.lifted ? "#CBA6F7" : Shell.Theme.sidebarInnerOutline
     border.width: root.hovered ? 0 : Shell.Theme.sidebarStrokeWidth
+    layer.enabled: root.lifted
+    layer.effect: MultiEffect {
+      shadowEnabled: true
+      shadowBlur: 0.5
+      blurMax: 10
+      shadowOpacity: 0.4
+      shadowHorizontalOffset: 2
+      shadowVerticalOffset: 5
+    }
 
     Behavior on color {
       ColorAnimation {
@@ -45,7 +56,7 @@ Item {
     source: root.windowData.iconSource || ""
     asynchronous: true
     smooth: true
-    opacity: root.hovered ? 1.0 : 0.9
+    opacity: root.hovered || root.lifted ? 1.0 : 0.9
 
     Behavior on opacity { Shell.HoverAnimation {} }
   }

@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import QtQuick.Shapes
 import Quickshell
 import "." as Nirimap
 import ".." as Shell
@@ -11,6 +12,7 @@ Shell.Card {
   property var screen: null
   property real collapseProgress: 0
   property real maximumHeight: 10000
+  readonly property alias dragSession: dragSession
   signal focusRequested(int workspaceIndex)
   signal windowRequested(var windowId)
 
@@ -35,7 +37,47 @@ Shell.Card {
       expandedNaturalHeight, collapsedNaturalHeight,
       Shell.Theme.ramp(collapseProgress, 0.18, 0.82))
   readonly property bool workspaceNumbersRevealed: expandedLayer.enabled
-      && expandedComponentHover.hovered
+      && (expandedComponentHover.hovered || (dragSession.active && !dragSession.windowDrag))
+
+  focus: dragSession.active
+  Keys.onEscapePressed: dragSession.cancel()
+  onCollapseProgressChanged: if (collapseProgress >= 0.55) dragSession.cancel()
+
+  Nirimap.DragSession {
+    id: dragSession
+    parent: root.Window.window?.contentItem ?? root
+  }
+
+  function windowIndex(workspaceId, items, index) {
+    if (!dragSession.windowDrag || !dragSession.active)
+      return index;
+    const sourceIndex = items.findIndex(w => w.winId === dragSession.source.windowData.winId);
+    const compact = index - (sourceIndex >= 0 && index > sourceIndex ? 1 : 0);
+    return compact + (dragSession.destination?.workspaceId === workspaceId
+        && compact >= dragSession.destination.slot ? 1 : 0);
+  }
+
+  function rowOffset(workspaceId, number) {
+    if (!dragSession.active || dragSession.windowDrag || number < 1)
+      return 0;
+    const source = dragSession.source;
+    if (source.workspaceId === workspaceId)
+      return dragSession.rowOffset;
+    const target = dragSession.destination?.number ?? source.number;
+    if (number > source.number && number <= target) return -Shell.Theme.workspaceControlPitch;
+    if (number < source.number && number >= target) return Shell.Theme.workspaceControlPitch;
+    return 0;
+  }
+
+  function numberedWorkspaceCount() {
+    let count = 0;
+    for (let i = 0; i < Shell.NiriMsg.workspaceRows.count; i++) {
+      const row = Shell.NiriMsg.workspaceRows.get(i);
+      if (!root.screen || row.outputName === "" || row.outputName === root.screen.name)
+        count = Math.max(count, row.sidebarWorkspaceNumber);
+    }
+    return count;
+  }
   width: {
     if (collapseProgress < 0.38)
       return Shell.Theme.lerp(Shell.Theme.sidebarCardExpandedWidth, 108,
@@ -100,16 +142,29 @@ Shell.Card {
               Shell.Theme.workspaceGridColumns, windowItems.length + 1)
           readonly property int workspaceNumber:
               Number(expandedWorkspace.model.sidebarWorkspaceNumber) || 0
+          readonly property bool dragTarget: dragSession.windowDrag
+              && dragSession.destination?.workspaceId === Number(model.workspaceId)
+          readonly property int remainingWindows: windowItems.filter(w =>
+              !dragSession.windowDrag || w.winId !== dragSession.source.windowData.winId).length
+          property real dragOffset: root.rowOffset(Number(model.workspaceId), workspaceNumber)
           visible: matchesOutput
           width: expandedColumn.width
           height: matchesOutput ? Shell.Theme.workspaceControlSize : 0
+          z: dragSession.source?.kind === "workspace"
+              && dragSession.source.workspaceId === Number(model.workspaceId) ? 20 : 0
+          transform: Translate { y: expandedWorkspace.dragOffset }
+          Behavior on dragOffset {
+            enabled: !dragSession.resetting && !dragSession.committing
+                && !(dragSession.held && expandedWorkspace.z === 20)
+            Shell.HoverAnimation { duration: Shell.Theme.workspaceDragSnapDuration }
+          }
           Rectangle {
             x: Shell.Theme.workspaceActiveIndicatorInset - expandedLayer.x
             y: -Shell.Theme.workspaceControlGap / 2
             width: root.width - Shell.Theme.workspaceActiveIndicatorInset * 2
             height: parent.height + Shell.Theme.workspaceControlGap
             radius: 12
-            color: expandedWorkspace.model.isActive
+            color: expandedWorkspace.model.isActive || expandedWorkspace.dragTarget
                 ? Shell.Theme.workspaceActiveIndicatorColor
                 : Qt.rgba(Shell.Theme.workspaceActiveIndicatorColor.r,
                           Shell.Theme.workspaceActiveIndicatorColor.g,
@@ -134,6 +189,7 @@ Shell.Card {
           }
 
           Item {
+            id: windowViewport
             x: Shell.Theme.workspaceContentPadding - expandedLayer.x
             width: Shell.Theme.workspaceGridColumns * Shell.Theme.workspaceControlSize
                 + (Shell.Theme.workspaceGridColumns - 1)
@@ -142,6 +198,7 @@ Shell.Card {
             clip: true
 
             Item {
+              id: windowCarousel
               x: -expandedWorkspace.windowStart
                   * Shell.Theme.workspaceControlPitch
               width: expandedWorkspace.carouselSlotCount
@@ -170,9 +227,14 @@ Shell.Card {
                       && expandedWorkspace.windowItems.length === 0
                       && expandedWorkspace.model.isActive
 
-                  x: index * Shell.Theme.workspaceControlPitch
+                  x: root.windowIndex(Number(expandedWorkspace.model.workspaceId),
+                      expandedWorkspace.windowItems, index) * Shell.Theme.workspaceControlPitch
                   width: Shell.Theme.workspaceControlSize
                   height: Shell.Theme.workspaceControlSize
+                  Behavior on x {
+                    enabled: workspaceSlot.hasWindow && !dragSession.resetting && !dragSession.committing
+                    Shell.HoverAnimation { duration: Shell.Theme.workspaceDragSnapDuration }
+                  }
 
                   Rectangle {
                     anchors.fill: parent
@@ -187,6 +249,7 @@ Shell.Card {
                   Rectangle {
                     anchors.centerIn: parent
                     visible: !workspaceSlot.hasWindow && !workspaceSlot.emptyWorkspaceActive
+                        && !dragSession.active
                     width: Shell.Theme.workspacePlaceholderDotSize
                     height: Shell.Theme.workspacePlaceholderDotSize
                     radius: width / 2
@@ -194,12 +257,79 @@ Shell.Card {
                   }
 
                   Nirimap.WindowIcon {
+                    id: windowIcon
                     anchors.fill: parent
                     visible: workspaceSlot.hasWindow
+                    opacity: dragSession.windowDrag
+                        && dragSession.source.windowData.winId === workspaceSlot.windowData.winId ? 0 : 1
                     controlSize: Shell.Theme.workspaceControlSize
                     windowData: workspaceSlot.windowData
                     onActivated: windowId => root.windowRequested(windowId)
+
+                    DragHandler {
+                      id: windowDrag
+                      target: null
+                      enabled: expandedLayer.enabled && workspaceSlot.hasWindow
+                          && (!dragSession.active || active)
+                      acceptedButtons: Qt.LeftButton
+                      dragThreshold: 6
+                      cursorShape: active ? Qt.ClosedHandCursor : Qt.PointingHandCursor
+                      onActiveChanged: {
+                        if (active) dragSession.begin({ kind: "window",
+                            windowData: Object.assign({}, workspaceSlot.windowData),
+                            slot: workspaceSlot.index,
+                            workspaceId: Number(expandedWorkspace.model.workspaceId) },
+                            windowIcon, centroid.scenePressPosition, centroid.scenePosition);
+                        else dragSession.release();
+                      }
+                      onCentroidChanged: if (active) dragSession.move(centroid.scenePosition)
+                      onCanceled: dragSession.cancel()
+                    }
                   }
+                }
+              }
+
+              Repeater {
+                parent: expandedLayer
+                model: expandedWorkspace.carouselSlotCount
+                DropArea {
+                  id: windowDrop
+                  required property int index
+                  readonly property int workspaceId: Number(expandedWorkspace.model.workspaceId)
+                  readonly property int slot: Math.min(index, expandedWorkspace.remainingWindows)
+                  readonly property real slotX: windowViewport.x + windowCarousel.x
+                      + index * Shell.Theme.workspaceControlPitch - Shell.Theme.workspaceControlGap / 2
+                  x: Math.max(windowViewport.x, slotX)
+                  y: expandedColumn.y + expandedWorkspace.y + 4
+                  width: Math.max(0, Math.min(windowViewport.x + windowViewport.width, slotX + 48) - x)
+                  height: 56
+                  keys: ["pond-window"]
+                  enabled: expandedLayer.enabled && index <= expandedWorkspace.remainingWindows
+                  onEntered: dragSession.destination = windowDrop
+                  onExited: if (dragSession.held && dragSession.destination === windowDrop) dragSession.destination = null
+                  onDropped: drop => drop.acceptProposedAction()
+                  function snapPosition() {
+                    return windowCarousel.mapToItem(dragSession.parent,
+                        slot * Shell.Theme.workspaceControlPitch, 0);
+                  }
+                }
+              }
+
+              Shape {
+                visible: expandedWorkspace.dragTarget
+                x: (dragSession.destination?.slot ?? 0) * Shell.Theme.workspaceControlPitch
+                width: Shell.Theme.workspaceControlSize
+                height: width
+                antialiasing: true
+                Behavior on x { Shell.HoverAnimation { duration: Shell.Theme.workspaceDragSnapDuration } }
+                ShapePath {
+                  strokeColor: "#4F3D64"
+                  strokeWidth: 1
+                  strokeStyle: ShapePath.DashLine
+                  dashPattern: [3, 3]
+                  capStyle: ShapePath.RoundCap
+                  fillColor: "#191919"
+                  PathRectangle { x: 0.5; y: 0.5; width: 39; height: 39; radius: 20 }
                 }
               }
             }
@@ -223,6 +353,7 @@ Shell.Card {
               Behavior on color { ColorAnimation { duration: 120; easing.type: Easing.OutCubic } }
               Text {
                 anchors.fill: parent
+                visible: !numberPointer.containsMouse && !workspaceDrag.active
                 text: expandedWorkspace.workspaceNumber
                 color: Shell.Theme.sidebarV3Foreground
                 font.family: Shell.Theme.plexFontFamily
@@ -232,14 +363,57 @@ Shell.Card {
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
               }
+              Image {
+                anchors.centerIn: parent
+                width: 2
+                height: 10
+                visible: numberPointer.containsMouse || workspaceDrag.active
+                source: "../assets/navigation/drag-handle.svg"
+              }
             }
             MouseArea {
               id: numberPointer
               anchors.fill: parent
               hoverEnabled: true
-              preventStealing: true
-              cursorShape: Qt.PointingHandCursor
+              cursorShape: workspaceDrag.active ? Qt.ClosedHandCursor : Qt.OpenHandCursor
               onClicked: root.focusRequested(expandedWorkspace.model.workspaceIndex)
+            }
+            DragHandler {
+              id: workspaceDrag
+              target: null
+              enabled: expandedLayer.enabled && (!dragSession.active || active)
+              acceptedButtons: Qt.LeftButton
+              dragThreshold: 6
+              xAxis.enabled: false
+              onActiveChanged: {
+                if (active) dragSession.begin({ kind: "workspace",
+                    workspaceId: Number(expandedWorkspace.model.workspaceId),
+                    number: expandedWorkspace.workspaceNumber,
+                    count: root.numberedWorkspaceCount() }, expandedWorkspace,
+                    centroid.scenePressPosition, centroid.scenePosition);
+                else dragSession.release();
+              }
+              onCentroidChanged: if (active) dragSession.move(centroid.scenePosition)
+              onCanceled: dragSession.cancel()
+            }
+          }
+
+          DropArea {
+            id: workspaceDrop
+            parent: expandedLayer
+            readonly property int workspaceId: Number(expandedWorkspace.model.workspaceId)
+            readonly property int number: expandedWorkspace.workspaceNumber
+            x: 0
+            y: expandedColumn.y + expandedWorkspace.y - Shell.Theme.workspaceControlGap / 2
+            width: 20
+            height: Shell.Theme.workspaceControlPitch
+            keys: ["pond-workspace"]
+            enabled: expandedLayer.enabled && number > 0 && expandedWorkspace.matchesOutput
+            onEntered: dragSession.destination = workspaceDrop
+            onExited: if (dragSession.held && dragSession.destination === workspaceDrop) dragSession.destination = null
+            onDropped: drop => drop.acceptProposedAction()
+            function snapPosition() {
+              return expandedColumn.mapToItem(dragSession.parent, 0, expandedWorkspace.y);
             }
           }
         }

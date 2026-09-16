@@ -42,6 +42,7 @@ QtObject {
   readonly property int workspaceCollapsedHeaderHeight: 37
   readonly property int sidebarHoverDuration: 120
   readonly property int sidebarWorkspaceSwitchDuration: 180
+  readonly property int workspaceDragSnapDuration: 110
   readonly property int mediaControlSize: 20
   readonly property int mediaRevealDuration: 180
   readonly property int sidebarStrokeWidth: 1

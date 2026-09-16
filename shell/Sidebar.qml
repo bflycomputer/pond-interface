@@ -29,7 +29,8 @@ PanelWindow {
   anchors { left: true; top: true; bottom: true }
   WlrLayershell.layer: WlrLayer.Top
   WlrLayershell.namespace: "pond-sidebar"
-  WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+  WlrLayershell.keyboardFocus: workspacesCard.dragSession.active
+      ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
   WlrLayershell.exclusionMode: ExclusionMode.Normal
   exclusiveZone: Theme.sidebarOuterMargin + (expanded
       ? Theme.sidebarCardExpandedWidth : Theme.sidebarCardCollapsedWidth)

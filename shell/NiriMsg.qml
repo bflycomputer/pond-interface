@@ -7,6 +7,8 @@ Singleton {
   id: root
 
   property var workspaces: []
+  property bool overviewOpen: false
+  property var dragOrigin: null
   property var _windows: ({})
   property var _appInfoCache: ({})
   property int sidebarWidth: 166
@@ -26,6 +28,136 @@ Singleton {
     if (index === undefined || index < 0)
       return;
     Quickshell.execDetached(["niri", "msg", "action", "focus-workspace", String(index)]);
+  }
+
+  function moveWindow(id, workspaceId, slot, done) {
+    const actions = _windowMoveActions(id, workspaceId, slot);
+    return actions !== null && _move(actions, done);
+  }
+
+  function _windowMoveActions(id, workspaceId, slot) {
+    const window = _windows[id];
+    if (!window || !workspaces.some(w => w.id === workspaceId))
+      return null;
+    const actions = [];
+    if (window.workspaceId !== workspaceId)
+      actions.push({ MoveWindowToWorkspace: { window_id: id,
+        reference: { Id: workspaceId }, focus: false } });
+    if (window.isFloating)
+      actions.push({ MoveWindowToTiling: { id: id } });
+    else if (window.workspaceId === workspaceId && Object.values(_windows).filter(w =>
+        w.workspaceId === workspaceId && !w.isFloating
+        && _layoutPos(w)[0] === _layoutPos(window)[0]).length > 1)
+      actions.push({ ConsumeOrExpelWindowRight: { id: id } });
+    actions.push({ FocusWindow: { id: id } }, { MoveColumnToIndex: { index: slot + 1 } });
+    return actions;
+  }
+
+  function windowExists(id) { return _windows[id] !== undefined; }
+
+  function showWindowOverview(id, done) {
+    const window = _windows[id];
+    const workspace = workspaces.find(w => w.id === window?.workspaceId);
+    if (!workspace || dragOrigin) return false;
+    dragOrigin = Object.assign({}, window, { workspaceName: workspace.name,
+      overviewOpen: overviewOpen, stackSize: Object.values(_windows).filter(w =>
+        w.workspaceId === window.workspaceId && !w.isFloating
+        && _layoutPos(w)[0] === _layoutPos(window)[0]).length });
+    const actions = [{ FocusWindow: { id: id } }];
+    // Keep the source workspace available if its last window is previewed elsewhere.
+    if (!workspace.name)
+      actions.push({ SetWorkspaceName: { workspace: { Id: workspace.id },
+        name: "pond-drag-" + Quickshell.processId + "-" + workspace.id } });
+    actions.push({ OpenOverview: {} });
+    return _move(actions, done);
+  }
+
+  function finishWindowDrag(restore, done) {
+    const origin = dragOrigin;
+    if (!origin) return false;
+    const actions = restore && windowExists(origin.id)
+        ? _windowMoveActions(origin.id, origin.workspaceId,
+            Math.max(0, _layoutPos(origin)[0] - 1)) : [];
+    if (!actions) return false;
+    if (restore && windowExists(origin.id)) {
+      if (origin.isFloating)
+        actions.push({ MoveWindowToFloating: { id: origin.id } });
+      else if (origin.stackSize > 1) {
+        actions.push({ ConsumeOrExpelWindowRight: { id: origin.id } });
+        for (let row = origin.stackSize; row > _layoutPos(origin)[1]; row--)
+          actions.push({ MoveWindowUp: {} });
+      }
+    }
+    if (!origin.workspaceName)
+      actions.push({ UnsetWorkspaceName: { reference: { Id: origin.workspaceId } } });
+    actions.push(origin.overviewOpen ? { OpenOverview: {} } : { CloseOverview: {} });
+    return _move(actions, success => {
+      dragOrigin = null;
+      _recompute();
+      done(success);
+    });
+  }
+
+  function moveWorkspace(id, targetId, done) {
+    const target = workspaces.find(w => w.id === targetId);
+    if (!target || !workspaces.some(w => w.id === id && w.output === target.output))
+      return false;
+    return _move([{ MoveWorkspaceToIndex: { reference: { Id: id }, index: target.idx } }], done);
+  }
+
+  property var _moveActions: []
+  property var _moveDone: null
+
+  function _move(actions, done) {
+    if (_moveDone)
+      return false;
+    _moveActions = actions;
+    _moveDone = done;
+    moveTimeout.restart();
+    moveSocket.connected = true;
+    return true;
+  }
+
+  function _nextMoveAction() {
+    if (_moveActions.length === 0) {
+      _finishMove(true);
+      return;
+    }
+    moveSocket.write(JSON.stringify({ Action: _moveActions.shift() }) + "\n");
+    moveSocket.flush();
+  }
+
+  function _finishMove(success) {
+    const done = _moveDone;
+    _moveDone = null;
+    _moveActions = [];
+    moveTimeout.stop();
+    moveSocket.connected = false;
+    if (done)
+      done(success);
+  }
+
+  Socket {
+    id: moveSocket
+    path: Quickshell.env("NIRI_SOCKET")
+    onConnectedChanged: {
+      if (connected) root._nextMoveAction();
+      else if (root._moveDone) root._finishMove(false);
+    }
+    onError: root._finishMove(false)
+    parser: SplitParser {
+      onRead: line => {
+        const reply = JSON.parse(line);
+        if (reply.Err) root._finishMove(false);
+        else root._nextMoveAction();
+      }
+    }
+  }
+
+  Timer {
+    id: moveTimeout
+    interval: 1500
+    onTriggered: root._finishMove(false)
   }
 
   function focusApp(appName, desktopEntry) {
@@ -77,7 +209,10 @@ Singleton {
   }
 
   function _handleEvent(ev) {
-    if (ev.WorkspacesChanged) {
+    if (ev.OverviewOpenedOrClosed) {
+      overviewOpen = ev.OverviewOpenedOrClosed.is_open;
+      return;
+    } else if (ev.WorkspacesChanged) {
       const list = ev.WorkspacesChanged.workspaces.map(w => ({
         id: w.id, idx: w.idx, name: w.name || "", output: w.output || "",
         isActive: !!w.is_active, isFocused: !!w.is_focused, isUrgent: !!w.is_urgent
@@ -212,6 +347,8 @@ Singleton {
   }
 
   function _recompute() {
+    // The drag's source delegate and drop slots must survive live window moves.
+    if (dragOrigin) return;
     // Annotate workspace occupancy for the sidebar.
     const occupied = {};
     for (const id in _windows) {
