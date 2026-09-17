@@ -17,7 +17,7 @@ PanelWindow {
   property real collapseProgress: expanded ? 0 : 1
   signal toggleRequested
   readonly property real cardWidth: Theme.lerp(Theme.sidebarCardExpandedWidth,
-      Theme.sidebarCardCollapsedWidth, collapseProgress)
+      Theme.sidebarCardCollapsedWidth, Theme.collapseWidth(collapseProgress))
   readonly property real notificationCardCenterY: mainStack.y + notificationCard.y + 24
   property real siblingOpacity: Notifications.State.panelOpen
       && Notifications.State.panelOutputName === screen.name ? 0.6 : 1

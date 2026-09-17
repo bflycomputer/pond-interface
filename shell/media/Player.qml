@@ -3,201 +3,123 @@ import Quickshell.Widgets
 import "." as Media
 import ".." as Shell
 
-Item {
+Shell.Card {
   id: root
 
   property real collapseProgress: 0
+  readonly property real layoutProgress:
+      Shell.Theme.collapseWidth(collapseProgress)
   readonly property bool hasPlayer: Media.State.hasPlayer
+  readonly property bool revealed: hasPlayer && (hover.hovered || pointer.pressed)
+  property real expandedTargetHeight: hasPlayer ? (revealed ? 92 : 64) : 0
+  property real collapsedTargetHeight: hasPlayer
+      ? (pointer.pressed ? 126 : (revealed ? 116 : 48)) : 0
   readonly property url playPauseIconSource: Qt.resolvedUrl(
       Media.State.isPlaying ? "../assets/media/pause.svg"
                            : "../assets/media/play.svg")
   readonly property url playPauseHoverIconSource: Qt.resolvedUrl(
       Media.State.isPlaying ? "../assets/media/pause.svg"
                            : "../assets/media/play-hover.svg")
-  readonly property real playPauseRestingOpacity:
-      Media.State.isPlaying ? 0.5 : 1.0
-  readonly property real expandedOpacity:
-      1 - Shell.Theme.ramp(collapseProgress, 0.22, 0.58)
-  readonly property real collapsedOpacity:
-      Shell.Theme.ramp(collapseProgress, 0.66, 0.92)
-  readonly property bool expandedRevealed: hasPlayer
-      && (expandedHover.hovered || expandedPointer.pressed)
-  readonly property bool collapsedRevealed: hasPlayer
-      && (collapsedHover.hovered || collapsedPointer.pressed)
-  readonly property real expandedTargetHeight: hasPlayer
-      ? (expandedRevealed ? 92 : 64)
-      : 0
-  readonly property real collapsedTargetHeight: !hasPlayer
-      ? 0
-      : (collapsedPointer.pressed
-         ? 126
-         : (collapsedRevealed ? 116 : 48))
+  readonly property real playPauseRestingOpacity: Media.State.isPlaying ? 0.5 : 1.0
   readonly property string displayTitle: Media.State.title !== ""
       ? Media.State.title : (Media.State.identity !== ""
                             ? Media.State.identity : "Unknown track")
 
   width: Shell.Theme.lerp(Shell.Theme.sidebarCardExpandedWidth,
-                    Shell.Theme.sidebarCardCollapsedWidth,
-                    Shell.Theme.ramp(collapseProgress, 0.12, 0.88))
+      Shell.Theme.sidebarCardCollapsedWidth, layoutProgress)
   height: Shell.Theme.lerp(expandedTargetHeight, collapsedTargetHeight,
-                     Shell.Theme.ramp(collapseProgress, 0.24, 0.84))
-  clip: true
+      Shell.Theme.collapseHeight(collapseProgress))
   visible: height > 0
+  classicColor: revealed ? Shell.Theme.mediaHoverBackground : Shell.Theme.sidebarV3Background
+  animateClassicColor: true
 
-  Behavior on height {
-    enabled: root.collapseProgress === 0 || root.collapseProgress === 1
+  Behavior on expandedTargetHeight {
+    enabled: root.collapseProgress === 0
+    Shell.Motion { duration: Shell.Theme.mediaRevealDuration }
+  }
+  Behavior on collapsedTargetHeight {
+    enabled: root.collapseProgress === 1
     Shell.Motion { duration: Shell.Theme.mediaRevealDuration }
   }
 
-  Shell.Card {
-    id: expandedSurface
-    width: Shell.Theme.sidebarCardExpandedWidth
-    height: root.expandedTargetHeight
-    radius: Shell.Theme.sidebarCardRadius
-    classicColor: (expandedHover.hovered || expandedPointer.pressed
-           ? Shell.Theme.mediaHoverBackground : Shell.Theme.sidebarV3Background)
-    opacity: root.expandedOpacity
-    visible: opacity > 0.001
-    enabled: root.collapseProgress < 0.58
-    clip: true
-    antialiasing: true
+  HoverHandler {
+    id: hover
+    cursorShape: Qt.PointingHandCursor
+  }
 
-    animateClassicColor: true
+  MouseArea {
+    id: pointer
+    anchors.fill: parent
+    acceptedButtons: Qt.LeftButton
+    cursorShape: Qt.PointingHandCursor
+  }
 
-    HoverHandler {
-      id: expandedHover
-      enabled: expandedSurface.enabled
-      cursorShape: Qt.PointingHandCursor
-    }
+  ClippingRectangle {
+    anchors.fill: parent
+    radius: root.radius
+    color: "transparent"
+    visible: root.hasPlayer
 
-    MouseArea {
-      id: expandedPointer
-      anchors.fill: parent
-      z: 1
-      enabled: expandedSurface.enabled
-      acceptedButtons: Qt.LeftButton
-      cursorShape: Qt.PointingHandCursor
-    }
-
-    Item {
-      anchors.fill: parent
-      visible: root.hasPlayer
-      z: 2
-
-      AlbumCover {
-        x: 12
-        y: 12
-        artSize: 40
+    AlbumCover {
+      id: artwork
+      x: Shell.Theme.lerp(12, 8, root.layoutProgress)
+      y: Shell.Theme.lerp(12, pointer.pressed ? 12 : 8, Shell.Theme.collapseHeight(root.collapseProgress))
+      artSize: Shell.Theme.lerp(40, 32, root.layoutProgress)
+      Behavior on y {
+        enabled: root.collapseProgress === 1
+        NumberAnimation { duration: Shell.Theme.mediaRevealDuration; easing.type: Easing.OutCubic }
       }
+    }
 
+    // The metadata stays in place as the shrinking card masks it from the right.
+    Item {
+      x: artwork.x + artwork.width + 8
+      y: artwork.y
+      width: Math.max(0, root.width - x - Shell.Theme.lerp(12, 8, root.layoutProgress))
+      height: 38
+      clip: true
       Column {
-        x: 60
-        y: 12
         width: 84
-        spacing: 0
-
         Media.MarqueeText {
           width: parent.width
           height: 19
           text: root.displayTitle
           textColor: Shell.Theme.sidebarV3Foreground
-          fadeColor: expandedSurface.color
+          fadeColor: root.color
           fontWeight: Font.Medium
           playing: Media.State.isPlaying
         }
-
         Media.MarqueeText {
           width: parent.width
           height: 19
           text: Media.State.subtitle
           textColor: Qt.rgba(0.973, 0.976, 0.976, 0.5)
-          fadeColor: expandedSurface.color
+          fadeColor: root.color
           fontWeight: Font.Normal
           playing: Media.State.isPlaying
         }
       }
-
-      Item {
-        x: 40
-        y: 56
-        width: 76
-        height: 28
-        opacity: root.expandedRevealed ? 1.0 : 0.0
-        visible: opacity > 0.001
-        enabled: root.expandedRevealed
-
-        Behavior on opacity { Shell.HoverAnimation {} }
-
-        Controls { anchors.fill: parent }
-      }
-    }
-  }
-
-  Shell.Card {
-    id: collapsedSurface
-    width: Shell.Theme.sidebarCardCollapsedWidth
-    height: root.collapsedTargetHeight
-    radius: Shell.Theme.sidebarCardRadius
-    classicColor: (collapsedHover.hovered || collapsedPointer.pressed
-           ? Shell.Theme.mediaHoverBackground : Shell.Theme.sidebarV3Background)
-    opacity: root.collapsedOpacity
-    visible: opacity > 0.001
-    enabled: root.collapseProgress >= 0.58
-    clip: true
-    antialiasing: true
-
-    animateClassicColor: true
-
-    HoverHandler {
-      id: collapsedHover
-      enabled: collapsedSurface.enabled
-      cursorShape: Qt.PointingHandCursor
     }
 
-    MouseArea {
-      id: collapsedPointer
-      anchors.fill: parent
-      z: 1
-      enabled: collapsedSurface.enabled
-      acceptedButtons: Qt.LeftButton
-      cursorShape: Qt.PointingHandCursor
-    }
-
-    AlbumCover {
-      x: 8
-      y: collapsedPointer.pressed ? 12 : 8
-      artSize: 32
-      visible: root.hasPlayer
-      z: 2
-
-      Behavior on y {
-        NumberAnimation {
-          duration: Shell.Theme.mediaRevealDuration
-          easing.type: Easing.OutCubic
-        }
-      }
-    }
-
+    // Growing/shrinking this mask reveals the same controls in either layout.
     Item {
-      anchors.fill: parent
-      visible: root.hasPlayer && root.collapsedRevealed
-      enabled: visible
-      opacity: visible ? 1.0 : 0.0
-      z: 3
-
-      Controls {
-        x: 14
-        y: collapsedPointer.pressed ? 55 : 48
-        vertical: true
-      }
+      x: Shell.Theme.lerp(40, 14, root.layoutProgress)
+      y: Shell.Theme.lerp(56, pointer.pressed ? 55 : 48, Shell.Theme.collapseHeight(root.collapseProgress))
+      width: Shell.Theme.lerp(76, 20, root.layoutProgress)
+      height: Math.max(0, root.height - Shell.Theme.lerp(64, 48,
+          Shell.Theme.collapseHeight(root.collapseProgress)))
+      clip: true
+      enabled: root.revealed
+      Controls { anchors.fill: parent; layoutProgress: root.layoutProgress; verticalProgress: Shell.Theme.collapseHeight(root.collapseProgress) }
     }
   }
   component Controls: Item {
     id: controls
-    property bool vertical: false
+    property real layoutProgress: 0
+    property real verticalProgress: 0
     ControlButton {
-      x: controls.vertical ? 0 : 4
-      y: controls.vertical ? 0 : 4
+      x: Shell.Theme.lerp(4, 0, controls.layoutProgress)
+      y: Shell.Theme.lerp(4, 0, controls.verticalProgress)
       iconSource: Qt.resolvedUrl("../assets/media/previous.svg")
       hoverIconSource: Qt.resolvedUrl(
           "../assets/media/previous-hover.svg")
@@ -206,8 +128,8 @@ Item {
     }
 
     ControlButton {
-      x: controls.vertical ? 0 : 28
-      y: controls.vertical ? 20 : 4
+      x: Shell.Theme.lerp(28, 0, controls.layoutProgress)
+      y: Shell.Theme.lerp(4, 20, controls.verticalProgress)
       iconSource: root.playPauseIconSource
       hoverIconSource: root.playPauseHoverIconSource
       restingOpacity: root.playPauseRestingOpacity
@@ -216,8 +138,8 @@ Item {
     }
 
     ControlButton {
-      x: controls.vertical ? 0 : 52
-      y: controls.vertical ? 40 : 4
+      x: Shell.Theme.lerp(52, 0, controls.layoutProgress)
+      y: Shell.Theme.lerp(4, 40, controls.verticalProgress)
       iconSource: Qt.resolvedUrl("../assets/media/next.svg")
       hoverIconSource: Qt.resolvedUrl(
           "../assets/media/next-hover.svg")
@@ -236,7 +158,7 @@ Item {
     Image {
       anchors.fill: parent
       source: Media.State.artUrl
-      sourceSize: Qt.size(Math.ceil(width * 2), Math.ceil(height * 2))
+      sourceSize: Qt.size(80, 80)
       fillMode: Image.PreserveAspectCrop
       asynchronous: true
       smooth: true

@@ -11,15 +11,17 @@ Shell.Card {
 
   property var screen: null
   property real collapseProgress: 0
+  readonly property real widthProgress: Shell.Theme.collapseWidth(collapseProgress)
+  readonly property real heightProgress: Shell.Theme.collapseHeight(collapseProgress)
   property real maximumHeight: 10000
   readonly property alias dragSession: dragSession
   signal focusRequested(int workspaceIndex)
   signal windowRequested(var windowId)
 
   readonly property real expandedOpacity:
-      1 - Shell.Theme.ramp(collapseProgress, 0.22, 0.58)
+      collapseProgress < 0.56 ? 1 : 0
   readonly property real collapsedOpacity:
-      Shell.Theme.ramp(collapseProgress, 0.68, 0.92)
+      collapseProgress >= 0.56 ? 1 : 0
   readonly property int expandedVisibleRowCount: expandedColumn.height > 0
       ? Math.round((expandedColumn.height + Shell.Theme.workspaceControlGap)
                    / Shell.Theme.workspaceControlPitch)
@@ -32,16 +34,17 @@ Shell.Card {
       : Shell.Theme.workspaceContentPadding * 2
         + expandedVisibleRowCount * Shell.Theme.workspaceControlSize
         + (expandedVisibleRowCount - 1) * Shell.Theme.workspaceControlGap
-  readonly property real collapsedNaturalHeight: collapsedColumn.height
+  readonly property real collapsedNaturalHeight: collapsedColumn.children.reduce(
+      (height, row) => height + (row.targetHeight ?? 0), 3)
   readonly property real naturalHeight: Shell.Theme.lerp(
       expandedNaturalHeight, collapsedNaturalHeight,
-      Shell.Theme.ramp(collapseProgress, 0.18, 0.82))
+      Shell.Theme.collapseHeight(collapseProgress))
   readonly property bool workspaceNumbersRevealed: expandedLayer.enabled
       && (expandedComponentHover.hovered || (dragSession.active && !dragSession.windowDrag))
 
   focus: dragSession.active
   Keys.onEscapePressed: dragSession.cancel()
-  onCollapseProgressChanged: if (collapseProgress >= 0.55) dragSession.cancel()
+  onCollapseProgressChanged: if (collapseProgress >= 0.56) dragSession.cancel()
 
   Nirimap.DragSession {
     id: dragSession
@@ -78,18 +81,13 @@ Shell.Card {
     }
     return count;
   }
-  width: {
-    if (collapseProgress < 0.38)
-      return Shell.Theme.lerp(Shell.Theme.sidebarCardExpandedWidth, 108,
-                        Shell.Theme.ramp(collapseProgress, 0.0, 0.38));
-    return Shell.Theme.lerp(108, Shell.Theme.sidebarCardCollapsedWidth,
-                      Shell.Theme.ramp(collapseProgress, 0.64, 1.0));
-  }
+  width: Shell.Theme.lerp(Shell.Theme.sidebarCardExpandedWidth,
+      Shell.Theme.sidebarCardCollapsedWidth, widthProgress)
   height: Math.min(maximumHeight, naturalHeight)
   // The number hit target reaches ten pixels outside the expanded card. The
   // panel gutter contains it; clipping returns once the compact layer takes
   // over so its top and bottom rows retain the card radius.
-  clip: collapseProgress >= 0.55
+  clip: collapseProgress >= 0.56
 
   Item {
     id: expandedLayer
@@ -99,7 +97,7 @@ Shell.Card {
     clip: true
     opacity: root.expandedOpacity
     visible: opacity > 0.001
-    enabled: root.collapseProgress < 0.55
+    enabled: root.collapseProgress < 0.56
 
     HoverHandler {
       id: expandedComponentHover
@@ -206,7 +204,7 @@ Shell.Card {
 
           Item {
             id: windowViewport
-            x: Shell.Theme.workspaceContentPadding - expandedLayer.x
+            x: Shell.Theme.lerp(Shell.Theme.workspaceContentPadding, 8, root.widthProgress) - expandedLayer.x
             width: Shell.Theme.workspaceGridColumns * Shell.Theme.workspaceControlSize
                 + (Shell.Theme.workspaceGridColumns - 1)
                   * Shell.Theme.workspaceControlGap
@@ -216,14 +214,14 @@ Shell.Card {
             Item {
               id: windowCarousel
               x: -expandedWorkspace.windowStart
-                  * Shell.Theme.workspaceControlPitch
+                  * Shell.Theme.workspaceControlPitch * (1 - root.widthProgress)
               width: expandedWorkspace.carouselSlotCount
                   * Shell.Theme.workspaceControlSize
                   + (expandedWorkspace.carouselSlotCount - 1)
                     * Shell.Theme.workspaceControlGap
               height: parent.height
 
-              Behavior on x { Shell.Motion { duration: 220 } }
+              Behavior on x { enabled: root.collapseProgress === 0; Shell.Motion { duration: 220 } }
 
               Repeater {
                 // Keep every window instantiated as the displayed range slides.
@@ -242,12 +240,15 @@ Shell.Card {
                       && expandedWorkspace.windowItems.length === 0
                       && expandedWorkspace.model.isActive
 
+                  visible: root.collapseProgress === 0 || (index >= expandedWorkspace.windowStart
+                      && index < expandedWorkspace.windowStart + Shell.Theme.workspaceGridColumns)
                   x: root.windowIndex(Number(expandedWorkspace.model.workspaceId),
-                      expandedWorkspace.windowItems, index) * Shell.Theme.workspaceControlPitch
-                  width: Shell.Theme.workspaceControlSize
-                  height: Shell.Theme.workspaceControlSize
+                      expandedWorkspace.windowItems, index) * Shell.Theme.workspaceControlPitch * (1 - root.widthProgress)
+                  width: Shell.Theme.lerp(Shell.Theme.workspaceControlSize,
+                      Shell.Theme.workspaceCollapsedControlSize, root.widthProgress)
+                  height: width
                   Behavior on x {
-                    enabled: workspaceSlot.hasWindow && !dragSession.resetting && !dragSession.committing
+                    enabled: root.collapseProgress === 0 && workspaceSlot.hasWindow && !dragSession.resetting && !dragSession.committing
                     Shell.HoverAnimation { duration: Shell.Theme.workspaceDragSnapDuration }
                   }
 
@@ -263,7 +264,7 @@ Shell.Card {
 
                   Rectangle {
                     anchors.centerIn: parent
-                    visible: !workspaceSlot.hasWindow && !workspaceSlot.emptyWorkspaceActive
+                    visible: root.collapseProgress === 0 && !workspaceSlot.hasWindow && !workspaceSlot.emptyWorkspaceActive
                         && !dragSession.active
                     width: Shell.Theme.workspacePlaceholderDotSize
                     height: Shell.Theme.workspacePlaceholderDotSize
@@ -277,7 +278,7 @@ Shell.Card {
                     visible: workspaceSlot.hasWindow
                     opacity: dragSession.windowDrag
                         && dragSession.source.windowData.winId === workspaceSlot.windowData.winId ? 0 : 1
-                    controlSize: Shell.Theme.workspaceControlSize
+                    controlSize: workspaceSlot.width
                     windowData: workspaceSlot.windowData
                     onActivated: windowId => root.windowRequested(windowId)
 
@@ -436,6 +437,7 @@ Shell.Card {
     }
 
     Column {
+      visible: root.collapseProgress === 0
       x: Shell.Theme.workspaceContentPadding - expandedLayer.x
       y: Shell.Theme.workspaceContentPadding
           + root.expandedVisibleRowCount * Shell.Theme.workspaceControlPitch
@@ -477,10 +479,11 @@ Shell.Card {
     height: collapsedColumn.height
     opacity: root.collapsedOpacity
     visible: opacity > 0.001
-    enabled: root.collapseProgress > 0.68
+    enabled: root.collapseProgress >= 0.56
 
     Column {
       id: collapsedColumn
+      y: Shell.Theme.lerp(Shell.Theme.workspaceContentPadding, 0, root.heightProgress)
       width: Shell.Theme.sidebarCardCollapsedWidth
 
       Repeater {
@@ -515,11 +518,13 @@ Shell.Card {
 
           visible: matchesOutput
           width: Shell.Theme.sidebarCardCollapsedWidth
-          height: !matchesOutput ? 0
-              : (active ? Math.max(42, activeHeight)
-                        : 41)
+          property real targetHeight: !matchesOutput ? 0
+              : (active ? Math.max(42, activeHeight) : 41)
+          height: matchesOutput ? Shell.Theme.lerp(Shell.Theme.workspaceControlPitch,
+              targetHeight, root.heightProgress) : 0
 
-          Behavior on height {
+          Behavior on targetHeight {
+            enabled: root.collapseProgress === 1
             NumberAnimation {
               duration: Shell.Theme.sidebarWorkspaceSwitchDuration
               easing.type: Easing.OutCubic
@@ -580,11 +585,12 @@ Shell.Card {
             }
           }
 
-          Column {
+          Item {
             visible: collapsedWorkspace.active
             x: 8
-            y: Shell.Theme.workspaceCollapsedHeaderHeight
-            spacing: Shell.Theme.workspaceCollapsedControlGap
+            y: Shell.Theme.workspaceCollapsedHeaderHeight * root.heightProgress
+            width: Shell.Theme.workspaceCollapsedControlSize
+            height: collapsedWorkspace.windowItems.length * Shell.Theme.workspaceCollapsedControlPitch
 
             Repeater {
               // Keep delegates alive when focus, title or activity changes.
@@ -593,6 +599,7 @@ Shell.Card {
 
               delegate: Nirimap.WindowIcon {
                 required property int index
+                y: index * Shell.Theme.workspaceCollapsedControlPitch * root.heightProgress
                 controlSize: Shell.Theme.workspaceCollapsedControlSize
                 windowData: collapsedWorkspace.windowItems[index] || ({})
                 onActivated: windowId => root.windowRequested(windowId)

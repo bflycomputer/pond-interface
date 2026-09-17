@@ -74,6 +74,9 @@ Singleton {
   readonly property string titleFontFamily: "ABC Gramercy"
   readonly property string plexFontFamily: "IBM Plex Mono"
 
+  function collapseWidth(progress) { return ramp(progress, 0, 0.56); }
+  function collapseHeight(progress) { return ramp(progress, 0.56, 1); }
+
   function clamp01(value) { return Math.max(0, Math.min(1, value)); }
   function lerp(from, to, progress) {
     return from + (to - from) * clamp01(progress);

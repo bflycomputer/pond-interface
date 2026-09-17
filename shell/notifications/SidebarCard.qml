@@ -8,8 +8,8 @@ Item {
   property real collapseProgress: 0
   signal panelRequested
   property real transientProgress: Notifications.State.transientVisible ? 1 : 0
-  readonly property real inlineAmount: transientProgress * (1 - collapseProgress)
-  readonly property real previewOpacity: Shell.Theme.ramp(inlineAmount, 0.2, 0.88)
+  readonly property real inlineAmount: transientProgress * (1 - Shell.Theme.collapseHeight(collapseProgress))
+  readonly property real previewOpacity: inlineAmount >= 0.54 ? 1 : 0
   readonly property var notification: Notifications.State.currentTransient
   implicitHeight: 48 + (47 + preview.height - 48) * inlineAmount
   Behavior on transientProgress { Shell.Motion {} }
@@ -28,7 +28,7 @@ Item {
         x: Math.round(Shell.Theme.lerp(
             Shell.Theme.sidebarRowHorizontalPadding,
             (summary.width - width) / 2,
-            root.collapseProgress))
+            Shell.Theme.collapseWidth(root.collapseProgress)))
         y: Math.round((Shell.Theme.sidebarSimpleRowHeight - height) / 2)
         height: Notifications.Style.summaryIconSize
         spacing: 2
@@ -62,7 +62,7 @@ Item {
         width: Math.max(0, summary.width - x - Shell.Theme.sidebarRowHorizontalPadding)
         height: Notifications.Style.summaryIconSize
         spacing: 8
-        opacity: 1 - Shell.Theme.ramp(root.collapseProgress, 0.12, 0.5)
+        opacity: root.collapseProgress < 0.31 ? 1 : 0
         visible: opacity > 0.001
 
         Rectangle {
@@ -121,7 +121,6 @@ Item {
     opacity: preview.hovered && root.inlineAmount > 0.7 ? 1 : 0
     visible: opacity > 0.001
     enabled: opacity > 0.5
-    Behavior on opacity { Shell.HoverAnimation {} }
     onClicked: Notifications.State.remove(root.notification)
   }
 }

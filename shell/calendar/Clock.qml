@@ -19,15 +19,15 @@ Shell.Card {
   }
 
   implicitWidth: Shell.Theme.lerp(Shell.Theme.sidebarCardExpandedWidth,
-      Shell.Theme.sidebarCardCollapsedWidth, collapseProgress)
+      Shell.Theme.sidebarCardCollapsedWidth, Shell.Theme.collapseWidth(collapseProgress))
   implicitHeight: Shell.Theme.lerp(Shell.Theme.sidebarTimeExpandedHeight,
-      105, collapseProgress)
-  radius: Shell.Theme.lerp(12, Shell.Theme.sidebarCardRadius, collapseProgress)
+      105, Shell.Theme.collapseHeight(collapseProgress))
+  radius: Shell.Theme.lerp(12, Shell.Theme.sidebarCardRadius, Shell.Theme.collapseWidth(collapseProgress))
 
   readonly property real expandedOpacity:
-      1 - Shell.Theme.ramp(collapseProgress, 0.10, 0.45)
+      collapseProgress < 0.56 ? 1 : 0
   readonly property real collapsedProgress:
-      Shell.Theme.ramp(collapseProgress, 0.66, 0.94)
+      collapseProgress >= 0.56 ? 1 : 0
 
   SystemClock {
     id: systemClock

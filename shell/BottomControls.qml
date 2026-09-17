@@ -6,8 +6,8 @@ Card {
   id: root
   property real collapseProgress: 0
   signal collapseClicked
-  readonly property real widthProgress: Theme.ramp(collapseProgress, 0, 0.56)
-  readonly property real heightProgress: Theme.ramp(collapseProgress, 0.56, 1)
+  readonly property real widthProgress: Theme.collapseWidth(collapseProgress)
+  readonly property real heightProgress: Theme.collapseHeight(collapseProgress)
   width: Theme.lerp(156, 48, widthProgress)
   height: Theme.lerp(openExpandedHeight, 168, heightProgress)
   clip: false
@@ -114,13 +114,6 @@ Card {
     opacity: root.soundSliderContentVisible ? 1 : 0
     onMoved: Audio.State.setOutputVolume(compactSoundSlider.value)
 
-    Behavior on opacity {
-      NumberAnimation {
-        duration: root.soundSliderContentVisible
-            ? PanelStyle.controlDuration : PanelStyle.hoverExitDuration
-        easing.type: Easing.OutCubic
-      }
-    }
   }
 
   Behavior on height {
@@ -141,17 +134,9 @@ Card {
     y: 12
     height: 19
     spacing: 8
-    opacity: (root.wifiContentVisible ? 1 : 0)
-        * (1 - Theme.ramp(root.collapseProgress, 0.12, 0.32))
+    opacity: root.wifiContentVisible && root.collapseProgress < 0.22 ? 1 : 0
     visible: opacity > 0
 
-    Behavior on opacity {
-      NumberAnimation {
-        duration: root.wifiContentVisible
-            ? PanelStyle.controlDuration : PanelStyle.hoverExitDuration
-        easing.type: Easing.OutCubic
-      }
-    }
 
     Row {
       height: 19
@@ -218,9 +203,8 @@ Card {
       readonly property bool vertical: index > 3
       readonly property int slot: vertical ? index - 3 : index
       readonly property var modelData: root.icons[slot]
-      opacity: slot === 0 ? 1 : vertical
-          ? Theme.ramp(root.collapseProgress, 0.62 + (slot - 1) * 0.12, 0.76 + (slot - 1) * 0.12)
-          : 1 - Theme.ramp(root.collapseProgress, 0.22, 0.42)
+      opacity: slot === 0 || (vertical ? root.collapseProgress >= 0.56
+          : root.collapseProgress < 0.56) ? 1 : 0
       visible: opacity > 0.001
       x: vertical ? 4 : Theme.lerp([4, 42, 78, 114][slot], 4, root.widthProgress)
       y: vertical ? 4 + slot * 40 : Theme.lerp(root.expandedControlsY, 4, root.widthProgress)
@@ -273,7 +257,7 @@ Card {
           sourceSize: Qt.size(Math.ceil(width * 2), Math.ceil(height * 2))
           fillMode: Image.PreserveAspectFit
           rotation: index === 0 ? 90 : -90
-          readonly property real flipProgress: Theme.ramp(root.collapseProgress, 0.42, 0.58)
+          readonly property real flipProgress: root.collapseProgress >= 0.5 ? 1 : 0
           opacity: action.glyphOpacity * (index === 0 ? 1 - flipProgress : flipProgress)
           smooth: true
           antialiasing: true
