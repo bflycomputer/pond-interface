@@ -1,64 +1,97 @@
 import QtQuick
+import Quickshell.Widgets
 
-Item {
+ClippingRectangle {
   id: root
   property bool checked: false
+  property bool busy: false
+  readonly property bool hovered: toggleMouse.containsMouse && root.enabled
+  property int animationDuration: 200
   signal toggled(bool checked)
+  property real position: checked ? 1 : 0
 
   implicitWidth: 54
   implicitHeight: 28
+  radius: height / 2
+  color: root.hovered ? PanelStyle.hover : "transparent"
+  border.color: PanelStyle.border
+  border.width: 1
+  contentInsideBorder: false
 
+  Behavior on position {
+    NumberAnimation {
+      duration: root.animationDuration
+      easing.type: Easing.BezierSpline
+      easing.bezierCurve: [0.77, 0, 0.175, 1, 1, 1]
+    }
+  }
+
+  // Stationary outlines underneath the moving circle.
   Rectangle {
-    anchors.fill: parent
-    radius: 150
+    x: 7.5
+    anchors.verticalCenter: parent.verticalCenter
+    width: 13
+    height: 5
+    radius: height / 2
     color: "transparent"
-    border.color: PanelStyle.border
+    border.color: Qt.rgba(231 / 255, 231 / 255, 231 / 255, 0.3)
     border.width: 1
-    antialiasing: true
   }
 
   Rectangle {
-    id: offButton
-    x: 2
-    y: 2
+    x: root.width - 16.5
+    anchors.verticalCenter: parent.verticalCenter
+    width: 5
+    height: 13
+    radius: width / 2
+    color: "transparent"
+    border.color: Qt.rgba(231 / 255, 231 / 255, 231 / 255, 0.3)
+    border.width: 1
+  }
+
+  Rectangle {
+    x: 2 + (root.width - width - 4) * root.position
+    anchors.verticalCenter: parent.verticalCenter
     width: 24
     height: 24
-    radius: 200
-    color: !root.checked ? PanelStyle.pressed
-        : offHover.hovered ? PanelStyle.hover : "transparent"
+    radius: 12
+    readonly property real travelDistance: root.width - width - 4
+    readonly property real rollingDistance: radius * Math.PI / 2
+    readonly property real redSideTravel: travelDistance - rollingDistance
+    rotation: Math.max(0, Math.min(rollingDistance,
+      travelDistance * root.position - redSideTravel)) / radius * 180 / Math.PI
+    antialiasing: true
+    color: root.checked ? PanelStyle.enabledSurface : "#613129"
+    Behavior on color {
+      ColorAnimation {
+        duration: root.animationDuration
+        easing.type: Easing.BezierSpline
+        easing.bezierCurve: [0.77, 0, 0.175, 1, 1, 1]
+      }
+    }
 
     Rectangle {
       anchors.centerIn: parent
       width: 12
       height: 4
-      radius: 2
-      color: "transparent"
-      border.color: Qt.rgba(0.91, 0.91, 0.91, 0.3)
-      border.width: 1
+      radius: height / 2
+      antialiasing: true
+      color: root.checked ? PanelStyle.enabledMark : "#FB9B89"
+      Behavior on color {
+        ColorAnimation {
+          duration: root.animationDuration
+          easing.type: Easing.BezierSpline
+          easing.bezierCurve: [0.77, 0, 0.175, 1, 1, 1]
+        }
+      }
     }
-    HoverHandler { id: offHover; cursorShape: Qt.PointingHandCursor }
-    TapHandler { onTapped: root.toggled(false) }
   }
 
-  Rectangle {
-    id: onButton
-    x: 28
-    y: 2
-    width: 24
-    height: 24
-    radius: 200
-    color: root.checked ? PanelStyle.enabledSurface
-                        : onHover.hovered ? PanelStyle.hover : "transparent"
-
-    Rectangle {
-      anchors.centerIn: parent
-      width: 4
-      height: 12
-      radius: 2
-      color: root.checked ? PanelStyle.enabledMark
-                          : Qt.rgba(0.91, 0.91, 0.91, 0.3)
-    }
-    HoverHandler { id: onHover; cursorShape: Qt.PointingHandCursor }
-    TapHandler { onTapped: root.toggled(true) }
+  MouseArea {
+    id: toggleMouse
+    anchors.fill: parent
+    hoverEnabled: true
+    cursorShape: Qt.PointingHandCursor
+    onClicked: if (!root.busy) root.toggled(!root.checked)
   }
 }
