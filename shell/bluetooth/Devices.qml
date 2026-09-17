@@ -17,7 +17,8 @@ Shell.DeviceList {
   message: service.errorText
   headerControl: Component { Shell.Toggle {
     checked: root.service.enabled
-    enabled: root.interactive && root.service.available && !root.service.powerBusy
+    enabled: root.interactive && root.service.available
+    busy: root.service.powerBusy
     onToggled: checked => root.service.setEnabled(checked)
   } }
   deviceDelegate: Component { DeviceRow {
