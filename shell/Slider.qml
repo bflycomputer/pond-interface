@@ -135,6 +135,7 @@ T.Slider {
 
   HoverHandler {
     id: pointer
+    enabled: root.hoverEnabled
     cursorShape: root.pressed ? Qt.ClosedHandCursor
         : root.handleHovered ? Qt.OpenHandCursor : Qt.PointingHandCursor
   }

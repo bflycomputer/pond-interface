@@ -111,6 +111,7 @@ Card {
     persistentHandle: false
     showInlineValue: false
     interactive: root.soundSliderRequested
+    hoverEnabled: root.soundSliderContentVisible
     visible: opacity > 0.001
     opacity: root.soundSliderContentVisible ? 1 : 0
     onMoved: Audio.State.setOutputVolume(compactSoundSlider.value)
