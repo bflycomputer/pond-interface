@@ -5,7 +5,6 @@ T.Slider {
   id: root
 
   property real externalValue: 0
-  property bool persistentHandle: false
   property bool showInlineValue: true
   property bool interactive: true
   signal dragStarted
@@ -22,14 +21,11 @@ T.Slider {
   Binding on value { value: root.externalValue; when: !root.pressed; restoreMode: Binding.RestoreNone }
   readonly property real visualValue: position
   readonly property real handleCenterX: leftPadding + visualPosition * availableWidth
-  readonly property bool showHandle: persistentHandle || hovered
-  readonly property bool handleHovered: showHandle && hovered
+  readonly property bool handleHovered: hovered
       && Math.abs(pointer.point.position.x - handleCenterX) <= 13
       && pointer.point.position.y >= 3 && pointer.point.position.y <= 31
-  readonly property real handleSize: pressed ? 20
-      : handleHovered || persistentHandle ? 26 : 24
-  readonly property real handleTop: pressed ? 8
-      : handleSize >= 26 ? 5 : 6
+  readonly property real handleSize: pressed ? 20 : 26
+  readonly property real handleTop: pressed ? 8 : 5
 
   implicitHeight: 32
   clip: false
@@ -54,7 +50,6 @@ T.Slider {
 
   Rectangle {
     id: handle
-    visible: root.showHandle
     x: root.handleCenterX - width / 2
     y: root.handleTop
     width: root.handleSize
@@ -100,7 +95,7 @@ T.Slider {
     width: 26
     height: 22
     visible: opacity > 0.001
-    opacity: root.showHandle && (root.handleHovered || root.pressed) ? 1 : 0
+    opacity: root.handleHovered || root.pressed ? 1 : 0
 
     Behavior on opacity {
       NumberAnimation {

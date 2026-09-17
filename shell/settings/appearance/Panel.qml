@@ -85,7 +85,7 @@ Settings.Modal {
         objectName: "brightnessSlider"
         x: 0; y: 5; width: parent.width
         externalValue: Appearance.State.brightness
-        persistentHandle: true; showInlineValue: false
+        showInlineValue: false
         interactive: Appearance.State.brightnessAvailable
         opacity: interactive ? 1 : 0.3
         onMoved: Appearance.State.setBrightness(brightnessSlider.value)

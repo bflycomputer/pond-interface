@@ -108,8 +108,6 @@ Card {
     width: 132
     height: 32
     externalValue: Audio.State.outputVolume
-    persistentHandle: false
-    showInlineValue: false
     interactive: root.soundSliderRequested
     hoverEnabled: root.soundSliderContentVisible
     visible: opacity > 0.001

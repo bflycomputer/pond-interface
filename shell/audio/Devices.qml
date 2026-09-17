@@ -69,7 +69,6 @@ Item {
       width: PanelStyle.fieldWidth
       height: 32
       externalValue: root.selectedVolume
-      persistentHandle: true
       interactive: root.interactive && root.selectedAudioAvailable
       onMoved: {
         if (root.selectedTab === "output")
