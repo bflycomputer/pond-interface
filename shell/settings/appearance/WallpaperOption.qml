@@ -63,6 +63,7 @@ Rectangle {
     visible: !root.dynamic && Appearance.State.wallpaperPath !== ""
     x: parent.width - 56; y: 19; width: 40; height: 26
     source: Appearance.State.wallpaperUrl
+    sourceSize: Qt.size(Math.ceil(width * Screen.devicePixelRatio), Math.ceil(height * Screen.devicePixelRatio))
     fillMode: Image.PreserveAspectCrop; asynchronous: true
   }
   HoverHandler { id: hover; cursorShape: Qt.PointingHandCursor }

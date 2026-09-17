@@ -1,5 +1,5 @@
 import QtQuick
-
+import Quickshell
 
 // Device drawer header, scrolling rows, empty state, and footer.
 Item {
@@ -10,6 +10,7 @@ Item {
   property url titleIcon: ""
   property Component headerControl
   property var devices: []
+  property string deviceKey: ""
   property Component deviceDelegate
   property Component footer
   property string emptyText: ""
@@ -38,7 +39,7 @@ Item {
       id: deviceList
       x: 8; y: root.listTop; width: PanelStyle.rowWidth
       height: root.viewportHeight - y - root.listBottomPadding
-      model: root.devices
+      model: ScriptModel { values: root.devices; objectProp: root.deviceKey }
       delegate: root.deviceDelegate
       footer: root.footer
       footerPositioning: ListView.InlineFooter

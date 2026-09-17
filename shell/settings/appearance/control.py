@@ -32,47 +32,61 @@ def atomic_write(path, text):
         temporary.unlink(missing_ok=True)
 
 
-def brightness_device(output):
+def brightness_device(output, cached=""):
+    device = json.loads(cached) if cached else None
     # Match brightness control to the selected connector, not detection order.
-    if not output.startswith(("eDP", "LVDS", "DSI")):
-        detected = run("ddcutil", "detect", "--brief")
+    if not device and not output.startswith(("eDP", "LVDS", "DSI")):
+        # The targeted brightness read below also checks DDC support.
+        detected = run("ddcutil", "detect", "--brief", "--skip-ddc-checks")
         for block in re.split(r"(?=Display \d+)", detected):
             connector = re.search(r"DRM connector:\s+\S*card\d+-(\S+)", block)
             bus = re.search(r"I2C bus:\s+/dev/i2c-(\d+)", block)
             if connector and bus and connector[1] == output:
-                value = run("ddcutil", "-b", bus[1], "getvcp", "10", "--brief")
-                match = re.search(r"VCP 10 C (\d+) (\d+)", value)
-                if match and int(match[2]) > 0:
-                    return {"kind": "ddc", "device": bus[1], "current": int(match[1]), "max": int(match[2])}
-    else:
+                device = {"kind": "ddc", "device": bus[1]}
+                break
+    elif not device:
         devices = sorted(Path("/sys/class/backlight").glob("*"))
         if devices:
-            device = devices[0]
-            return {"kind": "backlight", "device": device.name,
-                    "current": int((device / "brightness").read_text()),
-                    "max": int((device / "max_brightness").read_text())}
+            device = {"kind": "backlight", "device": devices[0].name}
+    try:
+        if device and device["kind"] == "ddc":
+            value = run("ddcutil", "-b", device["device"], "getvcp", "10", "--brief",
+                        *(["--skip-ddc-checks"] if cached else []))
+            match = re.search(r"VCP 10 C (\d+) (\d+)", value)
+            if match and int(match[2]) > 0:
+                return dict(device, current=int(match[1]), max=int(match[2]))
+        elif device:
+            path = Path("/sys/class/backlight") / device["device"]
+            return dict(device, current=int((path / "brightness").read_text()),
+                        max=int((path / "max_brightness").read_text()))
+    except (RuntimeError, OSError, subprocess.TimeoutExpired):
+        if not cached:
+            raise
+    if cached:
+        return brightness_device(output)
     raise RuntimeError("Brightness control is unavailable for this display")
 
 
-def status(output):
+def status(output, cached=""):
     outputs = json.loads(run("niri", "msg", "-j", "outputs"))
     monitor = outputs.get(output)
     result = {"output": output, "connected": bool(monitor and monitor.get("logical")),
-              "brightness": None, "brightnessError": ""}
+              "brightness": None, "brightnessDevice": None, "brightnessError": ""}
     if result["connected"]:
         mode = monitor["modes"][monitor["current_mode"]]
         result.update(width=mode["width"], height=mode["height"], scale=monitor["logical"]["scale"])
         try:
-            device = brightness_device(output)
+            device = brightness_device(output, cached)
             result["brightness"] = device["current"] / device["max"]
+            result["brightnessDevice"] = device
         except (RuntimeError, OSError, subprocess.TimeoutExpired) as error:
             result["brightnessError"] = str(error)
     return result
 
 
-def set_brightness(output, value):
+def set_brightness(output, value, cached=""):
     value = max(0.01, min(1, float(value)))
-    device = brightness_device(output)
+    device = json.loads(cached) if cached else brightness_device(output)
     if device["kind"] == "ddc":
         run("ddcutil", "-b", device["device"], "--noverify", "--enable-dynamic-sleep",
             "--sleep-multiplier=0.05", "setvcp", "10", str(round(value * device["max"])))

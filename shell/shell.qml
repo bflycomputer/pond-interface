@@ -1,3 +1,6 @@
+//@ pragma Env QSG_RENDER_LOOP = threaded
+//@ pragma Env QSG_USE_SIMPLE_ANIMATION_DRIVER = 1
+// Use elapsed time so multiple visible windows do not limit animations to 60 Hz.
 import QtQuick
 import Quickshell
 import Quickshell.Io

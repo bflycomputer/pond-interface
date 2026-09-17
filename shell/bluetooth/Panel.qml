@@ -26,6 +26,7 @@ Shell.CardStack {
   }
   Connections {
     target: root.service
+    function onPromptChanged() { Qt.callLater(root.syncPage); }
     function onActionFinished(path, action, success) {
       if (!root.opened) return;
       if (success && (action === "pair" || action === "connect") && path === root.nearbyConnection)
@@ -34,19 +35,20 @@ Shell.CardStack {
           && root.currentSelection.path === path) root.pop(false);
     }
   }
-  // Serialize prompt/success navigation with the existing stack animation.
-  Timer {
-    interval: 50; repeat: true; running: root.opened
-    onTriggered: {
-      if (root.transitionRunning) return;
-      if (root.service.prompt.kind && root.currentPage !== "pair") {
-        root.push("pair", null);
-      } else if (!root.service.prompt.kind && root.currentPage === "pair") {
-        root.pop(false);
-      } else if (root.connectionComplete) {
-        if (root.currentPage === "details" || root.currentPage === "nearby") root.pop(false);
-        else { root.connectionComplete = false; root.nearbyConnection = ""; }
-      }
+  onOpenedChanged: Qt.callLater(syncPage)
+  onConnectionCompleteChanged: Qt.callLater(syncPage)
+  onCurrentPageChanged: Qt.callLater(syncPage)
+  onTransitionRunningChanged: if (!transitionRunning) Qt.callLater(syncPage)
+
+  function syncPage() {
+    if (!opened || transitionRunning) return;
+    if (service.prompt.kind && currentPage !== "pair") {
+      push("pair", null);
+    } else if (!service.prompt.kind && currentPage === "pair") {
+      pop(false);
+    } else if (connectionComplete) {
+      if (currentPage === "details" || currentPage === "nearby") pop(false);
+      else { connectionComplete = false; nearbyConnection = ""; }
     }
   }
   Component { id: drawerComponent; Devices {} }

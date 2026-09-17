@@ -11,6 +11,7 @@ Shell.DeviceList {
   viewportHeight: 316
   listTop: 68
   devices: service.enabled ? service.nearbyDevices : []
+  deviceKey: "path"
   emptyText: !service.enabled ? "Bluetooth is off."
       : service.discovering ? "Searching for devices…\nMake sure your device is in pairing mode."
       : "No nearby devices found."

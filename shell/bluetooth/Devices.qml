@@ -10,6 +10,7 @@ Shell.DeviceList {
   listBottomPadding: 8
   viewportHeight: 292
   devices: service.enabled ? service.pairedDevices : []
+  deviceKey: "path"
   emptyText: !service.available ? "No Bluetooth adapter found."
       : service.blocked ? "Bluetooth is blocked. Turn off airplane mode to enable it."
       : !service.enabled ? "Bluetooth is off."

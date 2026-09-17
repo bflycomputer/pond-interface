@@ -50,6 +50,7 @@ Singleton {
   Process {
     id: query
     property string outputName
+    onExited: if (root.active && outputName !== Settings.State.outputName) root.refresh()
     stdout: StdioCollector {
       onStreamFinished: {
         try {
@@ -79,10 +80,13 @@ Singleton {
   }
   Process {
     id: brightnessWriter
+    property string outputName
     stdout: StdioCollector {
       onStreamFinished: root.receive(text, "Could not change brightness")
     }
-    onExited: {
+    onExited: (exitCode, exitStatus) => {
+      if (exitCode !== 0 && outputName === root.display.output)
+        root.display = Object.assign({}, root.display, {brightnessDevice: null});
       if (root.pendingBrightness >= 0) brightnessDelay.restart();
       else if (!root.draggingBrightness) root.refresh();
     }
@@ -101,8 +105,12 @@ Singleton {
   function refresh() {
     if (query.running || brightnessWriter.running || draggingBrightness || !Settings.State.outputName) return;
     query.outputName = Settings.State.outputName;
-    query.command = ["python3", Quickshell.shellDir + "/settings/appearance/control.py", "status", query.outputName];
+    query.command = ["python3", Quickshell.shellDir + "/settings/appearance/control.py", "status", query.outputName,
+        cachedDevice(query.outputName)];
     query.running = true;
+  }
+  function cachedDevice(output) {
+    return display.output === output && display.brightnessDevice ? JSON.stringify(display.brightnessDevice) : "";
   }
   function toggleSection(section) { expandedSection = expandedSection === section ? "" : section; }
   function apply(args) {
@@ -126,8 +134,9 @@ Singleton {
   function flushBrightness() {
     if (brightnessWriter.running || pendingBrightness < 0) return;
     error = "";
+    brightnessWriter.outputName = pendingBrightnessOutput;
     brightnessWriter.command = ["python3", Quickshell.shellDir + "/settings/appearance/control.py", "brightness",
-        pendingBrightnessOutput, String(pendingBrightness)];
+        pendingBrightnessOutput, String(pendingBrightness), cachedDevice(pendingBrightnessOutput)];
     pendingBrightness = -1;
     brightnessWriter.running = true;
   }
