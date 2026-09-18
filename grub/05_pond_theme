@@ -19,12 +19,12 @@ for c in /sys/class/drm/card*-*; do
 done
 
 # font size : minimum height : flower width (the flower must fit left of the menu)
-fs=32
+size=32
 if [ -n "$mode" ]; then
-  w=${mode%x*}; h=${mode#*x}; fs=12
+  w=${mode%x*}; h=${mode#*x}; size=12
   for p in 17:576:413 21:720:516 32:1080:774 43:1440:1032 64:2160:1548; do
     f=${p%%:*}; r=${p#*:}; hmin=${r%:*}; flower=${r#*:}
-    if [ "$h" -ge "$hmin" ] && [ $((w / 2)) -ge "$flower" ]; then fs=$f; fi
+    if [ "$h" -ge "$hmin" ] && [ $((w / 2)) -ge "$flower" ]; then size=$f; fi
   done
 fi
 
@@ -33,6 +33,6 @@ theme_path=${theme_path%/theme.txt}
 prepare_grub_to_access_device "$(grub-probe --target=device "$theme_dir/theme.txt")"
 cat <<EOT
 insmod png
-set theme=(\$root)$theme_path/theme-$fs.txt
+set theme=(\$root)$theme_path/theme-$size.txt
 export theme
 EOT
