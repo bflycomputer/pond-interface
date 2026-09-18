@@ -169,6 +169,7 @@ def wallpaper(mode, path=""):
 
 def pick_wallpaper():
     result = subprocess.run(["zenity", "--file-selection", "--title=Choose a wallpaper",
+                             f"--filename={Path.home() / 'Pictures/Wallpapers'}/",
                              "--file-filter=Images | *.png *.jpg *.jpeg *.webp *.avif *.bmp *.gif *.svg *.PNG *.JPG *.JPEG",
                              "--file-filter=All files | *"], capture_output=True, text=True)
     if result.returncode == 1:
