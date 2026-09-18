@@ -1,0 +1,72 @@
+--- a/include/grub/gui.h
++++ b/include/grub/gui.h
+@@ -213,6 +213,9 @@
+ grub_gui_component_t grub_gui_list_new (void);
+ grub_gui_component_t grub_gui_circular_progress_new (void);
+ 
++int grub_gui_list_get_selected_bounds (grub_gui_component_t component,
++                                        grub_video_rect_t *bounds);
++
+ /* Manipulation functions.  */
+ 
+ /* Visit all components with the specified ID.  */
+--- a/grub-core/gfxmenu/gui_list.c
++++ b/grub-core/gfxmenu/gui_list.c
+@@ -246,6 +246,46 @@
+     self->first_shown_index = selected_index;
+   else if (selected_index > last_shown_index)
+     self->first_shown_index = selected_index - (num_shown_items - 1);
++}
++
++
++/* Return the selected item's left border in screen coordinates. */
++int
++grub_gui_list_get_selected_bounds (grub_gui_component_t component,
++                                   grub_video_rect_t *bounds)
++{
++  list_impl_t self = (list_impl_t) component;
++  grub_gui_container_t parent;
++  grub_gfxmenu_box_t selected;
++  int top_pad;
++
++  if (!self->visible || !self->view || self->view->selected < 0
++      || !check_boxes (self) || get_num_shown_items (self) < 1)
++    return 0;
++
++  make_selected_item_visible (self);
++  selected = self->selected_item_box;
++  top_pad = grub_max (self->item_box->get_top_pad (self->item_box),
++                     selected->get_top_pad (selected));
++  *bounds = self->bounds;
++  bounds->x += self->menu_box->get_left_pad (self->menu_box) + self->item_padding;
++  if (self->scrollbar_slice == SCROLLBAR_SLICE_WEST)
++    bounds->x += self->scrollbar_right_pad;
++  bounds->y += self->menu_box->get_top_pad (self->menu_box) + self->item_padding
++    + (self->view->selected - self->first_shown_index)
++      * (self->item_height + self->item_spacing)
++    + top_pad - selected->get_top_pad (selected);
++  bounds->width = selected->get_left_pad (selected);
++  bounds->height = self->item_height;
++  for (parent = self->parent; parent;
++       parent = parent->component.ops->get_parent (parent))
++    {
++      grub_video_rect_t position;
++      parent->component.ops->get_bounds (parent, &position);
++      bounds->x += position.x;
++      bounds->y += position.y;
++    }
++  return bounds->width > 0 && bounds->height > 0;
+ }
+ 
+ /* Draw a scrollbar on the menu.  */
+--- a/grub-core/Makefile.core.def
++++ b/grub-core/Makefile.core.def
+@@ -2773,3 +2773,8 @@
+   cflags = '-Wno-uninitialized';
+   cppflags = '-I$(srcdir)/lib/libtasn1-grub -I$(srcdir)/tests/asn1/';
+ };
++
++module = {
++  name = pond_timer;
++  common = gfxmenu/pond_timer.c;
++};

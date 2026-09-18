@@ -1,0 +1,64 @@
+title-text: ""
+desktop-color: "#1c0919"
+terminal-font: "Unifont Regular 16"
+terminal-left: "0"
+terminal-top: "0"
+terminal-width: "100%"
+terminal-height: "100%"
+terminal-border: "0"
+
++ image {
+  left = 0
+  top = 100%-451
+  width = 413
+  height = 451
+  file = "assets/17/flower.png"
+}
++ image {
+  left = 50%-21
+  top = 50%-148
+  width = 46
+  height = 7
+  file = "assets/17/label.png"
+}
++ image {
+  left = 50%-21
+  top = 50%-128
+  width = 124
+  height = 38
+  file = "assets/17/heading.png"
+}
++ boot_menu {
+  id = "pond_menu"
+  left = 50%-21
+  top = 50%-57
+  width = 50%+21
+  height = 50%-2
+  item_font = "Onest Regular 17"
+  selected_item_font = "Onest Regular 17"
+  item_color = "#745888"
+  selected_item_color = "#cbe25b"
+  item_height = 21
+  item_padding = 0
+  item_spacing = 16
+  icon_width = 0
+  icon_height = 0
+  item_icon_space = 11
+  item_pixmap_style = "assets/17/item_*.png"
+  selected_item_pixmap_style = "assets/17/selected_*.png"
+  scrollbar = false
+  scrollbar_left_pad = 0
+}
+
+# Keep this at the root: pond_timer uses screen coordinates.
++ progress_bar {
+  id = "__timeout__"
+  left = 0
+  top = 0
+  width = 1
+  height = 1
+  text = ""
+  border_color = "#00000000"
+  bg_color = "#00000000"
+  fg_color = "#00000000"
+}

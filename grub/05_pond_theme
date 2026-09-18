@@ -1,0 +1,25 @@
+#!/bin/sh
+set -e
+. /usr/share/grub/grub-mkconfig_lib
+
+theme_dir=/usr/share/grub/themes/pond
+[ "${GRUB_THEME:-}" = "$theme_dir/theme.txt" ] || exit 0
+theme_path=$(make_system_path_relative_to_its_root "$theme_dir/theme.txt")
+theme_path=${theme_path%/theme.txt}
+prepare_grub_to_access_device "$(grub-probe --target=device "$theme_dir/theme.txt")"
+
+cat <<EOF
+set pond_theme_root=(\$root)$theme_path
+export pond_theme_root
+insmod png
+if [ -s \$prefix/\$grub_cpu-\$grub_platform/pond_timer.mod ]; then
+  insmod pond_timer
+fi
+if [ "\$pond_timer_loaded" != 1 ]; then
+  # Keep the static theme readable when optional modules are unavailable.
+  set gfxmode=1024x768,800x600,640x480,auto
+  set gfxterm_font="Unifont Regular 16"
+  terminal_output console
+  terminal_output ${GRUB_TERMINAL_OUTPUT:-gfxterm}
+fi
+EOF
