@@ -26,8 +26,12 @@ Singleton {
   readonly property var scales: [1, 1.25, 1.5, 2]
 
   onActiveChanged: {
-    if (active) { expandedSection = ""; error = ""; refresh(); }
+    if (active) { expandedSection = ""; error = ""; settleDelay.restart(); }
+    else settleDelay.stop();
   }
+  // DDC/CI brightness reads stall the GPU's display driver for a few hundred
+  // ms, freezing every animating window. Only query once the page is static.
+  Timer { id: settleDelay; interval: Settings.Style.closeDuration + 60; onTriggered: root.refresh() }
   Connections {
     target: Settings.State
     function onOutputNameChanged() { root.display = ({}); if (root.active) root.refresh(); }
@@ -88,11 +92,10 @@ Singleton {
       if (exitCode !== 0 && outputName === root.display.output)
         root.display = Object.assign({}, root.display, {brightnessDevice: null});
       if (root.pendingBrightness >= 0) brightnessDelay.restart();
-      else if (!root.draggingBrightness) root.refresh();
+      else if (!root.draggingBrightness && exitCode !== 0) root.refresh();
     }
   }
   Timer { id: brightnessDelay; interval: 90; onTriggered: root.flushBrightness() }
-  Timer { interval: 5000; repeat: true; running: root.active && !root.pickingWallpaper; onTriggered: root.refresh() }
 
   function receive(text, failure) {
     try {
