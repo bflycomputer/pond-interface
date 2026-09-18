@@ -8,6 +8,7 @@ import ".." as Shell
 Singleton {
   id: root
   property var historyNotifications: []
+  readonly property int historyLimit: 100
   property var activeNotifications: []
   readonly property var recentApps: _recentApps(historyNotifications)
   property string transientId: ""
@@ -32,9 +33,10 @@ Singleton {
 
   Component.onCompleted: {
     try {
-      historyNotifications = JSON.parse(history.text() || "{}").notifications || [];
       historyWritable = true;
+      historyNotifications = (JSON.parse(history.text() || "{}").notifications || []).slice(0, historyLimit);
     } catch (error) {
+      historyWritable = false;
       // Preserve unreadable history before starting a fresh file.
       recover.command = ["mv", "--", history.path, history.path + ".unreadable-" + Date.now()];
       recover.running = true;
@@ -100,15 +102,21 @@ Singleton {
         if (closed) return;
         const data = root.snapshot(notification, notificationId);
         root.activeNotifications = [data, ...root.activeNotifications.filter(n => n.id !== notificationId)];
-        if (!notification.transient)
-          root.historyNotifications = [data, ...root.historyNotifications.filter(n => n.id !== notificationId)];
-        expiry.restart();
+        if (!notification.transient) {
+          const updated = [data, ...root.historyNotifications.filter(n => n.id !== notificationId)];
+          root.historyNotifications = updated.slice(0, root.historyLimit);
+          for (const removed of updated.slice(root.historyLimit)) root.remove(removed);
+        }
+        popupTimeout.restart();
       }
       function scheduleRefresh() { Qt.callLater(refresh); }
       Timer {
-        id: expiry
+        id: popupTimeout
         interval: [3000, 8000, 15000][entry.notification.urgency] || 8000
-        onTriggered: entry.notification.expire()
+        onTriggered: {
+          if (entry.notification.transient) root.remove({ id: entry.notificationId });
+          else if (root.transientId === entry.notificationId) root.transientId = "";
+        }
       }
       Connections {
         target: entry.notification
@@ -117,9 +125,8 @@ Singleton {
         function onAppIconChanged() { entry.scheduleRefresh(); }
         function onClosed(reason) {
           entry.closed = true;
-          if (root.transientId === entry.notificationId) root.transientId = "";
-          root.activeNotifications = root.activeNotifications.filter(n => n.id !== entry.notificationId);
           delete root.live[entry.notificationId];
+          root.remove({ id: entry.notificationId });
           entry.destroy();
         }
       }

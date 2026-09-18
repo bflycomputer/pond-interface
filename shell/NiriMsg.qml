@@ -159,30 +159,22 @@ Singleton {
     onTriggered: root._finishMove(false)
   }
 
-  function focusApp(appName, desktopEntry) {
+  function appMatches(appId, appName, desktopEntry) {
     function normalize(value) {
-      return String(value || "").toLowerCase().replace(/[^a-z0-9]+/g, "");
+      return String(value || "").toLowerCase().replace(/\.desktop$/, "").replace(/[^a-z0-9]+/g, "");
     }
+    const wanted = desktopEntry || appName;
+    if (!appId || !wanted) return false;
+    const entry = DesktopEntries.heuristicLookup(appId);
+    const target = DesktopEntries.heuristicLookup(wanted);
+    if (entry && target) return entry.id === target.id;
+    return [appId, entry?.id, entry?.name].some(value => normalize(value) === normalize(wanted));
+  }
 
-    const wanted = [normalize(desktopEntry), normalize(appName)]
-        .filter(value => value.length >= 2);
-    if (wanted.length === 0)
-      return false;
-
-    for (const id in _windows) {
-      const windowData = _windows[id];
-      const appId = normalize(windowData.appId);
-      if (appId === "")
-        continue;
-      for (const candidate of wanted) {
-        if (appId === candidate || appId.includes(candidate)
-            || candidate.includes(appId)) {
-          focusWindow(windowData.id);
-          return true;
-        }
-      }
-    }
-    return false;
+  function focusApp(appName, desktopEntry) {
+    const window = Object.values(_windows).find(w => appMatches(w.appId, appName, desktopEntry));
+    if (window) focusWindow(window.id);
+    return !!window;
   }
 
   Process {
