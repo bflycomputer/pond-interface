@@ -30,7 +30,7 @@ ShaderEffect {
     onStatusChanged: if (status === ShaderEffect.Error) console.error("Daylight shader:", log)
 
     Timer {
-        interval: 1000
+        interval: 30000
         repeat: true
         running: sky.live && sky.visible
         onRunningChanged: if (running) sky.now = new Date()

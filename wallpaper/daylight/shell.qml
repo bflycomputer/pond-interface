@@ -1,10 +1,28 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import QtCore
+import Quickshell.Io
 import Quickshell
 import Quickshell.Wayland
 import Pond.Daylight
 
 ShellRoot {
+    id: root
+    readonly property var wallpaper: {
+        try { return JSON.parse(wallpaperFile.text() || "{}"); }
+        catch (error) { console.warn("Could not read wallpaper settings:", error); return {}; }
+    }
+    IpcHandler {
+        target: "wallpaper"
+        function reload(): void { wallpaperFile.reload(); }
+    }
+    FileView {
+        id: wallpaperFile
+        path: StandardPaths.writableLocation(StandardPaths.ConfigLocation) + "/pond-interface/wallpaper.json"
+        printErrors: false
+        watchChanges: true
+        onFileChanged: reload()
+    }
     Variants {
         model: Quickshell.screens
         PanelWindow {
@@ -19,7 +37,17 @@ ShellRoot {
             WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
             mask: Region {}
 
-            Sky { anchors.fill: parent }
+            Loader {
+                anchors.fill: parent
+                active: root.wallpaper.mode !== "custom"
+                sourceComponent: Sky {}
+            }
+            Image {
+                anchors.fill: parent
+                source: root.wallpaper.mode === "custom" ? root.wallpaper.url || "" : ""
+                fillMode: Image.PreserveAspectCrop
+                asynchronous: true
+            }
         }
     }
 }
