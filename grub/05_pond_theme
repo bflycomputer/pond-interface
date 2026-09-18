@@ -32,6 +32,7 @@ theme_path=$(make_system_path_relative_to_its_root "$theme_dir/theme.txt")
 theme_path=${theme_path%/theme.txt}
 prepare_grub_to_access_device "$(grub-probe --target=device "$theme_dir/theme.txt")"
 cat <<EOT
+insmod png
 set theme=(\$root)$theme_path/theme-$fs.txt
 export theme
 EOT
