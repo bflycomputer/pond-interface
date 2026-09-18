@@ -33,7 +33,7 @@ terminal-border: "0"
   left = 50%-27
   top = 50%-71
   width = 50%+27
-  height = 50%-2
+  height = 50%+62
   item_font = "Onest Regular 21"
   selected_item_font = "Onest Regular 21"
   item_color = "#745888"
@@ -50,15 +50,3 @@ terminal-border: "0"
   scrollbar_left_pad = 0
 }
 
-# Keep this at the root: pond_timer uses screen coordinates.
-+ progress_bar {
-  id = "__timeout__"
-  left = 0
-  top = 0
-  width = 1
-  height = 1
-  text = ""
-  border_color = "#00000000"
-  bg_color = "#00000000"
-  fg_color = "#00000000"
-}

@@ -1,25 +1,37 @@
 #!/bin/sh
+# Pick the Pond layout for this machine's screen. GRUB script cannot read the
+# video mode, so the choice is made here, when the menu is generated: the
+# built-in panel if there is one, otherwise the largest connected display.
 set -e
 . /usr/share/grub/grub-mkconfig_lib
-
 theme_dir=/usr/share/grub/themes/pond
 [ "${GRUB_THEME:-}" = "$theme_dir/theme.txt" ] || exit 0
+
+mode=
+for c in /sys/class/drm/card*-*; do
+  [ -f "$c/status" ] && [ "$(cat "$c/status")" = connected ] || continue
+  m=$(head -n1 "$c/modes" 2>/dev/null || true); m=${m%i}
+  [ -n "$m" ] || continue
+  case $c in
+    *-eDP-*|*-LVDS-*|*-DSI-*) mode=$m; break ;;
+  esac
+  if [ -z "$mode" ] || [ "${m%x*}" -gt "${mode%x*}" ]; then mode=$m; fi
+done
+
+# font size : minimum height : flower width (the flower must fit left of the menu)
+fs=32
+if [ -n "$mode" ]; then
+  w=${mode%x*}; h=${mode#*x}; fs=12
+  for p in 17:576:413 21:720:516 32:1080:774 43:1440:1032 64:2160:1548; do
+    f=${p%%:*}; r=${p#*:}; hmin=${r%:*}; flower=${r#*:}
+    if [ "$h" -ge "$hmin" ] && [ $((w / 2)) -ge "$flower" ]; then fs=$f; fi
+  done
+fi
+
 theme_path=$(make_system_path_relative_to_its_root "$theme_dir/theme.txt")
 theme_path=${theme_path%/theme.txt}
 prepare_grub_to_access_device "$(grub-probe --target=device "$theme_dir/theme.txt")"
-
-cat <<EOF
-set pond_theme_root=(\$root)$theme_path
-export pond_theme_root
-insmod png
-if [ -s \$prefix/\$grub_cpu-\$grub_platform/pond_timer.mod ]; then
-  insmod pond_timer
-fi
-if [ "\$pond_timer_loaded" != 1 ]; then
-  # Keep the static theme readable when optional modules are unavailable.
-  set gfxmode=1024x768,800x600,640x480,auto
-  set gfxterm_font="Unifont Regular 16"
-  terminal_output console
-  terminal_output ${GRUB_TERMINAL_OUTPUT:-gfxterm}
-fi
-EOF
+cat <<EOT
+set theme=(\$root)$theme_path/theme-$fs.txt
+export theme
+EOT

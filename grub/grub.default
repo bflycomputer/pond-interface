@@ -1,3 +1,4 @@
+GRUB_DISTRIBUTOR="Pond"
 GRUB_TIMEOUT=3
 GRUB_CMDLINE_LINUX_DEFAULT="quiet splash loglevel=0 systemd.show_status=false udev.log_level=err rd.udev.log_level=err vt.global_cursor_default=0"
 GRUB_GFXPAYLOAD_LINUX=keep
