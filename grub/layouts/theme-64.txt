@@ -8,13 +8,6 @@ terminal-height: "100%"
 terminal-border: "0"
 
 + image {
-  left = 0
-  top = 100%-1690
-  width = 1548
-  height = 1690
-  file = "assets/64/flower.png"
-}
-+ image {
   left = 50%-78
   top = 50%-554
   width = 174
@@ -49,4 +42,10 @@ terminal-border: "0"
   scrollbar = false
   scrollbar_left_pad = 0
 }
-
++ image {
+  left = 0
+  top = 100%-1690
+  width = 1548
+  height = 1690
+  file = "assets/64/flower.png"
+}
