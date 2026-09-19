@@ -115,6 +115,10 @@ Singleton {
   function cachedDevice(output) {
     return display.output === output && display.brightnessDevice ? JSON.stringify(display.brightnessDevice) : "";
   }
+  function receiveBrightness(output, value) {
+    if (output === display.output && !draggingBrightness && pendingBrightness < 0 && !brightnessWriter.running)
+      brightness = value;
+  }
   function toggleSection(section) { expandedSection = expandedSection === section ? "" : section; }
   function apply(args) {
     if (action.running) return;

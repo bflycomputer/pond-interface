@@ -95,6 +95,12 @@ def set_brightness(output, value, cached=""):
     return {"brightness": value}
 
 
+def step_brightness(output, delta):
+    device = brightness_device(output)
+    value = device["current"] / device["max"] + float(delta)
+    return set_brightness(output, value, json.dumps(device))
+
+
 def scaled_config(text, output, scale):
     """Replace only the target output's direct scale node, preserving other KDL."""
     # Token positions preserve comments/formatting. Strings and comments cannot
@@ -161,9 +167,6 @@ def wallpaper(mode, path=""):
     elif mode != "dynamic":
         raise ValueError("Unknown wallpaper mode")
     atomic_write(CONFIG / "pond-interface/wallpaper.json", json.dumps(state) + "\n")
-    renderer = Path(__file__).resolve().parents[3] / "wallpaper/daylight"
-    run("qs", "-d", "-p", str(renderer))
-    run("qs", "-p", str(renderer), "ipc", "call", "wallpaper", "reload")
     return state
 
 
@@ -189,7 +192,7 @@ def theme(name):
 def main():
     try:
         action, *args = sys.argv[1:]
-        commands = {"status": status, "brightness": set_brightness, "scale": set_scale,
+        commands = {"status": status, "brightness": set_brightness, "brightness-step": step_brightness, "scale": set_scale,
                     "wallpaper": wallpaper, "pick-wallpaper": pick_wallpaper, "theme": theme}
         print(json.dumps(commands[action](*args)))
     except Exception as error:

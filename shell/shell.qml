@@ -10,6 +10,8 @@ ShellRoot {
   id: root
   property bool expanded: true
 
+  Shortcuts {}
+
   IpcHandler {
     target: "sidebar"
     function toggle() { root.expanded = !root.expanded; }
@@ -19,6 +21,7 @@ ShellRoot {
     model: Quickshell.screens
     delegate: Scope {
       required property var modelData
+      Wallpaper { screen: modelData }
       Sidebar {
         id: sidebar
         screen: modelData

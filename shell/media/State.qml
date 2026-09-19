@@ -51,4 +51,17 @@ Singleton {
   function previous() {
     if (canPrevious) currentPlayer.previous();
   }
+
+  function shortcut(action) {
+    // Hardware keys must also work for players without enough metadata to
+    // show a sidebar card (for example, a video with only a title).
+    const players = Mpris.players.values;
+    const player = players.find(p => p.isPlaying) ||
+        (players.includes(currentPlayer) ? currentPlayer : players[0]);
+    if (!player) return;
+    if (action === "playPause" && (player.isPlaying ? player.canPause : player.canPlay))
+      player.togglePlaying();
+    else if (action === "next" && player.canGoNext) player.next();
+    else if (action === "previous" && player.canGoPrevious) player.previous();
+  }
 }

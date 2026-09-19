@@ -64,6 +64,20 @@ Singleton {
     source.audio.volume = clampVolume(value);
   }
 
+  function adjustOutputVolume(delta) {
+    if (!hasOutput) return;
+    setOutputVolume(outputVolume + delta);
+    keyboardOutputVolumeChanged(outputVolume);
+  }
+
+  function toggleOutputMute() {
+    if (hasOutput) sink.audio.muted = !sink.audio.muted;
+  }
+
+  function toggleInputMute() {
+    if (hasInput) source.audio.muted = !source.audio.muted;
+  }
+
   function setOutputDevice(node) {
     if (!node || !Pipewire.ready)
       return;
