@@ -12,8 +12,8 @@ Scope {
 
   IpcHandler {
     target: "volume"
-    function increase(): void { Audio.State.adjustOutputVolume(0.05); }
-    function decrease(): void { Audio.State.adjustOutputVolume(-0.05); }
+    function increase(): void { Audio.State.adjustOutputVolume(0.02); }
+    function decrease(): void { Audio.State.adjustOutputVolume(-0.02); }
     function muteOutput(): void { Audio.State.toggleOutputMute(); }
     function muteInput(): void { Audio.State.toggleInputMute(); }
   }
