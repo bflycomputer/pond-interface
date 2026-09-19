@@ -1,3 +1,4 @@
+# Keep fixed-size components within a 640x480 framebuffer.
 title-text: ""
 desktop-color: "#1c0919"
 terminal-font: "Unifont Regular 16"
@@ -8,44 +9,43 @@ terminal-height: "100%"
 terminal-border: "0"
 
 + image {
-  left = 50%-39
-  top = 50%-277
-  width = 87
-  height = 13
-  file = "assets/32/label.png"
+  left = 50%-26
+  top = 50%-185
+  width = 58
+  height = 9
+  file = "assets/21/label.png"
 }
 + image {
-  left = 50%-39
-  top = 50%-240
-  width = 232
-  height = 71
-  file = "assets/32/heading.png"
+  left = 50%-26
+  top = 50%-160
+  width = 155
+  height = 47
+  file = "assets/21/heading.png"
 }
 + boot_menu {
-  id = "pond_menu"
-  left = 50%-40
-  top = 50%-107
-  width = 50%+40
-  height = 50%+93
-  item_font = "Onest Regular 32"
-  selected_item_font = "Onest Regular 32"
+  left = 50%-27
+  top = 50%-71
+  width = 50%+27
+  height = 50%+62
+  item_font = "Onest Regular 21"
+  selected_item_font = "Onest Regular 21"
   item_color = "#745888"
   selected_item_color = "#cbe25b"
-  item_height = 40
+  item_height = 27
   item_padding = 0
-  item_spacing = 30
+  item_spacing = 20
   icon_width = 0
   icon_height = 0
-  item_icon_space = 20
-  item_pixmap_style = "assets/32/item_*.png"
-  selected_item_pixmap_style = "assets/32/selected_*.png"
+  item_icon_space = 13
+  item_pixmap_style = "assets/21/item_*.png"
+  selected_item_pixmap_style = "assets/21/selected_*.png"
   scrollbar = false
   scrollbar_left_pad = 0
 }
 + image {
   left = 0
-  top = 100%-845
-  width = 774
-  height = 845
-  file = "assets/32/flower.png"
+  top = 100%-282
+  width = 258
+  height = 282
+  file = "assets/12/flower.png"
 }
