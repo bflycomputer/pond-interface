@@ -1,0 +1,12 @@
+[Plymouth Theme]
+Name=Pond
+Description=Pond boot animation
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/pond/assets
+ScriptFile=/usr/share/plymouth/themes/pond/pond.script
+Font=Sans 14
+MonospaceFont=Monospace 14
+ConsoleLogTextColor=0xcba6f7ff
+ConsoleLogBackgroundColor=0x1c0919ff

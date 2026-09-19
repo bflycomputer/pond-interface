@@ -1,0 +1,419 @@
+# Scene coordinates use a 1920x1080 canvas; times are milliseconds.
+settled_at = 1620;
+palette_start = 3620;
+palette_period = 2000;
+raw = []; asset = []; layers = []; screens = []; image_cache = [];
+layer_count = 0;
+
+fun add_asset(key, file, opacity, dx, dy, width, height) {
+  global.raw[key] = Image(file);
+  global.asset[key].opacity = opacity;
+  global.asset[key].dx = dx;
+  global.asset[key].dy = dy;
+  global.asset[key].width = width;
+  global.asset[key].height = height;
+}
+
+add_asset("pond-logo", "pond-logo.png", 1, 0, 0, 0, 0);
+add_asset("loader-1", "loader-1.png", 1, 0, 0, 0, 0);
+add_asset("loader-2", "loader-2.png", 1, 0, 0, 0, 0);
+add_asset("big-loader-1", "big-loader-1.png", 1, -0.5, -0.5, 321, 321);
+add_asset("big-loader-2", "big-loader-2.png", 1, -67, -67, 454, 454);
+add_asset("initializing", "initializing.png", 1, 0, 0, 0, 0);
+add_asset("plus", "plus.png", 1, 0, 0, 0, 0);
+add_asset("slash", "slash.png", 1, 0, 0, 0, 0);
+add_asset("devices", "devices.png", 1, 0, 0, 0, 0);
+add_asset("services", "services.png", 1, 0, 0, 0, 0);
+add_asset("drivers", "drivers.png", 1, 0, 0, 0, 0);
+add_asset("display", "display.png", 1, 0, 0, 0, 0);
+add_asset("butterfly-1", "butterfly-1.png", 0.4, 0, 0, 280, 350);
+add_asset("butterfly-2", "butterfly-2.png", 0.5, 0, -10, 280, 350);
+add_asset("lilypad-1", "lilypad.png", 0.5, 0, 0, 0, 0);
+asset["lilypad-1"].image_width = 1058;
+asset["lilypad-1"].image_height = 1015;
+asset["lilypad-1"].rotation = 0.0;
+asset["lilypad-1"].crop_x = 0;
+asset["lilypad-1"].crop_y = 306;
+asset["lilypad-1"].crop_width = 1058;
+asset["lilypad-1"].crop_height = 709;
+# Both lilypads share one decoded source image.
+raw["lilypad-2"] = raw["lilypad-1"];
+asset["lilypad-2"].opacity = 0.5;
+asset["lilypad-2"].dx = 0; asset["lilypad-2"].dy = 0;
+asset["lilypad-2"].image_width = 700;
+asset["lilypad-2"].image_height = 672;
+asset["lilypad-2"].rotation = -2.356194490192345;
+asset["lilypad-2"].crop_x = 0;
+asset["lilypad-2"].crop_y = 0;
+asset["lilypad-2"].crop_width = 700;
+asset["lilypad-2"].crop_height = 400;
+add_asset("initializing-2", "initializing-2.png", 1, 0, 0, 0, 0);
+add_asset("initializing-3", "initializing-3.png", 1, 0, 0, 0, 0);
+add_asset("slash-2", "slash-2.png", 1, 0, 0, 0, 0);
+add_asset("slash-3", "slash-3.png", 1, 0, 0, 0, 0);
+add_asset("display-2", "display-2.png", 1, 0, 0, 0, 0);
+add_asset("display-3", "display-3.png", 1, 0, 0, 0, 0);
+add_asset("drivers-2", "drivers-2.png", 1, 0, 0, 0, 0);
+add_asset("drivers-3", "drivers-3.png", 1, 0, 0, 0, 0);
+add_asset("services-2", "services-2.png", 1, 0, 0, 0, 0);
+add_asset("services-3", "services-3.png", 1, 0, 0, 0, 0);
+add_asset("devices-2", "devices-2.png", 1, 0, 0, 0, 0);
+add_asset("devices-3", "devices-3.png", 1, 0, 0, 0, 0);
+add_asset("overlay-600-976", "overlay-600-976.png", 1, 0, 0, 0, 0);
+add_asset("overlay-1688-0", "overlay-1688-0.png", 1, 0, 0, 0, 0);
+add_asset("solid-cbe25b", "solid-cbe25b.png", 1, 0, 0, 0, 0);
+add_asset("solid-ff9f67", "solid-ff9f67.png", 1, 0, 0, 0, 0);
+add_asset("solid-ffe51d", "solid-ffe51d.png", 1, 0, 0, 0, 0);
+add_asset("solid-fa6d80", "solid-fa6d80.png", 1, 0, 0, 0, 0);
+add_asset("solid-cba6f7", "solid-cba6f7.png", 1, 0, 0, 0, 0);
+add_asset("solid-background", "solid-background.png", 1, 0, 0, 0, 0);
+
+fun add_layer(id, frames, x, y, width, height, z, start, end, period, palette_offset, anchor) {
+  local.l = [];
+  l.id = id; l.frames = frames;
+  l.x = x; l.y = y; l.width = width; l.height = height; l.z = z;
+  l.start = start; l.end = end; l.period = period;
+  l.palette_offset = palette_offset; l.anchor = anchor;
+  l.count = 0;
+  while (frames[l.count]) l.count++;
+  global.layers[layer_count++] = l;
+}
+
+# Frames, geometry, timing, and edge anchoring for each scene element.
+# An end time or palette offset of -1 disables that boundary.
+
+add_layer("R1", ["solid-cbe25b"],
+          0, 800, 1640, 280, 2, 0, 200, 0, -1, "bottom");
+add_layer("R2", ["solid-ff9f67"],
+          880, 200, 1040, 80, 2, 200, 400, 0, -1, "center");
+add_layer("R3", ["solid-ffe51d"],
+          200, 0, 280, 80, 2, 400, 600, 0, -1, "top");
+add_layer("R4", ["solid-fa6d80"],
+          1880, 81, 40, 40, 2, 600, 800, 0, -1, "center");
+add_layer("R5", ["solid-cba6f7"],
+          0, 280, 80, 41, 2, 800, 1000, 0, -1, "center");
+add_layer("big-loader", ["big-loader-1", "big-loader-2"],
+          200, 360, 320, 320, 5, 0, 1500, 500, -1, "center");
+add_layer("pond-logo", ["pond-logo"],
+          200, 360, 320, 320, 5, 1500, -1, 0, -1, "center");
+add_layer("butterfly", ["butterfly-1", "butterfly-2"],
+          50, 101, 280, 350, 8, 1540, -1, 500, -1, "center");
+add_layer("lilypad-1", ["lilypad-1"],
+          1240, 0, 529, 354.5, 7, 1580, -1, 0, -1, "top");
+add_layer("lilypad-2", ["lilypad-2"],
+          500, 880, 350, 200, 7, 1620, -1, 0, -1, "bottom");
+add_layer("loader", ["loader-1", "loader-2"],
+          960, 360, 120, 120, 5, 1000, -1, 500, -1, "center");
+add_layer("initializing", ["initializing", "initializing-2", "initializing-3"],
+          960, 560, 360, 120, 5, 1200, -1, 0, 0, "center");
+add_layer("plus-880-400", ["plus"],
+          880, 400, 40, 40, 5, 760, -1, 0, -1, "center");
+add_layer("plus-880-360", ["plus"],
+          880, 360, 40, 40, 5, 720, -1, 0, -1, "center");
+add_layer("plus-880-440", ["plus"],
+          880, 440, 40, 40, 5, 800, -1, 0, -1, "center");
+add_layer("plus-880-560", ["plus"],
+          880, 560, 40, 40, 5, 920, -1, 0, -1, "center");
+add_layer("plus-1400-560", ["plus"],
+          1400, 560, 40, 40, 5, 600, -1, 0, -1, "center");
+add_layer("plus-1600-560", ["plus"],
+          1600, 560, 40, 40, 5, 800, -1, 0, -1, "center");
+add_layer("plus-1680-560", ["plus"],
+          1680, 560, 40, 40, 5, 800, -1, 0, -1, "center");
+add_layer("slash-1800-640", ["slash", "slash-2", "slash-3"],
+          1800, 640, 40, 40, 5, 1240, -1, 0, 420, "center");
+add_layer("display", ["display", "display-2", "display-3"],
+          1680, 640, 80, 40, 5, 1280, -1, 0, 360, "center");
+add_layer("drivers", ["drivers", "drivers-2", "drivers-3"],
+          1680, 600, 160, 40, 5, 1200, -1, 0, 80, "center");
+add_layer("slash-1600-640", ["slash", "slash-2", "slash-3"],
+          1600, 640, 40, 40, 5, 1040, -1, 0, 560, "center");
+add_layer("slash-1600-600", ["slash", "slash-2", "slash-3"],
+          1600, 600, 40, 40, 5, 1040, -1, 0, 280, "center");
+add_layer("services", ["services", "services-2", "services-3"],
+          1480, 640, 80, 40, 5, 1080, -1, 0, 500, "center");
+add_layer("slash-1400-640", ["slash", "slash-2", "slash-3"],
+          1400, 640, 40, 40, 5, 1040, -1, 0, 140, "center");
+add_layer("devices", ["devices", "devices-2", "devices-3"],
+          1400, 600, 160, 40, 5, 1000, -1, 0, 220, "center");
+add_layer("plus-880-600", ["plus"],
+          880, 600, 40, 40, 5, 960, -1, 0, -1, "center");
+add_layer("plus-880-640", ["plus"],
+          880, 640, 40, 40, 5, 1000, -1, 0, -1, "center");
+add_layer("overlay-600-976", ["overlay-600-976"],
+          600, 976, 104, 104, 12, 1620, -1, 0, -1, "bottom");
+add_layer("overlay-1688-0", ["overlay-1688-0"],
+          1688, 0, 104, 104, 12, 1580, -1, 0, -1, "top");
+add_layer("cover-10", ["solid-ff9f67"],
+          1680, 600, 160, 80, 20, 1000, 1200, 0, -1, "center");
+add_layer("cover-9", ["solid-cbe25b"],
+          1680, 560, 40, 40, 20, 600, 800, 0, -1, "center");
+add_layer("cover-8", ["solid-ff9f67"],
+          1600, 600, 40, 80, 20, 800, 1000, 0, -1, "center");
+add_layer("cover-7", ["solid-cbe25b"],
+          1600, 560, 40, 40, 20, 600, 800, 0, -1, "center");
+add_layer("cover-6", ["solid-ff9f67"],
+          1400, 600, 160, 80, 20, 800, 1000, 0, -1, "center");
+add_layer("cover-5", ["solid-cbe25b"],
+          1400, 560, 40, 40, 20, 400, 600, 0, -1, "center");
+add_layer("cover-4", ["solid-cbe25b"],
+          960, 560, 360, 120, 20, 1000, 1200, 0, -1, "center");
+add_layer("cover-3", ["solid-cba6f7"],
+          960, 360, 120, 120, 20, 800, 1000, 0, -1, "center");
+add_layer("cover-2", ["solid-ffe51d"],
+          880, 560, 40, 120, 20, 600, 800, 0, -1, "center");
+add_layer("cover-1", ["solid-fa6d80"],
+          880, 360, 40, 120, 20, 400, 600, 0, -1, "center");
+
+# A 20ms tick represents every entrance event; sprites redraw only dirty regions.
+Window.SetBackgroundTopColor(0.109803922, 0.035294118, 0.098039216);
+Window.SetBackgroundBottomColor(0.109803922, 0.035294118, 0.098039216);
+Plymouth.SetRefreshRate(50);
+clock_ms = 0;
+next_event = 0;
+screen_count = 0;
+entrance_pending = 1;
+dialog_active = 0;
+dialog_prompt = "";
+dialog_entry = "";
+message = "";
+quitting = 0;
+mode = Plymouth.GetMode();
+
+fun scaled_image(key, width, height) {
+  local.w = Math.Max(1, Math.Int(width + 0.5));
+  local.h = Math.Max(1, Math.Int(height + 0.5));
+  local.cache_key = key + ":" + w + ":" + h;
+  if (!image_cache[cache_key]) {
+    local.a = asset[key];
+    if (a.crop_width) {
+      local.sx = w / a.crop_width; local.sy = h / a.crop_height;
+      local.im = raw[key].Scale(Math.Max(1,Math.Int(a.image_width*sx+0.5)),Math.Max(1,Math.Int(a.image_height*sy+0.5)));
+      if (a.rotation) im = im.Rotate(a.rotation);
+      image_cache[cache_key] = im.Crop(Math.Int(a.crop_x*sx+0.5),Math.Int(a.crop_y*sy+0.5),w,h);
+    } else if (raw[key].GetWidth() == 1 && raw[key].GetHeight() == 1)
+      image_cache[cache_key] = raw[key].Tile(w,h);
+    else image_cache[cache_key] = raw[key].Scale(w,h);
+  }
+  return image_cache[cache_key];
+}
+
+fun frame_at(l,t) {
+  if (l.palette_offset >= 0) {
+    local.start = palette_start + l.palette_offset;
+    if (t < start) return 0;
+    return (Math.Int((t-start)/palette_period)+1) % l.count;
+  }
+  if (l.period > 0) return Math.Int(Math.Max(0,t-l.start)/l.period) % l.count;
+  return 0;
+}
+
+fun visible_at(l,t) {
+  return t >= l.start && (l.end < 0 || t < l.end);
+}
+
+fun find_next_event(t) {
+  local.next = t + 2000;
+  for (local.i=0; i<layer_count; i++) {
+    local.l = layers[i];
+    if (l.start > t) next = Math.Min(next,l.start);
+    if (l.end > t) next = Math.Min(next,l.end);
+    if (l.period > 0 && visible_at(l,t)) {
+      local.boundary = l.start + (Math.Int((t-l.start)/l.period)+1)*l.period;
+      if (l.end < 0 || boundary < l.end) next = Math.Min(next,boundary);
+    }
+    if (l.palette_offset >= 0) {
+      local.start = palette_start + l.palette_offset;
+      local.boundary = start;
+      if (t >= start) boundary = start + (Math.Int((t-start)/palette_period)+1)*palette_period;
+      next = Math.Min(next,boundary);
+    }
+  }
+  return next;
+}
+
+fun prepare_screen(index, origin, width, height) {
+  global.entrance_pending=1;
+  local.s = [];
+  s.width=width; s.height=height; s.origin=origin;
+  s.scale=Math.Min(width/1920,height/1080);
+  s.x=origin+(width-1920*s.scale)/2;
+  s.y=(height-1080*s.scale)/2;
+  for (local.i=0; i<layer_count; i++) {
+    local.l=layers[i];
+    local.n=[];
+    n.sprite=Sprite(); n.sprite.SetOpacity(0); n.sprite.SetZ(l.z);
+    n.last_frame=-1; n.last_visible=-1;
+    for (local.f=0; f<l.count; f++) {
+      local.key=l.frames[f];
+      local.a=asset[key];
+      local.w=l.width; local.h=l.height;
+      if (a.width) { w=a.width; h=a.height; }
+      n.images[f]=scaled_image(key,w*s.scale,h*s.scale);
+      n.x[f]=Math.Int(s.x+(l.x+a.dx)*s.scale+0.5);
+      n.y[f]=Math.Int(s.y+(l.y+a.dy)*s.scale+0.5);
+      if (l.anchor == "top") n.y[f]=0;
+      if (l.anchor == "bottom") n.y[f]=height-n.images[f].GetHeight();
+    }
+    s.nodes[i]=n;
+  }
+  s.shield=Sprite();
+  s.shield_ready=0;
+  s.shield.SetPosition(origin,0,9000); s.shield.SetOpacity(0);
+  s.prompt=Sprite(); s.prompt.SetZ(9001); s.prompt.SetOpacity(0);
+  s.entry=Sprite(); s.entry.SetZ(9001); s.entry.SetOpacity(0);
+  s.message=Sprite(); s.message.SetZ(9002); s.message.SetOpacity(0);
+  global.screens[index]=s;
+}
+
+# Plymouth normally overlaps monitor coordinate spaces. Separate them so each
+# monitor gets its own aspect-preserving scene, with no cross-monitor clipping.
+fun check_layout() {
+  local.changed=0; local.count=0; local.origin=0;
+  while (Window.GetWidth(count)) {
+    local.w=Window.GetWidth(count); local.h=Window.GetHeight(count);
+    local.s=screens[count];
+    if (!s || s.width != w || s.height != h || s.origin != origin) {
+      if (s) {
+        for(local.i=0;i<layer_count;i++) s.nodes[i].sprite.SetOpacity(0);
+        s.shield.SetOpacity(0); s.prompt.SetOpacity(0); s.entry.SetOpacity(0); s.message.SetOpacity(0);
+      }
+      prepare_screen(count,origin,w,h); changed=1;
+    }
+    if (Window.GetX(count) != origin || Window.GetY(count) != 0) changed=1;
+    Window.SetX(count,origin); Window.SetY(count,0);
+    origin += w+1024; count++;
+  }
+  for(local.i=count;i<screen_count;i++) {
+    local.s=screens[i];
+    for(local.j=0;j<layer_count;j++) s.nodes[j].sprite.SetOpacity(0);
+    s.shield.SetOpacity(0); s.prompt.SetOpacity(0); s.entry.SetOpacity(0); s.message.SetOpacity(0);
+    global.screens[i]=NULL; changed=1;
+    global.entrance_pending=1;
+  }
+  global.screen_count=count;
+  return changed;
+}
+
+fun draw_scene(t) {
+  for(local.i=0;i<layer_count;i++) {
+    local.l=layers[i]; local.f=frame_at(l,t); local.v=visible_at(l,t);
+    if (mode != "boot" && l.id == "initializing") v=0;
+    for(local.d=0;d<screen_count;d++) {
+      local.n=screens[d].nodes[i];
+      if (v && (n.last_frame != f || !n.last_visible)) {
+        n.sprite.SetImage(n.images[f]); n.sprite.SetX(n.x[f]); n.sprite.SetY(n.y[f]);
+      }
+      if (v != n.last_visible || (v && n.last_frame != f)) {
+        local.opacity=0;
+        if(v) opacity=asset[l.frames[f]].opacity;
+        n.sprite.SetOpacity(opacity);
+      }
+      n.last_frame=f; n.last_visible=v;
+    }
+  }
+}
+
+fun fit_text(text, width, height, red, green, blue, font) {
+  local.im=Image.Text(text,red,green,blue,1,font,"center");
+  local.scale=Math.Min(1,Math.Min(width/Math.Max(1,im.GetWidth()),height/Math.Max(1,im.GetHeight())));
+  if(scale<1) im=im.Scale(Math.Max(1,Math.Int(im.GetWidth()*scale)),Math.Max(1,Math.Int(im.GetHeight()*scale)));
+  return im;
+}
+
+fun draw_dialog() {
+  for(local.d=0;d<screen_count;d++) {
+    local.s=screens[d];
+    s.shield.SetOpacity(dialog_active); s.prompt.SetOpacity(dialog_active); s.entry.SetOpacity(dialog_active);
+    if(dialog_active) {
+      if(!s.shield_ready) {
+        s.shield.SetImage(scaled_image("solid-background",s.width,s.height));
+        s.shield_ready=1;
+      }
+      local.im=fit_text(dialog_prompt,s.width*0.88,s.height*0.22,0.796,0.651,0.969,"DejaVu Sans " + Math.Max(20,Math.Int(20*s.scale)));
+      s.prompt.SetImage(im); s.prompt.SetX(s.origin+(s.width-im.GetWidth())/2); s.prompt.SetY(s.height*0.40-im.GetHeight()/2);
+      local.im=fit_text(dialog_entry,s.width*0.8,s.height*0.15,0.808,0.941,0.345,"DejaVu Sans Mono " + Math.Max(20,Math.Int(20*s.scale)));
+      s.entry.SetImage(im); s.entry.SetX(s.origin+(s.width-im.GetWidth())/2); s.entry.SetY(s.height*0.55-im.GetHeight()/2);
+    }
+    local.text=message;
+    # Routine boot messages stay in the logs; keep the artwork unobstructed.
+    if (mode == "boot" && !dialog_active) text="";
+    if (mode != "boot" && text == "" && !dialog_active) {
+      text="Shutting down";
+      if(mode=="reboot") text="Restarting";
+      if(mode=="updates" || mode=="system-upgrade") text="Installing updates";
+      if(mode=="firmware-upgrade") text="Updating firmware";
+      if(mode=="system-reset") text="Resetting system";
+    }
+    s.message.SetOpacity(text != "");
+    if(text != "") {
+      local.im=fit_text(text,s.width*0.9,s.height*0.12,0.796,0.651,0.969,"DejaVu Sans " + Math.Max(16,Math.Int(16*s.scale)));
+      s.message.SetImage(im); s.message.SetX(s.origin+(s.width-im.GetWidth())/2); s.message.SetY(s.height*0.78-im.GetHeight()/2);
+    }
+  }
+}
+
+fun display_normal() {
+  global.dialog_active=0; global.dialog_prompt=""; global.dialog_entry="";
+  draw_dialog();
+}
+fun display_password(prompt,bullets) {
+  global.dialog_active=1; global.dialog_prompt=prompt;
+  if(prompt=="") global.dialog_prompt="Unlock disk";
+  global.dialog_entry="";
+  for(local.i=0;i<Math.Min(64,bullets);i++) global.dialog_entry += "•";
+  draw_dialog();
+}
+fun display_question(prompt,entry) {
+  global.dialog_active=1; global.dialog_prompt=prompt; global.dialog_entry=entry; draw_dialog();
+}
+fun display_prompt(prompt,entry,is_secret) {
+  if(is_secret) display_password(prompt,entry.Length());
+  else display_question(prompt,entry);
+}
+fun display_message(text) { global.message=text; draw_dialog(); }
+fun hide_message(text) { if(message==text) { global.message=""; draw_dialog(); } }
+fun system_update(progress) { global.message="Installing updates: " + progress + "%"; draw_dialog(); }
+fun quit() {
+  global.quitting=1;
+  # No end animation or delay: immediately leave a complete frame for handoff.
+  draw_scene(Math.Max(clock_ms,settled_at));
+}
+
+# A DRM handover may replace a display with another of the same size between
+# refreshes. Latch the native notification rather than relying on dimensions.
+fun display_hotplug() { global.entrance_pending=1; }
+
+fun refresh() {
+  if(quitting) return;
+  local.changed=check_layout();
+  if(!screen_count) {
+    # Never consume the entrance while there is no display to draw it on.
+    if(mode == "boot") { global.clock_ms=0; global.next_event=0; }
+    global.entrance_pending=1;
+    return;
+  }
+  if(entrance_pending) {
+    if(mode == "boot") { global.clock_ms=0; global.next_event=0; }
+    global.entrance_pending=0;
+    changed=1;
+  }
+  if (mode != "boot" && clock_ms < settled_at) global.clock_ms=settled_at;
+  if(changed || clock_ms >= next_event) {
+    draw_scene(clock_ms);
+    global.next_event=find_next_event(clock_ms);
+  }
+  if(changed) draw_dialog();
+  global.clock_ms += 20;
+}
+
+Plymouth.SetRefreshFunction(refresh);
+Plymouth.SetDisplayHotplugFunction(display_hotplug);
+Plymouth.SetDisplayNormalFunction(display_normal);
+Plymouth.SetDisplayPasswordFunction(display_password);
+Plymouth.SetDisplayQuestionFunction(display_question);
+Plymouth.SetDisplayPromptFunction(display_prompt);
+Plymouth.SetDisplayMessageFunction(display_message);
+Plymouth.SetHideMessageFunction(hide_message);
+Plymouth.SetSystemUpdateFunction(system_update);
+Plymouth.SetQuitFunction(quit);
