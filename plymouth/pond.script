@@ -4,6 +4,7 @@ palette_start = 3620;
 palette_period = 2000;
 raw = []; asset = []; layers = []; screens = []; image_cache = [];
 layer_count = 0;
+mode = Plymouth.GetMode();
 
 fun add_asset(key, file, opacity, dx, dy, width, height) {
   global.raw[key] = Image(file);
@@ -13,6 +14,79 @@ fun add_asset(key, file, opacity, dx, dy, width, height) {
   global.asset[key].width = width;
   global.asset[key].height = height;
 }
+
+fun add_layer(id, frames, x, y, width, height, z, start, end, period, palette_offset, anchor) {
+  local.l = [];
+  l.id = id; l.frames = frames;
+  l.x = x; l.y = y; l.width = width; l.height = height; l.z = z;
+  l.start = start; l.end = end; l.period = period;
+  l.palette_offset = palette_offset; l.anchor = anchor;
+  l.count = 0;
+  while (frames[l.count]) l.count++;
+  global.layers[layer_count++] = l;
+}
+
+add_asset("solid-background", "solid-background.png", 1, 0, 0, 0, 0);
+
+# Shutdown V2 from taha-prototypes/pond-plymouth-prototype/shutdown-v2/scene.json.
+# Decode only the selected scene's artwork; the prompt background is shared.
+if (mode == "shutdown") {
+  shutdown_cycle = 2160;
+  shutdown_starts = [0, 160, 320, 480, 640, 800, 960, 1120,
+                     1280, 1400, 1500, 1600, 1720, 1840];
+  shutdown_phase_count = 14;
+  shutdown_assets = ["flower-off", "flower-on", "shutting-off", "shutting-on",
+                     "shutting-edge", "down-off", "down-on", "down-edge",
+                     "circle-off", "circle-on", "icon-1", "icon-2", "icon-3",
+                     "icon-4", "icon-5", "icon-6"];
+  for (i=0; shutdown_assets[i]; i++) {
+    key=shutdown_assets[i];
+    add_asset(key, "shutdown-" + key + ".png", 1, 0, 0, 0, 0);
+  }
+
+  # Paired flowers light from the outer edges toward the central text.
+  for (side=0; side<2; side++) {
+    for (row=0; row<8; row++) {
+      frames=[];
+      for (phase=0; phase<shutdown_phase_count; phase++) frames[phase]="flower-off";
+      frames[row]="flower-on";
+      y=40+row*40; id="top-";
+      if (side==1) { y=1010-row*40; id="bottom-"; }
+      for (column=0; column<2; column++)
+        add_layer(id+row+"-"+column, frames, 924+column*42, y, 30, 30,
+                  1, 0, -1, 0, -1, "center");
+    }
+  }
+
+  # The 500ms orientation clock runs continuously across highlight cycles.
+  frames=[];
+  for (phase=0; phase<shutdown_phase_count; phase++) {
+    upright="icon-1"; rotated="icon-2";
+    if (phase>=9 && phase<=11) { upright="icon-5"; rotated="icon-3"; }
+    if (phase==12) { upright="icon-6"; rotated="icon-4"; }
+    frames[phase*2]=upright; frames[phase*2+1]=rotated;
+  }
+  add_layer("shutdown-loader", frames, 651.5, 479.5, 121, 121,
+            2, 0, -1, 0, -1, "center");
+  layers[layer_count-1].motion_period=500;
+  layers[layer_count-1].motion_count=2;
+  add_layer("down", ["down-off", "down-off", "down-off", "down-off",
+                    "down-off", "down-off", "down-off", "down-off",
+                    "down-off", "down-on", "down-on", "down-on", "down-edge", "down-off"],
+            1066.5, 479.5, 202, 121, 2, 0, -1, 0, -1, "center");
+  add_layer("shutting", ["shutting-off", "shutting-off", "shutting-off", "shutting-off",
+                        "shutting-off", "shutting-off", "shutting-off", "shutting-off",
+                        "shutting-on", "shutting-on", "shutting-on", "shutting-edge",
+                        "shutting-edge", "shutting-off"],
+            771.5, 479.5, 296, 121, 3, 0, -1, 0, -1, "center");
+  frames=[];
+  for (phase=0; phase<shutdown_phase_count; phase++) frames[phase]="circle-off";
+  frames[13]="circle-on";
+  add_layer("corner-tl", frames, 39.5, 39.5, 41, 41, 1, 0, -1, 0, -1, "center");
+  add_layer("corner-tr", frames, 1839.5, 39.5, 41, 41, 1, 0, -1, 0, -1, "center");
+  add_layer("corner-bl", frames, 39.5, 999.5, 41, 41, 1, 0, -1, 0, -1, "center");
+  add_layer("corner-br", frames, 1839.5, 999.5, 41, 41, 1, 0, -1, 0, -1, "center");
+} else {
 
 add_asset("pond-logo", "pond-logo.png", 1, 0, 0, 0, 0);
 add_asset("loader-1", "loader-1.png", 1, 0, 0, 0, 0);
@@ -66,19 +140,6 @@ add_asset("solid-ff9f67", "solid-ff9f67.png", 1, 0, 0, 0, 0);
 add_asset("solid-ffe51d", "solid-ffe51d.png", 1, 0, 0, 0, 0);
 add_asset("solid-fa6d80", "solid-fa6d80.png", 1, 0, 0, 0, 0);
 add_asset("solid-cba6f7", "solid-cba6f7.png", 1, 0, 0, 0, 0);
-add_asset("solid-background", "solid-background.png", 1, 0, 0, 0, 0);
-
-fun add_layer(id, frames, x, y, width, height, z, start, end, period, palette_offset, anchor) {
-  local.l = [];
-  l.id = id; l.frames = frames;
-  l.x = x; l.y = y; l.width = width; l.height = height; l.z = z;
-  l.start = start; l.end = end; l.period = period;
-  l.palette_offset = palette_offset; l.anchor = anchor;
-  l.count = 0;
-  while (frames[l.count]) l.count++;
-  global.layers[layer_count++] = l;
-}
-
 # Frames, geometry, timing, and edge anchoring for each scene element.
 # An end time or palette offset of -1 disables that boundary.
 
@@ -164,6 +225,7 @@ add_layer("cover-2", ["solid-ffe51d"],
           880, 560, 40, 120, 20, 600, 800, 0, -1, "center");
 add_layer("cover-1", ["solid-fa6d80"],
           880, 360, 40, 120, 20, 400, 600, 0, -1, "center");
+}
 
 # A 20ms tick represents every entrance event; sprites redraw only dirty regions.
 Window.SetBackgroundTopColor(0.109803922, 0.035294118, 0.098039216);
@@ -178,7 +240,6 @@ dialog_prompt = "";
 dialog_entry = "";
 message = "";
 quitting = 0;
-mode = Plymouth.GetMode();
 
 fun scaled_image(key, width, height) {
   local.w = Math.Max(1, Math.Int(width + 0.5));
@@ -199,6 +260,13 @@ fun scaled_image(key, width, height) {
 }
 
 fun frame_at(l,t) {
+  if (mode == "shutdown") {
+    local.phase=0; local.position=t % shutdown_cycle;
+    while (phase+1 < shutdown_phase_count && position >= shutdown_starts[phase+1]) phase++;
+    if (l.motion_period > 0)
+      return phase*l.motion_count + Math.Int(t/l.motion_period)%l.motion_count;
+    return phase;
+  }
   if (l.palette_offset >= 0) {
     local.start = palette_start + l.palette_offset;
     if (t < start) return 0;
@@ -213,6 +281,17 @@ fun visible_at(l,t) {
 }
 
 fun find_next_event(t) {
+  if (mode == "shutdown") {
+    local.start=Math.Int(t/shutdown_cycle)*shutdown_cycle;
+    local.next=start+shutdown_cycle;
+    for (local.i=0; i<shutdown_phase_count; i++)
+      if (start+shutdown_starts[i]>t) next=Math.Min(next,start+shutdown_starts[i]);
+    for (local.i=0; i<layer_count; i++) {
+      local.period=layers[i].motion_period;
+      if (period>0) next=Math.Min(next,(Math.Int(t/period)+1)*period);
+    }
+    return next;
+  }
   local.next = t + 2000;
   for (local.i=0; i<layer_count; i++) {
     local.l = layers[i];
@@ -301,15 +380,15 @@ fun draw_scene(t) {
     if (mode != "boot" && l.id == "initializing") v=0;
     for(local.d=0;d<screen_count;d++) {
       local.n=screens[d].nodes[i];
-      if (v && (n.last_frame != f || !n.last_visible)) {
+      if (v && (n.last_key != l.frames[f] || !n.last_visible)) {
         n.sprite.SetImage(n.images[f]); n.sprite.SetX(n.x[f]); n.sprite.SetY(n.y[f]);
       }
-      if (v != n.last_visible || (v && n.last_frame != f)) {
+      if (v != n.last_visible || (v && n.last_key != l.frames[f])) {
         local.opacity=0;
         if(v) opacity=asset[l.frames[f]].opacity;
         n.sprite.SetOpacity(opacity);
       }
-      n.last_frame=f; n.last_visible=v;
+      n.last_key=l.frames[f]; n.last_frame=f; n.last_visible=v;
     }
   }
 }
@@ -338,7 +417,7 @@ fun draw_dialog() {
     local.text=message;
     # Routine boot messages stay in the logs; keep the artwork unobstructed.
     if (mode == "boot" && !dialog_active) text="";
-    if (mode != "boot" && text == "" && !dialog_active) {
+    if (mode != "boot" && mode != "shutdown" && text == "" && !dialog_active) {
       text="Shutting down";
       if(mode=="reboot") text="Restarting";
       if(mode=="updates" || mode=="system-upgrade") text="Installing updates";
@@ -377,7 +456,8 @@ fun system_update(progress) { global.message="Installing updates: " + progress +
 fun quit() {
   global.quitting=1;
   # No end animation or delay: immediately leave a complete frame for handoff.
-  draw_scene(Math.Max(clock_ms,settled_at));
+  if (mode == "shutdown") draw_scene(clock_ms);
+  else draw_scene(Math.Max(clock_ms,settled_at));
 }
 
 # A DRM handover may replace a display with another of the same size between
@@ -398,7 +478,7 @@ fun refresh() {
     global.entrance_pending=0;
     changed=1;
   }
-  if (mode != "boot" && clock_ms < settled_at) global.clock_ms=settled_at;
+  if (mode != "boot" && mode != "shutdown" && clock_ms < settled_at) global.clock_ms=settled_at;
   if(changed || clock_ms >= next_event) {
     draw_scene(clock_ms);
     global.next_event=find_next_event(clock_ms);

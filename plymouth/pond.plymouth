@@ -1,6 +1,6 @@
 [Plymouth Theme]
 Name=Pond
-Description=Pond boot animation
+Description=Pond boot and shutdown animations
 ModuleName=script
 
 [script]
