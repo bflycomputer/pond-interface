@@ -9,6 +9,7 @@ import "calendar" as Calendar
 import "media" as Media
 import "nirimap" as Nirimap
 import "notifications" as Notifications
+import Pond.Screenshot as Screenshot
 
 PanelWindow {
   id: root
@@ -191,14 +192,19 @@ PanelWindow {
     anchors.bottomMargin: Theme.sidebarOuterMargin
   }
 
-  Item {
+  Column {
     id: bottomStack
     x: Theme.sidebarOuterMargin
     anchors.bottom: parent.bottom
     anchors.bottomMargin: Theme.sidebarOuterMargin
     width: controls.width
-    height: controls.height
+    spacing: Theme.sidebarCardGap
     opacity: root.siblingOpacity
+    Screenshot.Preview {
+      width: root.cardWidth
+      outputName: root.screen.name
+      collapsed: root.collapseProgress > 0.5
+    }
     BottomControls {
       id: controls
       collapseProgress: root.collapseProgress

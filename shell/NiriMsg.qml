@@ -2,6 +2,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import Pond.Screenshot as Screenshot
 
 Singleton {
   id: root
@@ -200,7 +201,10 @@ Singleton {
   }
 
   function _handleEvent(ev) {
-    if (ev.OverviewOpenedOrClosed) {
+    if (ev.ScreenshotCaptured) {
+      Screenshot.State.receive(ev.ScreenshotCaptured.path, focusedOutputName);
+      return;
+    } else if (ev.OverviewOpenedOrClosed) {
       overviewOpen = ev.OverviewOpenedOrClosed.is_open;
       return;
     } else if (ev.WorkspacesChanged) {
