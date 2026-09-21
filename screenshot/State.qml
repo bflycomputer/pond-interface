@@ -10,11 +10,12 @@ Singleton {
   property string outputName: ""
   property int generation: 0
   property bool copied: false
+  property bool dragging: false
   readonly property string helper: decodeURIComponent(Qt.resolvedUrl("clipboard.py").toString().replace(/^file:\/\//, ""))
 
   function receive(path, output) {
     copied = false;
-    dismissTimer.restart();
+    if (!dragging) dismissTimer.restart();
     const reader = readerComponent.createObject(root, {
       captureGeneration: ++generation,
       captureOutput: output || Quickshell.screens[0]?.name || "",
@@ -38,6 +39,11 @@ Singleton {
     copier.running = true;
   }
 
+  onDraggingChanged: {
+    if (dragging) dismissTimer.stop();
+    else if (imageSource) dismissTimer.restart();
+  }
+
   Component {
     id: readerComponent
     Process {
@@ -53,7 +59,7 @@ Singleton {
           root.imageSource = "data:image/png;base64," + payload;
           root.copied = true;
           copyTag.restart();
-          dismissTimer.restart();
+          if (!root.dragging) dismissTimer.restart();
         }
         destroy();
       }

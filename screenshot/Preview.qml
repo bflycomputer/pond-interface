@@ -2,17 +2,22 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Effects
 import Quickshell.Widgets
+import Pond.Screenshot.Native
 import "." as Screenshot
 
 Item {
   id: root
   required property string outputName
   property bool collapsed: false
+  property bool dragging: false
   readonly property bool hasScreenshot: Screenshot.State.imageSource !== ""
       && Screenshot.State.outputName === outputName
   width: collapsed ? 48 : 156
   height: hasScreenshot ? (collapsed ? 48 : 112) : 0
   visible: hasScreenshot
+  opacity: dragging ? 0 : 1
+
+  ScreenshotDrag { id: nativeDrag }
 
   Rectangle {
     id: shadowShape
@@ -65,9 +70,25 @@ Item {
     }
   }
   HoverHandler { id: hover }
-  TapHandler {
-    enabled: root.collapsed
-    onTapped: Screenshot.State.copy()
+  MouseArea {
+    id: dragArea
+    anchors.fill: parent
+    property point pressPosition
+    property bool started: false
+    cursorShape: Screenshot.State.dragging ? Qt.ClosedHandCursor : Qt.OpenHandCursor
+    onPressed: mouse => { pressPosition = Qt.point(mouse.x, mouse.y); started = false; }
+    onClicked: if (root.collapsed && !started) Screenshot.State.copy()
+    onPositionChanged: mouse => {
+      if (!pressed || started || Math.hypot(mouse.x - pressPosition.x, mouse.y - pressPosition.y)
+          < Qt.styleHints.startDragDistance) return;
+      if (Screenshot.State.dragging) return;
+      started = true;
+      const generation = Screenshot.State.generation;
+      Screenshot.State.dragging = root.dragging = true;
+      const accepted = nativeDrag.start(root, Screenshot.State.imageSource, pressPosition);
+      Screenshot.State.dragging = root.dragging = false;
+      if (accepted && generation === Screenshot.State.generation) Screenshot.State.dismiss();
+    }
   }
 
   component ActionButton: Rectangle {
@@ -80,7 +101,7 @@ Item {
     radius: 15
     color: "white"
     opacity: hover.hovered && !root.collapsed ? 1 : 0
-    enabled: opacity > 0
+    enabled: opacity > 0 && !Screenshot.State.dragging
     scale: pointer.pressed ? 0.94 : pointer.containsMouse ? 34 / 30 : 1
     Accessible.role: Accessible.Button
     Accessible.name: label
