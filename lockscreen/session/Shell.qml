@@ -2,7 +2,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import Quickshell.Io
-import Pond.System
+import Pond.WifiStatus
 
 ShellRoot {
     id: root

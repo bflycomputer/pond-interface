@@ -1,7 +1,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQml.Models
-import Pond.System
+import Pond.WifiStatus
 import "../frontend" as Frontend
 
 Item {
