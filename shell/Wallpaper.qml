@@ -9,7 +9,7 @@ import "settings/appearance" as Appearance
 PanelWindow {
   anchors { top: true; bottom: true; left: true; right: true }
   color: "#0b101c"
-  WlrLayershell.namespace: "daylight-wallpaper"
+  WlrLayershell.namespace: "pond-wallpaper"
   WlrLayershell.layer: WlrLayer.Background
   exclusionMode: ExclusionMode.Ignore
   WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
