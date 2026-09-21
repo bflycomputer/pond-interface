@@ -4,18 +4,18 @@ set(CMAKE_CXX_STANDARD 17)
 find_package(Qt6 6.11 REQUIRED COMPONENTS Qml ShaderTools)
 find_package(KF6NetworkManagerQt REQUIRED)
 qt_standard_project_setup(REQUIRES 6.7)
-qt_add_qml_module(pond_system
-    URI Pond.System
+qt_add_qml_module(pond_wifi_status
+    URI Pond.WifiStatus
     VERSION 1.0
-    OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Pond/System"
+    OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Pond/WifiStatus"
     SOURCES lockscreen/frontend/system/NetworkStatus.h
 )
-target_include_directories(pond_system PRIVATE lockscreen/frontend/system)
-target_link_libraries(pond_system PRIVATE KF6::NetworkManagerQt)
-set_target_properties(pond_systemplugin PROPERTIES INSTALL_RPATH "$ORIGIN")
-install(TARGETS pond_system pond_systemplugin LIBRARY DESTINATION lib/qt6/qml/Pond/System COMPONENT Native)
-install(FILES "${CMAKE_BINARY_DIR}/Pond/System/qmldir"
-    "${CMAKE_BINARY_DIR}/Pond/System/pond_system.qmltypes" DESTINATION lib/qt6/qml/Pond/System COMPONENT Native)
+target_include_directories(pond_wifi_status PRIVATE lockscreen/frontend/system)
+target_link_libraries(pond_wifi_status PRIVATE KF6::NetworkManagerQt)
+set_target_properties(pond_wifi_statusplugin PROPERTIES INSTALL_RPATH "$ORIGIN")
+install(TARGETS pond_wifi_status pond_wifi_statusplugin LIBRARY DESTINATION lib/qt6/qml/Pond/WifiStatus COMPONENT Native)
+install(FILES "${CMAKE_BINARY_DIR}/Pond/WifiStatus/qmldir"
+    "${CMAKE_BINARY_DIR}/Pond/WifiStatus/pond_wifi_status.qmltypes" DESTINATION lib/qt6/qml/Pond/WifiStatus COMPONENT Native)
 install(DIRECTORY lockscreen/ DESTINATION share/pond-interface/lockscreen
     FILES_MATCHING PATTERN "*.qml" PATTERN "*.js" PATTERN "*.png" PATTERN "*.svg" PATTERN "*.qsb")
 install(FILES lockscreen/greeter/metadata.desktop lockscreen/greeter/niri.kdl
