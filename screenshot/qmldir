@@ -1,0 +1,3 @@
+module Pond.Screenshot
+singleton State 1.0 State.qml
+Preview 1.0 Preview.qml
