@@ -73,7 +73,7 @@ Item {
     Rectangle {
         x: 44; y: 14
         width: 1; height: 16
-        visible: root.compositors.length > 0
+        visible: root.compositors.length > 1
         color: root.theme.lavender
         opacity: 0.5
     }
@@ -82,7 +82,7 @@ Item {
         x: 54; y: 8
         width: Math.max(110, selectedName.implicitWidth + 26, alternatives.implicitWidth)
         height: expanded ? alternatives.y + alternatives.height : 28
-        visible: root.compositors.length > 0
+        visible: root.compositors.length > 1
         readonly property bool expanded: root.enabled && hover.hovered
         HoverHandler { id: hover }
         Text {
