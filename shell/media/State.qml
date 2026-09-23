@@ -12,7 +12,8 @@ Singleton {
        clean(player.trackArtist) || clean(player.trackAlbum),
        clean(player.trackArtUrl)].filter(field => field !== "").length >= 2)
   readonly property var playing: available.filter(player => player.isPlaying)
-  readonly property bool hasPlayer: currentPlayer !== null
+  readonly property bool anyPlaying: Mpris.players.values.some(player => player.isPlaying)
+  readonly property bool hasPlayer: currentPlayer !== null && (anyPlaying || hideDelay.running)
   readonly property bool isPlaying: currentPlayer?.isPlaying ?? false
   readonly property string title: clean(currentPlayer?.trackTitle)
   readonly property string subtitle: {
@@ -29,6 +30,15 @@ Singleton {
 
   onAvailableChanged: selectPlayer()
   onPlayingChanged: selectPlayer()
+  onAnyPlayingChanged: {
+    if (anyPlaying) hideDelay.stop();
+    else hideDelay.restart();
+  }
+
+  Timer {
+    id: hideDelay
+    interval: 10 * 60 * 1000
+  }
 
   function clean(value) {
     return String(value || "").replace(/[\r\n]+/g, " ").trim();
