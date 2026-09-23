@@ -1,5 +1,6 @@
 import QtQuick
 import "." as Settings
+import ".." as Shell
 
 Item {
   id: root
@@ -55,7 +56,8 @@ Item {
     Item {
       width: root.iconBoxWidth
       height: root.iconBoxHeight
-      anchors.centerIn: parent
+      x: 30
+      y: 30
 
       Image {
         anchors.centerIn: parent
@@ -68,6 +70,17 @@ Item {
         smooth: true
         antialiasing: true
       }
+    }
+
+    Text {
+      x: 30
+      y: parent.height - 30 - baselineOffset
+      text: root.accessibleName
+      color: "white"
+      font.family: Shell.Theme.titleFontFamily
+      font.weight: Font.Normal
+      font.pixelSize: 32
+      font.letterSpacing: -0.64
     }
   }
 

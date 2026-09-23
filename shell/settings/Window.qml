@@ -14,7 +14,8 @@ PanelWindow {
 
   property bool presented: false
   property int revealStep: -1
-  property var revealRanks: [0, 1, 2, 3, 4, 5, 6, 7]
+  property var revealRanks: []
+  readonly property int cardCount: primaryButtons.length + sessionButtons.length
   property string displayedPage: Settings.State.page || "appearance"
 
   readonly property bool targetOpen: Settings.State.opened
@@ -24,52 +25,46 @@ PanelWindow {
 
   readonly property var primaryButtons: [
     {
-      slot: 0, x: 0, y: 0, name: "Appearance",
+      slot: 0, x: 0, y: 0, width: 538, name: "Appearance",
       source: Qt.resolvedUrl("../assets/settings/appearance.svg"),
-      boxWidth: 64, boxHeight: 64, iconWidth: 64, iconHeight: 64
+      boxWidth: 48, boxHeight: 48, iconWidth: 48, iconHeight: 48
     },
     {
-      slot: 1, x: 274, y: 0, name: "Bluetooth",
+      slot: 1, x: 0, y: 274, width: 264, name: "Bluetooth",
       source: Qt.resolvedUrl("../assets/settings/bluetooth.svg"),
-      boxWidth: 80, boxHeight: 80,
-      iconWidth: 33.3333, iconHeight: 53.3333
+      boxWidth: 30, boxHeight: 48, iconWidth: 30, iconHeight: 48
     },
     {
-      slot: 2, x: 0, y: 274, name: "System",
-      source: Qt.resolvedUrl("../assets/settings/system.svg"),
-      boxWidth: 72, boxHeight: 72, iconWidth: 62, iconHeight: 53
-    },
-    {
-      slot: 3, x: 274, y: 274, name: "Information",
+      slot: 2, x: 274, y: 274, width: 264, name: "Information",
       source: Qt.resolvedUrl("../assets/settings/information.svg"),
-      boxWidth: 72, boxHeight: 72, iconWidth: 72, iconHeight: 72
+      boxWidth: 48, boxHeight: 48, iconWidth: 48, iconHeight: 48
     }
   ]
 
   readonly property var sessionButtons: [
     {
-      slot: 4, y: 0, action: "lock", name: "Lock screen",
+      slot: 3, y: 0, action: "lock", name: "Lock screen",
       source: Qt.resolvedUrl("../assets/lock.svg"),
       iconWidth: 32, iconHeight: 32,
       hover: "#FFE51D", control: "#632B0F", labelWidth: 170,
       dot: false
     },
     {
-      slot: 5, y: 137, action: "suspend", name: "Sleep",
+      slot: 4, y: 137, action: "suspend", name: "Sleep",
       source: Qt.resolvedUrl("../assets/settings/sleep.svg"),
       iconWidth: 32, iconHeight: 32,
       hover: "#E99FFF", control: "#681D4F", labelWidth: 74,
       dot: false
     },
     {
-      slot: 6, y: 274, action: "reboot", name: "Restart",
+      slot: 5, y: 274, action: "reboot", name: "Restart",
       source: Qt.resolvedUrl("../assets/settings/restart.svg"),
       iconWidth: 32, iconHeight: 32,
       hover: "#CEF058", control: "#1B322D", labelWidth: 99,
       dot: false
     },
     {
-      slot: 7, y: 411, action: "shutdown", name: "Power off",
+      slot: 6, y: 411, action: "shutdown", name: "Power off",
       source: Qt.resolvedUrl("../assets/settings/power.svg"),
       iconWidth: 32, iconHeight: 32,
       hover: "#FE6146", control: "#632B0F", labelWidth: 127,
@@ -156,7 +151,7 @@ PanelWindow {
 
         x: modelData.x
         y: modelData.y
-        width: 264
+        width: modelData.width
         height: 264
         iconSource: modelData.source
         iconBoxWidth: modelData.boxWidth
@@ -238,7 +233,7 @@ PanelWindow {
     interval: Settings.Style.staggerInterval
     repeat: true
     onTriggered: {
-      if (root.revealStep >= 7) {
+      if (root.revealStep >= root.cardCount - 1) {
         stop();
         return;
       }
@@ -277,7 +272,7 @@ PanelWindow {
   }
 
   function shuffledRanks() {
-    const order = [0, 1, 2, 3, 4, 5, 6, 7];
+    const order = Array.from({length: root.cardCount}, (_, index) => index);
     for (let index = order.length - 1; index > 0; --index) {
       const other = Math.floor(Math.random() * (index + 1));
       const held = order[index];
