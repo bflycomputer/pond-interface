@@ -1,0 +1,49 @@
+window-rule {
+    geometry-corner-radius 12
+    clip-to-geometry true
+}
+
+window-rule {
+    match app-id="kitty"
+
+    background-effect {
+        blur true
+        xray false
+    }
+}
+
+// if you use steam you will probably like these
+window-rule {
+    match app-id="steam"
+    exclude title=r#"^[Ss]team$"#
+    open-floating true
+}
+
+window-rule {
+    match app-id="steam" title=r#"^notificationtoasts_\d+_desktop$"#
+    default-floating-position x=10 y=10 relative-to="bottom-right"
+    open-focused false
+}
+
+// Keep the wallpaper stationary behind workspaces and the overview.
+layer-rule {
+    match namespace="^pond-wallpaper$"
+    place-within-backdrop true
+}
+
+layer-rule {
+    match namespace="^pond-calendar-"
+    background-effect {
+        xray false
+    }
+}
+
+gestures {
+    // Keep sidebar drags from panning the tiling view at a screen edge.
+    dnd-edge-view-scroll {
+        max-speed 0
+    }
+    hot-corners {
+        off
+    }
+}

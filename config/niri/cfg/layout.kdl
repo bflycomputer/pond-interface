@@ -1,0 +1,24 @@
+layout {
+    gaps 10 // Match the modular sidebar's desktop gutter
+    center-focused-column "never" // Don’t auto-center focused column
+    always-center-single-column
+
+    background-color "transparent" // <- needed to set wallpaper
+
+    focus-ring {
+        width 2
+        active-color "#8a8a8a99"
+        inactive-color "#50505055"
+    }
+
+    border {
+        off
+    }
+
+    preset-column-widths {
+        proportion 0.33333
+        proportion 0.5
+        proportion 0.66667
+    }
+
+}
