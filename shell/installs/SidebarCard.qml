@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.Controls
 import "." as Installs
 import ".." as Shell
 
@@ -25,7 +24,6 @@ Shell.Card {
       required property string name
       required property string status
       required property real progress
-      required property string message
       readonly property string summary: status === "installed" ? "Installed"
           : status === "failed" ? "Failed" : progress < 0 ? "Installing"
           : "Installing " + Math.round(progress * 100) + "%"
@@ -58,17 +56,12 @@ Shell.Card {
         status: row.status
       }
       HoverHandler {
-        id: hover
         cursorShape: row.status === "failed" ? Qt.PointingHandCursor : Qt.ArrowCursor
       }
       TapHandler {
         enabled: row.status === "failed"
         onTapped: Installs.State.dismiss(row.jobId)
       }
-      ToolTip.visible: hover.hovered
-      ToolTip.delay: 500
-      ToolTip.text: row.name + ": " + row.summary
-          + (row.status === "failed" ? "\n" + row.message + "\nClick to dismiss" : "")
     }
   }
 }
