@@ -9,6 +9,7 @@ import "calendar" as Calendar
 import "media" as Media
 import "nirimap" as Nirimap
 import "notifications" as Notifications
+import "installs" as Installs
 import Pond.Screenshot as Screenshot
 
 PanelWindow {
@@ -131,8 +132,8 @@ PanelWindow {
       collapseProgress: root.collapseProgress
       maximumHeight: Math.max(64,
           bottomStack.y - Theme.sidebarCardGap - mainStack.y
-          - timeCard.height - mediaCard.height - notificationCard.height
-          - Theme.sidebarCardGap * (mediaCard.visible ? 3 : 2))
+          - timeCard.height - mediaCard.height - notificationCard.height - installsCard.height
+          - Theme.sidebarCardGap * (2 + (mediaCard.visible ? 1 : 0) + (installsCard.visible ? 1 : 0)))
       opacity: root.siblingOpacity
       onFocusRequested: index => NiriMsg.focusWorkspace(index)
       onWindowRequested: windowId => NiriMsg.focusWindow(windowId)
@@ -149,6 +150,13 @@ PanelWindow {
       width: root.cardWidth
       collapseProgress: root.collapseProgress
       onPanelRequested: { root.dismissPanels(); Notifications.State.togglePanel(root.screen.name); }
+    }
+
+    Installs.SidebarCard {
+      id: installsCard
+      width: root.cardWidth
+      collapseProgress: root.collapseProgress
+      opacity: root.siblingOpacity
     }
   }
 
