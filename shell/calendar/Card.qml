@@ -4,7 +4,7 @@ import Quickshell
 import "Dates.js" as Dates
 import ".." as Shell
 
-Rectangle {
+Shell.PanelBackground {
   id: root
   property date today: clock.date
   property bool followToday: true
@@ -16,16 +16,13 @@ Rectangle {
   readonly property int weekRow: isCurrentMonth
       ? Dates.currentWeekRow(days, today) : -1
   readonly property real cellWidth: (width - 20 - 12) / 7
-  readonly property real cellHeight: cellWidth
+  readonly property real cellHeight: 36
   readonly property real rowPitch: cellHeight + 2
   readonly property string monthTitle: Qt.locale("en_US").standaloneMonthName(
       displayedMonth.getMonth(), Locale.LongFormat) + ", " + displayedMonth.getFullYear()
 
   implicitWidth: 264
   implicitHeight: 76 + days.length / 7 * rowPitch - 2 + 10
-  radius: 24
-  color: Qt.rgba(1, 1, 1, 0.06)
-  antialiasing: true
   Accessible.role: Accessible.Pane
   Accessible.name: monthTitle + " calendar"
 

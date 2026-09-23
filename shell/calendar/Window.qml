@@ -21,15 +21,6 @@ PanelWindow {
   WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
   WlrLayershell.exclusionMode: ExclusionMode.Ignore
 
-  // Ask the compositor to blur only the rounded calendar, not the click catcher.
-  BackgroundEffect.blurRegion: Region {
-    x: calendar.x
-    y: calendar.y
-    width: calendar.width
-    height: calendar.height
-    radius: 24
-  }
-
   onVisibleChanged: {
     if (visible) {
       calendar.goToday();
