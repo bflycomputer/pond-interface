@@ -23,7 +23,6 @@ Singleton {
   readonly property bool active: Settings.State.opened && Settings.State.page === "appearance"
   readonly property bool brightnessAvailable: display.brightness !== undefined && display.brightness !== null
   readonly property string wallpaperName: wallpaperPath.split("/").pop() || ""
-  readonly property var scales: [1, 1.25, 1.5, 2]
 
   onActiveChanged: {
     if (active) { expandedSection = ""; error = ""; settleDelay.restart(); }
@@ -131,7 +130,6 @@ Singleton {
   }
   function selectDynamic() { apply(["wallpaper", "dynamic"]); }
   function pickWallpaper() { if (!picker.running) { error = ""; picker.running = true; } }
-  function selectScale(scale) { apply(["scale", Settings.State.outputName, String(scale)]); }
   function setBrightness(value) {
     brightness = Math.max(0.01, Math.min(1, value));
     pendingBrightness = brightness;

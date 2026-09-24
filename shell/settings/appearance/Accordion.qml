@@ -6,6 +6,7 @@ Rectangle {
   default property alias content: body.data
   property string title
   property string summary
+  property bool navigation: false
   property bool expanded: false
   property real expandedHeight: 100
   signal toggled
@@ -15,7 +16,7 @@ Rectangle {
   clip: true
   activeFocusOnTab: true
   Accessible.role: Accessible.Button
-  Accessible.name: title + ", " + summary + (expanded ? ", expanded" : ", collapsed")
+  Accessible.name: title + ", " + summary + (navigation ? "" : expanded ? ", expanded" : ", collapsed")
   Accessible.onPressAction: toggled()
   Keys.onReturnPressed: toggled()
   Keys.onSpacePressed: toggled()
@@ -41,7 +42,8 @@ Rectangle {
   Image {
     x: parent.width - 36; y: 17; width: 16; height: 16
     source: Qt.resolvedUrl("../../assets/appearance/chevron.svg")
-    rotation: root.expanded ? 180 : 0
+    objectName: "settingsRowChevron"
+    rotation: root.navigation ? -90 : root.expanded ? 180 : 0
     Behavior on rotation { NumberAnimation { duration: 220; easing.type: Easing.InOutCubic } }
   }
   MouseArea {

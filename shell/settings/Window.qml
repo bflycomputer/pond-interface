@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import "." as Settings
 import "appearance" as Appearance
+import "display" as Display
 import "information" as Information
 import Quickshell
 import Quickshell.Wayland
@@ -201,13 +202,29 @@ PanelWindow {
     z: 3
     anchors.centerIn: parent
     active: root.presented && (root.modalOpen || opacity > 0)
-    sourceComponent: root.displayedPage === "information" ? informationPage : appearancePage
+    sourceComponent: root.displayedPage === "information" ? informationPage
+        : root.displayedPage === "display" ? displayPage
+        : root.displayedPage === "arrange" ? arrangePage : appearancePage
     enabled: root.modalOpen
     opacity: root.modalOpen ? 1 : 0
     scale: root.modalOpen ? 1 : 0.96
     Behavior on opacity { NumberAnimation { duration: Settings.Style.closeDuration; easing.type: Easing.OutCubic } }
     Behavior on scale { NumberAnimation { duration: Settings.Style.closeDuration; easing.type: Easing.OutCubic } }
     onLoaded: item.forceActiveFocus()
+  }
+  Component {
+    id: displayPage
+    Display.Panel {
+      availableHeight: root.height - 80
+      scale: Math.min(1, (root.width - 60) / implicitWidth)
+    }
+  }
+  Component {
+    id: arrangePage
+    Display.Arrange {
+      availableHeight: root.height - 80
+      scale: Math.min(1, (root.width - 60) / implicitWidth)
+    }
   }
   Component {
     id: appearancePage

@@ -7,11 +7,15 @@ Rectangle {
   id: root
   default property alias content: body.contentItem.data
   property string title
+  property real bodyTop: 82
+  property real titleOpacity: 1
+  property string closeLabel: "Back to settings"
+  property alias overlay: overlays.data
   property real contentHeight: 0
   property real availableHeight: 900
   signal backRequested
   implicitWidth: 580
-  implicitHeight: Math.min(contentHeight + 82, availableHeight)
+  implicitHeight: Math.min(contentHeight + bodyTop, availableHeight)
   radius: 32
   color: Settings.Style.card
 
@@ -22,6 +26,7 @@ Rectangle {
   Text {
     x: 30; y: 20
     text: root.title
+    opacity: root.titleOpacity
     color: "white"
     font.family: Shell.Theme.titleFontFamily
     font.pixelSize: 32
@@ -30,7 +35,7 @@ Rectangle {
   Flickable {
     id: body
     objectName: "settingsModalScroll"
-    x: 0; y: 82
+    x: 0; y: root.bodyTop
     width: parent.width
     height: Math.max(0, parent.height - y)
     contentHeight: root.contentHeight
@@ -38,11 +43,12 @@ Rectangle {
     boundsBehavior: Flickable.StopAtBounds
     interactive: contentHeight > height
   }
+  Item { id: overlays; anchors.fill: parent; z: 4 }
   Shell.PanelCloseButton {
     objectName: "settingsModalClose"
     x: parent.width - 20; y: -13; z: 5
     Accessible.role: Accessible.Button
-    Accessible.name: "Back to settings"
+    Accessible.name: root.closeLabel
     activeFocusOnTab: true
     Keys.onReturnPressed: root.backRequested()
     Keys.onSpacePressed: root.backRequested()

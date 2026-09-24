@@ -47,11 +47,11 @@ Singleton {
   }
 
   function openPage(name) {
-    if (["appearance", "information"].indexOf(name) < 0) return;
+    if (["appearance", "information", "display", "arrange"].indexOf(name) < 0) return;
     page = name;
   }
 
-  function back() { page = ""; }
+  function back() { page = page === "arrange" ? "display" : page === "display" ? "appearance" : ""; }
 
   function toggle(requestedOutputName) {
     const targetOutput = requestedOutputName || focusedOutputName();

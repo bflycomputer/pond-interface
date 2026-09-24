@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import "." as Appearance
 import ".." as Settings
+import "../display" as Display
 import "../.." as Shell
 
 Settings.Modal {
@@ -107,43 +108,9 @@ Settings.Modal {
     Accordion {
       objectName: "displaySection"
       width: parent.width; title: "Display"
-      summary: Appearance.State.display.connected ? Appearance.State.display.width + " × "
-          + Appearance.State.display.height + " @" + Appearance.State.display.scale + "x" : "Unavailable"
-      expanded: Appearance.State.expandedSection === "display"
-      expandedHeight: 153
-      onToggled: Appearance.State.toggleSection("display")
-      Row {
-        y: 3; width: parent.width; spacing: 13
-        Repeater {
-          model: Appearance.State.scales
-          delegate: Rectangle {
-            id: scaleOption
-            required property real modelData
-            objectName: "displayScale" + modelData
-            readonly property bool selected: Math.abs((Appearance.State.display.scale || 0) - modelData) < 0.01
-            width: (parent.width - 39) / 4; height: 80; radius: 8
-            color: selected ? "#333333" : scaleHover.hovered || activeFocus ? "#303030" : "transparent"
-            border.width: 1
-            border.color: selected ? "#cba6f7" : "#3d3d3d"
-            enabled: !!Appearance.State.display.connected && !Appearance.State.busy
-            activeFocusOnTab: enabled
-            Accessible.role: Accessible.Button
-            Accessible.name: Math.round(modelData * 100) + "% display scale"
-            Accessible.checked: selected
-            Accessible.onPressAction: Appearance.State.selectScale(modelData)
-            Keys.onReturnPressed: Appearance.State.selectScale(modelData)
-            Keys.onSpacePressed: Appearance.State.selectScale(modelData)
-            Behavior on color { ColorAnimation { duration: 160; easing.type: Easing.OutCubic } }
-            Text {
-              anchors.centerIn: parent; text: Math.round(scaleOption.modelData * 100) + "%"
-              color: scaleOption.selected ? "#cba6f7" : "#b3b3b3"
-              font.family: Shell.Theme.fontFamily; font.pixelSize: 15
-            }
-            HoverHandler { id: scaleHover; cursorShape: Qt.PointingHandCursor }
-            TapHandler { onTapped: Appearance.State.selectScale(scaleOption.modelData) }
-          }
-        }
-      }
+      summary: Display.State.summary
+      navigation: true
+      onToggled: Settings.State.openPage("display")
     }
     Text {
       width: parent.width

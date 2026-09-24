@@ -9,7 +9,6 @@ import sys
 import tempfile
 
 CONFIG = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config"))
-SCALES = (1, 1.25, 1.5, 2)
 
 
 def run(*args, timeout=12):
@@ -101,59 +100,6 @@ def step_brightness(output, delta):
     return set_brightness(output, value, json.dumps(device))
 
 
-def scaled_config(text, output, scale):
-    """Replace only the target output's direct scale node, preserving other KDL."""
-    # Token positions preserve comments/formatting. Strings and comments cannot
-    # accidentally contribute braces or nodes to the structural scan.
-    token_re = re.compile(r'//[^\n]*|/\*.*?\*/|"(?:\\.|[^"\\])*"|[{};\n]|[^\s{};"/]+', re.S)
-    tokens = [(m[0], m.start(), m.end()) for m in token_re.finditer(text)
-              if not m[0].startswith(("//", "/*"))]
-    for index, (token, _, _) in enumerate(tokens):
-        if token != "output" or index + 2 >= len(tokens):
-            continue
-        name, _, _ = tokens[index + 1]
-        if not name.startswith('"') or json.loads(name) != output or tokens[index + 2][0] != "{":
-            continue
-        depth = 1
-        cursor = index + 3
-        while cursor < len(tokens):
-            token, start, end = tokens[cursor]
-            if token == "{":
-                depth += 1
-            elif token == "}":
-                depth -= 1
-                if depth == 0:
-                    return text[:start] + f"    scale {scale:g}\n" + text[start:]
-            elif token == "scale" and depth == 1:
-                _, value_start, value_end = tokens[cursor + 1]
-                return text[:value_start] + f"{scale:g}" + text[value_end:]
-            cursor += 1
-        raise ValueError("Unclosed output configuration")
-    return text.rstrip() + f'\n\noutput {json.dumps(output)} {{\n    scale {scale:g}\n}}\n'
-
-
-def set_scale(output, value):
-    scale = float(value)
-    if scale not in SCALES:
-        raise ValueError("Unsupported display scale")
-    outputs = json.loads(run("niri", "msg", "-j", "outputs"))
-    if output not in outputs or not outputs[output].get("logical"):
-        raise ValueError("Display is no longer connected")
-    path = CONFIG / "niri/cfg/display.kdl"
-    previous = path.read_text()
-    updated = scaled_config(previous, output, scale)
-    # Keep a recovery copy and roll back if the compositor rejects the config.
-    atomic_write(path.with_suffix(".kdl.appearance-backup"), previous)
-    atomic_write(path, updated)
-    try:
-        run("niri", "validate")
-        run("niri", "msg", "output", output, "scale", str(scale))
-    except Exception:
-        atomic_write(path, previous)
-        raise
-    return {"scale": scale}
-
-
 def wallpaper(mode, path=""):
     state = {"mode": mode, "path": "", "url": ""}
     if mode == "custom":
@@ -192,7 +138,7 @@ def theme(name):
 def main():
     try:
         action, *args = sys.argv[1:]
-        commands = {"status": status, "brightness": set_brightness, "brightness-step": step_brightness, "scale": set_scale,
+        commands = {"status": status, "brightness": set_brightness, "brightness-step": step_brightness,
                     "wallpaper": wallpaper, "pick-wallpaper": pick_wallpaper, "theme": theme}
         print(json.dumps(commands[action](*args)))
     except Exception as error:
