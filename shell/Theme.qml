@@ -45,6 +45,14 @@ Singleton {
   readonly property color sidebarV3Control: "#303030"
   readonly property color sidebarV3Foreground: "#F8F9F9"
   readonly property color mediaHoverBackground: "#262626"
+  readonly property color workspaceIconOutline: daylight ? sidebarCardOutline : sidebarInnerOutline
+  readonly property color workspaceControlHover: daylight ? Qt.rgba(1, 1, 1, 0.10) : sidebarControlHover
+  readonly property color workspacePlaceholderColor: daylight ? Qt.rgba(1, 1, 1, 0.30) : sidebarInnerOutline
+  readonly property color workspaceDropFill: Qt.rgba(1, 1, 1, 0.20)
+  readonly property color workspaceNumberBackground: daylight ? "#5B5B5B" : sidebarV3WorkspaceActive
+  readonly property color workspaceNumberDragBackground: daylight ? "#787878" : sidebarV3Control
+  readonly property color workspaceDragBackground: daylight ? "#53525D" : "#292929"
+  readonly property real workspaceDragGlyphScale: daylight ? 13.913043975830078 / 16 : 1
   readonly property int workspaceControlSize: 40
   readonly property int workspaceCollapsedControlSize: 32
   readonly property int workspaceControlGap: 8

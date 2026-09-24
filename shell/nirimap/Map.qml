@@ -40,7 +40,8 @@ Shell.Card {
       expandedNaturalHeight, collapsedNaturalHeight,
       Shell.Theme.collapseHeight(collapseProgress))
   readonly property bool workspaceNumbersRevealed: expandedLayer.enabled
-      && (expandedComponentHover.hovered || (dragSession.active && !dragSession.windowDrag))
+      && (expandedComponentHover.hovered
+          || (dragSession.active && (!dragSession.windowDrag || Shell.Theme.daylight)))
 
   focus: dragSession.active
   Keys.onEscapePressed: dragSession.cancel()
@@ -84,6 +85,11 @@ Shell.Card {
   width: Shell.Theme.lerp(Shell.Theme.sidebarCardExpandedWidth,
       Shell.Theme.sidebarCardCollapsedWidth, widthProgress)
   height: Math.min(maximumHeight, naturalHeight)
+  radius: Shell.Theme.daylight ? 12 : Shell.Theme.sidebarCardRadius
+  color: Shell.Theme.daylight
+      ? (cardHovered || (dragSession.active && dragSession.windowDrag)
+          ? Shell.Theme.sidebarHoverFill : Shell.Theme.sidebarClearFill)
+      : classicColor
   // The number hit target reaches ten pixels outside the expanded card. The
   // panel gutter contains it; clipping returns once the compact layer takes
   // over so its top and bottom rows retain the card radius.
@@ -239,11 +245,14 @@ Shell.Card {
                   readonly property bool emptyWorkspaceActive: index === 0
                       && expandedWorkspace.windowItems.length === 0
                       && expandedWorkspace.model.isActive
+                  readonly property int visualIndex: root.windowIndex(Number(expandedWorkspace.model.workspaceId),
+                      expandedWorkspace.windowItems, index)
+                  readonly property bool daylightDropTarget: Shell.Theme.daylight && expandedWorkspace.dragTarget
+                      && visualIndex === dragSession.destination?.slot
 
                   visible: root.collapseProgress === 0 || (index >= expandedWorkspace.windowStart
                       && index < expandedWorkspace.windowStart + Shell.Theme.workspaceGridColumns)
-                  x: root.windowIndex(Number(expandedWorkspace.model.workspaceId),
-                      expandedWorkspace.windowItems, index) * Shell.Theme.workspaceControlPitch * (1 - root.widthProgress)
+                  x: visualIndex * Shell.Theme.workspaceControlPitch * (1 - root.widthProgress)
                   width: Shell.Theme.lerp(Shell.Theme.workspaceControlSize,
                       Shell.Theme.workspaceCollapsedControlSize, root.widthProgress)
                   height: width
@@ -254,10 +263,10 @@ Shell.Card {
 
                   Rectangle {
                     anchors.fill: parent
-                    visible: workspaceSlot.emptyWorkspaceActive
+                    visible: workspaceSlot.emptyWorkspaceActive && !workspaceSlot.daylightDropTarget
                     radius: width / 2
                     color: Shell.Theme.workspaceLauncherActive
-                    border.color: Shell.Theme.sidebarV3Border
+                    border.color: Shell.Theme.daylight ? Shell.Theme.workspaceIconOutline : Shell.Theme.sidebarV3Border
                     border.width: Shell.Theme.sidebarStrokeWidth
                     antialiasing: true
                   }
@@ -265,11 +274,11 @@ Shell.Card {
                   Rectangle {
                     anchors.centerIn: parent
                     visible: root.collapseProgress === 0 && !workspaceSlot.hasWindow && !workspaceSlot.emptyWorkspaceActive
-                        && !dragSession.active
+                        && (!dragSession.active || Shell.Theme.daylight) && !workspaceSlot.daylightDropTarget
                     width: Shell.Theme.workspacePlaceholderDotSize
                     height: Shell.Theme.workspacePlaceholderDotSize
                     radius: width / 2
-                    color: Shell.Theme.sidebarInnerOutline
+                    color: Shell.Theme.workspacePlaceholderColor
                   }
 
                   Nirimap.WindowIcon {
@@ -339,12 +348,12 @@ Shell.Card {
                 antialiasing: true
                 Behavior on x { Shell.HoverAnimation { duration: Shell.Theme.workspaceDragSnapDuration } }
                 ShapePath {
-                  strokeColor: "#4F3D64"
+                  strokeColor: Shell.Theme.daylight ? Shell.Theme.workspaceDropFill : "#4F3D64"
                   strokeWidth: 1
-                  strokeStyle: ShapePath.DashLine
+                  strokeStyle: Shell.Theme.daylight ? ShapePath.SolidLine : ShapePath.DashLine
                   dashPattern: [3, 3]
                   capStyle: ShapePath.RoundCap
-                  fillColor: "#191919"
+                  fillColor: Shell.Theme.daylight ? Shell.Theme.workspaceDropFill : "#191919"
                   PathRectangle { x: 0.5; y: 0.5; width: 39; height: 39; radius: 20 }
                 }
               }
@@ -364,14 +373,15 @@ Shell.Card {
               height: 20
               radius: 10
               color: numberPointer.containsMouse || numberPointer.pressed
-                  ? Shell.Theme.sidebarV3Control : Shell.Theme.sidebarV3WorkspaceActive
+                  || (Shell.Theme.daylight && dragSession.active && dragSession.windowDrag)
+                  ? Shell.Theme.workspaceNumberDragBackground : Shell.Theme.workspaceNumberBackground
               antialiasing: true
               Behavior on color { ColorAnimation { duration: 120; easing.type: Easing.OutCubic } }
               Text {
                 anchors.fill: parent
                 visible: !numberPointer.containsMouse && !workspaceDrag.active
                 text: expandedWorkspace.workspaceNumber
-                color: Shell.Theme.sidebarV3Foreground
+                color: Shell.Theme.daylight ? "white" : Shell.Theme.sidebarV3Foreground
                 font.family: Shell.Theme.plexFontFamily
                 font.weight: Font.Medium
                 font.pixelSize: 11
@@ -464,7 +474,7 @@ Shell.Card {
                 width: Shell.Theme.workspacePlaceholderDotSize
                 height: Shell.Theme.workspacePlaceholderDotSize
                 radius: width / 2
-                color: Shell.Theme.sidebarInnerOutline
+                color: Shell.Theme.workspacePlaceholderColor
               }
             }
           }

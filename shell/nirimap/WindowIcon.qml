@@ -20,17 +20,24 @@ Item {
   implicitWidth: controlSize
   implicitHeight: controlSize
 
+  Shell.Shadow {
+    anchors.fill: chrome
+    cornerRadius: chrome.radius
+    shadows: root.visible && root.lifted && Shell.Theme.daylight ? Shell.PanelStyle.controlShadows : []
+  }
+
   Rectangle {
+    id: chrome
     anchors.fill: parent
     radius: width / 2
     antialiasing: true
     // Fade alpha without interpolating the fill through transparent black.
-    color: root.lifted ? "#292929" : root.hovered ? Shell.Theme.sidebarControlHover
-        : Qt.rgba(Shell.Theme.sidebarControlHover.r, Shell.Theme.sidebarControlHover.g,
-                  Shell.Theme.sidebarControlHover.b, 0)
-    border.color: root.lifted ? "#CBA6F7" : Shell.Theme.sidebarInnerOutline
+    color: root.lifted ? Shell.Theme.workspaceDragBackground : root.hovered ? Shell.Theme.workspaceControlHover
+        : Qt.rgba(Shell.Theme.workspaceControlHover.r, Shell.Theme.workspaceControlHover.g,
+                  Shell.Theme.workspaceControlHover.b, 0)
+    border.color: root.lifted ? "#CBA6F7" : Shell.Theme.workspaceIconOutline
     border.width: root.hovered ? 0 : Shell.Theme.sidebarStrokeWidth
-    layer.enabled: root.lifted
+    layer.enabled: root.lifted && !Shell.Theme.daylight
     layer.effect: MultiEffect {
       shadowEnabled: true
       shadowBlur: 0.5
@@ -51,12 +58,12 @@ Item {
   IconImage {
     anchors.centerIn: parent
     visible: (root.windowData.iconSource || "") !== ""
-    width: Shell.Theme.workspaceIconSize
-    height: Shell.Theme.workspaceIconSize
+    width: Shell.Theme.workspaceIconSize * (root.lifted ? Shell.Theme.workspaceDragGlyphScale : 1)
+    height: width
     source: root.windowData.iconSource || ""
     asynchronous: true
     smooth: true
-    opacity: root.hovered || root.lifted ? 1.0 : 0.9
+    opacity: Shell.Theme.daylight || root.hovered || root.lifted ? 1.0 : 0.9
 
     Behavior on opacity { Shell.HoverAnimation {} }
   }
