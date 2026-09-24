@@ -27,4 +27,14 @@ PanelWindow {
     fillMode: Image.PreserveAspectCrop
     asynchronous: true
   }
+  Rectangle {
+    visible: Theme.daylight
+    width: parent.width * 788 / 1728
+    height: parent.height
+    gradient: Gradient {
+      orientation: Gradient.Horizontal
+      GradientStop { position: 0; color: Qt.rgba(0, 0, 0, 0.4) }
+      GradientStop { position: 1; color: Qt.rgba(0, 0, 0, 0) }
+    }
+  }
 }

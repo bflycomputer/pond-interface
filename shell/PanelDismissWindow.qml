@@ -4,8 +4,8 @@ import Quickshell.Wayland
 
 // Full-screen click-away surface for the settings card stacks. Layer-shell
 // surfaces on the same layer are not guaranteed to keep creation order for
-// input. Explicitly cut the entire sidebar surface out of this window's input
-// region so its card controls always receive pointer events.
+// input. Exclude the sidebar's input region so its controls receive events
+// while empty background areas share this window's click-away behavior.
 PanelWindow {
   id: root
 
@@ -29,9 +29,8 @@ PanelWindow {
   WlrLayershell.exclusionMode: ExclusionMode.Ignore
 
   mask: Region {
-    x: Math.min(root.width, root.bar.implicitWidth)
-    width: root.width - x
-    height: root.height
+    intersection: Intersection.Subtract
+    regions: [root.bar.mask]
   }
 
   MouseArea {

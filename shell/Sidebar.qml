@@ -96,6 +96,14 @@ PanelWindow {
     width: root.panelOpen ? root.implicitWidth : Math.ceil(Theme.sidebarOuterMargin + Math.max(root.cardWidth,
         workspacesCard.width, mediaCard.width, controls.width) + 8)
     height: root.height
+    // Let the background receive clicks between the card stacks.
+    Region {
+      y: Math.ceil(mainStack.y + mainStack.height)
+      width: root.width
+      height: Math.max(0, Math.floor(bottomStack.y) - y)
+      intersection: Intersection.Subtract
+    }
+    Region { item: root.activePanel }
   }
   anchors { left: true; top: true; bottom: true }
   WlrLayershell.layer: WlrLayer.Top
