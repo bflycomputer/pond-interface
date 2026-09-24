@@ -30,6 +30,14 @@ Singleton {
     Quickshell.execDetached(["niri", "msg", "action", "focus-workspace", String(index)]);
   }
 
+  function openLauncher(workspaceId) {
+    const workspace = workspaces.find(workspace => workspace.id === workspaceId);
+    if (!workspace) return;
+    _move(workspace.isFocused ? [] : [{ FocusWorkspace: { reference: { Id: workspaceId } } }], success => {
+      if (success) Quickshell.execDetached(["vicinae", "open"]);
+    });
+  }
+
   function moveWindow(id, workspaceId, slot, done) {
     const actions = _windowMoveActions(id, workspaceId, slot);
     return actions !== null && _move(actions, done);
@@ -415,6 +423,8 @@ Singleton {
         workspaceIndex: ws.idx,
         outputName: outputName,
         isActive: !!ws.isActive,
+        isCreationRow: creationRow,
+        outputHasWindows: byOutput[outputName].some(workspace => workspace.hasWindows),
         activeWindowId: ws.activeWindowId ?? -1,
         windowsJson: JSON.stringify(windowRecords),
         sidebarRowOrdinal: rowOrdinal,

@@ -145,6 +145,7 @@ PanelWindow {
       opacity: root.siblingOpacity
       onFocusRequested: index => NiriMsg.focusWorkspace(index)
       onWindowRequested: windowId => NiriMsg.focusWindow(windowId)
+      onAddRequested: workspaceId => NiriMsg.openLauncher(workspaceId)
     }
 
     Media.Player {

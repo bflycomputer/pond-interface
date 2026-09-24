@@ -17,6 +17,7 @@ Shell.Card {
   readonly property alias dragSession: dragSession
   signal focusRequested(int workspaceIndex)
   signal windowRequested(var windowId)
+  signal addRequested(var workspaceId)
 
   readonly property real expandedOpacity:
       collapseProgress < 0.56 ? 1 : 0
@@ -208,6 +209,8 @@ Shell.Card {
                 expandedWorkspace.model.workspaceIndex)
           }
 
+          HoverHandler { id: rowHover; enabled: expandedLayer.enabled }
+
           Item {
             id: windowViewport
             x: Shell.Theme.lerp(Shell.Theme.workspaceContentPadding, 8, root.widthProgress) - expandedLayer.x
@@ -240,6 +243,10 @@ Shell.Card {
 
                   readonly property bool hasWindow:
                       index < expandedWorkspace.windowItems.length
+                  readonly property bool addSlot: index === expandedWorkspace.windowItems.length
+                  readonly property bool plusRevealed: addSlot && root.collapseProgress === 0
+                      && expandedWorkspace.matchesOutput && !dragSession.active && (rowHover.hovered
+                          || (!expandedWorkspace.model.outputHasWindows && expandedWorkspace.model.isCreationRow))
                   readonly property var windowData: hasWindow
                       ? expandedWorkspace.windowItems[index] : ({})
                   readonly property bool emptyWorkspaceActive: index === 0
@@ -279,6 +286,8 @@ Shell.Card {
                     height: Shell.Theme.workspacePlaceholderDotSize
                     radius: width / 2
                     color: Shell.Theme.workspacePlaceholderColor
+                    opacity: workspaceSlot.plusRevealed ? 0 : 1
+                    Behavior on opacity { Shell.HoverAnimation {} }
                   }
 
                   Nirimap.WindowIcon {
@@ -310,6 +319,13 @@ Shell.Card {
                       onCentroidChanged: if (active) dragSession.move(centroid.scenePosition)
                       onCanceled: dragSession.cancel()
                     }
+                  }
+
+                  Nirimap.PlusButton {
+                    anchors.fill: parent
+                    revealed: workspaceSlot.plusRevealed
+                    enabled: expandedLayer.enabled && !dragSession.active
+                    onActivated: root.addRequested(Number(expandedWorkspace.model.workspaceId))
                   }
                 }
               }
