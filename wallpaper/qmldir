@@ -1,0 +1,4 @@
+module Pond.Wallpaper
+Window 1.0 Window.qml
+Reveal 1.0 Reveal.qml
+internal Content Content.qml

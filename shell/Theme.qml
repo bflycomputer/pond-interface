@@ -33,6 +33,7 @@ Singleton {
   readonly property int sidebarCardCollapsedWidth: 48
   readonly property int sidebarCardRadius: 16
   readonly property int sidebarCardGap: 6
+  readonly property int sidebarFadeWidth: 12
   readonly property int sidebarRowHorizontalPadding: 16
   readonly property int sidebarSimpleRowHeight: 48
   readonly property int sidebarTimeExpandedHeight: 58

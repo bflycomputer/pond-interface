@@ -10,11 +10,13 @@ import "media" as Media
 import "nirimap" as Nirimap
 import "notifications" as Notifications
 import "installs" as Installs
+import Pond.Wallpaper as Wallpaper
 import Pond.Screenshot as Screenshot
 
 PanelWindow {
   id: root
   required property bool expanded
+  required property Wallpaper.Window wallpaper
   property bool calendarOpen: false
   property real collapseProgress: expanded ? 0 : 1
   signal toggleRequested
@@ -88,7 +90,7 @@ PanelWindow {
 
   color: "transparent"
   // Keep compositor resizes out of the card animation; only the input area shrinks.
-  implicitWidth: Math.ceil(Math.max(Theme.sidebarOuterMargin + Theme.sidebarCardExpandedWidth + 8,
+  implicitWidth: Math.ceil(Math.max(Theme.sidebarOuterMargin + Theme.sidebarCardExpandedWidth + Theme.sidebarFadeWidth,
       wifiPanel.visible ? panelX + wifiPanel.width + 67 : 0,
       audioPanel.visible ? panelX + audioPanel.width + 67 : 0,
       bluetoothPanel.visible ? panelX + bluetoothPanel.width + 67 : 0))
@@ -115,6 +117,17 @@ PanelWindow {
       ? Theme.sidebarCardExpandedWidth : Theme.sidebarCardCollapsedWidth)
   Behavior on collapseProgress { Motion {} }
   Behavior on siblingOpacity { HoverAnimation { duration: 180 } }
+
+  Loader {
+    active: Theme.daylight
+    z: -1
+    width: Theme.sidebarOuterMargin + root.cardWidth + Theme.sidebarFadeWidth
+    height: root.height
+    sourceComponent: Wallpaper.Reveal {
+      wallpaper: root.wallpaper
+      fadeWidth: Theme.sidebarFadeWidth
+    }
+  }
 
   Column {
     id: mainStack

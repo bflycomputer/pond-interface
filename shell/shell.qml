@@ -4,7 +4,9 @@ import Quickshell
 import Quickshell.Io
 import "calendar" as Calendar
 import "settings" as Settings
+import "settings/appearance" as Appearance
 import "notifications" as Notifications
+import Pond.Wallpaper as Wallpaper
 
 ShellRoot {
   id: root
@@ -21,11 +23,17 @@ ShellRoot {
     model: Quickshell.screens
     delegate: Scope {
       required property var modelData
-      Wallpaper { screen: modelData }
+      Wallpaper.Window {
+        id: desktopWallpaper
+        screen: modelData
+        custom: Appearance.State.wallpaperMode === "custom"
+        imageSource: Appearance.State.wallpaperUrl
+      }
       Sidebar {
         id: sidebar
         screen: modelData
         expanded: root.expanded
+        wallpaper: desktopWallpaper
         onToggleRequested: root.expanded = !root.expanded
       }
       Notifications.ToastWindow { bar: sidebar }
