@@ -4,6 +4,7 @@ import Quickshell.Wayland
 
 PanelWindow {
   property alias custom: background.custom
+  property alias dimmed: background.dimmed
   property alias imageSource: background.imageSource
   property alias now: background.now
   anchors { top: true; bottom: true; left: true; right: true }

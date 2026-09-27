@@ -27,6 +27,7 @@ ShellRoot {
         id: desktopWallpaper
         screen: modelData
         custom: Appearance.State.wallpaperMode === "custom"
+        dimmed: Theme.daylight
         imageSource: Appearance.State.wallpaperUrl
       }
       Sidebar {

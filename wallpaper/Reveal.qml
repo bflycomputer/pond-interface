@@ -32,6 +32,7 @@ Item {
     width: root.wallpaper.width
     height: root.wallpaper.height
     custom: root.wallpaper.custom
+    dimmed: root.wallpaper.dimmed
     imageSource: root.wallpaper.imageSource
     live: false
     now: root.wallpaper.now
