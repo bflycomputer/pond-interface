@@ -652,7 +652,9 @@ Shell.Card {
                 height: 4
                 radius: 2
                 antialiasing: true
-                color: iconColor.colors[0] ?? "white"
+                readonly property string dotState: collapsedWorkspace.windowItems[index].dotState || ""
+                color: dotState === "working" ? "#CBA6F7" : dotState === "unread" ? "#FF9F67"
+                    : dotState === "read" ? "#CBE25B" : iconColor.colors[0] ?? "white"
 
                 // ColorQuantizer needs a file; theme icons use an image-provider URL.
                 Image {

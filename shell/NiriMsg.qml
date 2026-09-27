@@ -244,12 +244,26 @@ Singleton {
       _windows = wins;
     } else if (ev.WindowOpenedOrChanged) {
       const w = _mapWindow(ev.WindowOpenedOrChanged.window);
+      const old = _windows[w.id];
+      if (w.isFocused)
+        delete _unread[w.id];
+      else if (_isAgent(w) && old && _isWorking(old.title) && !_isWorking(w.title))
+        _unread[w.id] = true;
       const wins = Object.assign({}, _windows);
+      if (w.isFocused)
+        for (const id in wins) wins[id] = Object.assign({}, wins[id], { isFocused: false });
       wins[w.id] = w;
       _windows = wins;
     } else if (ev.WindowClosed) {
       const wins = Object.assign({}, _windows);
       delete wins[ev.WindowClosed.id];
+      _windows = wins;
+    } else if (ev.WindowFocusChanged) {
+      const focused = ev.WindowFocusChanged.id;
+      delete _unread[focused];
+      const wins = {};
+      for (const id in _windows)
+        wins[id] = Object.assign({}, _windows[id], { isFocused: _windows[id].id === focused });
       _windows = wins;
     } else if (ev.WindowLayoutsChanged) {
       const wins = Object.assign({}, _windows);
@@ -267,9 +281,22 @@ Singleton {
 
   function _mapWindow(w) {
     return {
-      id: w.id, workspaceId: w.workspace_id,
+      id: w.id, workspaceId: w.workspace_id, title: w.title || "",
+      isFocused: !!w.is_focused,
       isFloating: w.is_floating, layout: w.layout, appId: w.app_id || ""
     };
+  }
+
+  property var _unread: ({})
+
+  // Claude Code titles are "◐ "/"◑ " while working, "✳ " idle; Codex prefixes a
+  // braille spinner while working. Fish on Pond has " - ", bash/zsh has "@"
+  // & every other kitty title is considered idle Codex.
+  // This is obviously a dumb hack. Should fix & add support for more stuff.
+  function _isWorking(title) { return /^[\u2800-\u28ff\u25d0\u25d1] /.test(title); }
+  function _isAgent(w) {
+    return w.appId === "kitty" && w.title !== ""
+        && (/^[\u2800-\u28ff\u25d0\u25d1\u2733] /.test(w.title) || !/ - \S+$|@/.test(w.title));
   }
 
   function _appInfo(appId) {
@@ -400,10 +427,13 @@ Singleton {
 
       for (const w of wsWindows) {
         const info = _appInfo(w.appId);
+        const agent = _isAgent(w);
         windowRecords.push({
           winId: w.id,
           iconName: info.iconName,
-          iconSource: info.iconSource
+          iconSource: agent ? "" : info.iconSource,
+          dotState: !agent ? "" : _isWorking(w.title) ? "working" : _unread[w.id] ? "unread" : "read",
+          loaderVariant: w.id % 4 + 1
         });
       }
 

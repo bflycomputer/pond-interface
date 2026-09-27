@@ -68,6 +68,15 @@ Item {
     Behavior on opacity { Shell.HoverAnimation {} }
   }
 
+  TerminalIndicator {
+    anchors.centerIn: parent
+    visible: (root.windowData.dotState || "") !== ""
+    dotState: root.windowData.dotState || "read"
+    loaderVariant: root.windowData.loaderVariant || 1
+    scale: root.controlSize / Shell.Theme.workspaceControlSize
+        * (root.lifted ? Shell.Theme.workspaceDragGlyphScale : 1)
+  }
+
   MouseArea {
     id: pointer
     anchors.fill: parent
