@@ -18,9 +18,11 @@ Item {
     MouseArea { anchors.fill: parent }
     ListView {
       id: list
+      clip: true
+      boundsBehavior: Flickable.StopAtBounds
+      Shell.ScrollWheel { view: list }
       objectName: "displayOptions"
       x: 8; y: 8; width: parent.width - 16; height: parent.height - 16
-      clip: true; boundsBehavior: Flickable.StopAtBounds
       model: root.options
       focus: true; keyNavigationEnabled: true
       currentIndex: Math.max(0, root.options.findIndex(o => String(o.value) === root.currentValue))

@@ -53,8 +53,11 @@ Item {
     border.width: 0.5
     clip: true
 
-    ScrollList {
+    ListView {
       id: optionList
+      clip: true
+      boundsBehavior: Flickable.StopAtBounds
+      ScrollWheel { view: optionList }
       x: 8
       y: 8
       width: 259

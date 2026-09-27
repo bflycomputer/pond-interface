@@ -87,8 +87,11 @@ Item {
       antialiasing: false
     }
 
-    ScrollList {
+    ListView {
       id: deviceList
+      clip: true
+      boundsBehavior: Flickable.StopAtBounds
+      ScrollWheel { view: deviceList }
       x: 8
       y: 98
       width: PanelStyle.rowWidth

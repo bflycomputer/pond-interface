@@ -35,8 +35,11 @@ Item {
       font.family: Theme.titleFontFamily; font.weight: Font.Normal; font.pixelSize: 20
     }
     Loader { x: 241.5; y: 19.5; width: 54; height: 28; sourceComponent: root.headerControl }
-    ScrollList {
+    ListView {
       id: deviceList
+      clip: true
+      boundsBehavior: Flickable.StopAtBounds
+      ScrollWheel { view: deviceList }
       x: 8; y: root.listTop; width: PanelStyle.rowWidth
       height: root.viewportHeight - y - root.listBottomPadding
       model: ScriptModel { values: root.devices; objectProp: root.deviceKey }

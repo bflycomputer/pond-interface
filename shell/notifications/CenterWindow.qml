@@ -164,8 +164,11 @@ PanelWindow {
     opacity: root.reveal
     z: 3
 
-    Shell.ScrollList {
+    ListView {
       id: notificationList
+      clip: true
+      boundsBehavior: Flickable.StopAtBounds
+      Shell.ScrollWheel { view: notificationList }
       width: 288
       height: listClip.height
       model: Notifications.State.historyNotifications

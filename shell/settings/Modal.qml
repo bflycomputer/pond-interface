@@ -46,6 +46,7 @@ Rectangle {
     clip: true
     boundsBehavior: Flickable.StopAtBounds
     interactive: contentHeight > height
+    Shell.ScrollWheel { view: body }
     layer.enabled: root.roundedContent
     layer.smooth: true
     layer.effect: MultiEffect {
