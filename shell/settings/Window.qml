@@ -5,6 +5,7 @@ import "." as Settings
 import "appearance" as Appearance
 import "display" as Display
 import "information" as Information
+import "manual" as Manual
 import Quickshell
 import Quickshell.Wayland
 
@@ -203,6 +204,7 @@ PanelWindow {
     anchors.centerIn: parent
     active: root.presented && (root.modalOpen || opacity > 0)
     sourceComponent: root.displayedPage === "information" ? informationPage
+        : root.displayedPage === "manual" ? manualPage
         : root.displayedPage === "display" ? displayPage
         : root.displayedPage === "arrange" ? arrangePage : appearancePage
     enabled: root.modalOpen
@@ -236,6 +238,13 @@ PanelWindow {
   Component {
     id: informationPage
     Information.Panel {
+      availableHeight: Math.max(200, root.height - 70)
+      scale: Math.min(1, (root.width - 60) / implicitWidth)
+    }
+  }
+  Component {
+    id: manualPage
+    Manual.Panel {
       availableHeight: Math.max(200, root.height - 70)
       scale: Math.min(1, (root.width - 60) / implicitWidth)
     }

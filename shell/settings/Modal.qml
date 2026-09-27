@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Effects
 import "." as Settings
 import ".." as Shell
 
@@ -11,8 +12,11 @@ Rectangle {
   property real titleOpacity: 1
   property string closeLabel: "Back to settings"
   property alias overlay: overlays.data
+  property alias scrollItem: body
   property real contentHeight: 0
   property real availableHeight: 900
+  property bool roundedContent: false
+  property real closeButtonY: -13
   signal backRequested
   implicitWidth: 580
   implicitHeight: Math.min(contentHeight + bodyTop, availableHeight)
@@ -42,11 +46,27 @@ Rectangle {
     clip: true
     boundsBehavior: Flickable.StopAtBounds
     interactive: contentHeight > height
+    layer.enabled: root.roundedContent
+    layer.smooth: true
+    layer.effect: MultiEffect {
+      autoPaddingEnabled: false
+      maskEnabled: true
+      maskThresholdMin: 0.5
+      maskSpreadAtMin: 1.0
+      maskSource: ShaderEffectSource {
+        sourceItem: Rectangle {
+          width: body.width; height: body.height
+          radius: root.radius
+          color: "white"
+          antialiasing: true
+        }
+      }
+    }
   }
   Item { id: overlays; anchors.fill: parent; z: 4 }
   Shell.PanelCloseButton {
     objectName: "settingsModalClose"
-    x: parent.width - 20; y: -13; z: 5
+    x: parent.width - 20; y: root.closeButtonY; z: 5
     Accessible.role: Accessible.Button
     Accessible.name: root.closeLabel
     activeFocusOnTab: true

@@ -70,14 +70,20 @@ Settings.Modal {
     activeFocusOnTab:true
     Accessible.role:Accessible.Button
     Accessible.name:"Manual"
-    // The manual card will be connected in a later iteration.
+    Accessible.onPressAction:Settings.State.openPage("manual")
+    Keys.onReturnPressed:Settings.State.openPage("manual")
+    Keys.onSpacePressed:Settings.State.openPage("manual")
     Behavior on color { ColorAnimation { duration:Settings.Style.hoverDuration; easing.type:Easing.OutCubic } }
+    Image {
+      x:20; y:20; width:24; height:24
+      source:Qt.resolvedUrl("../../assets/manual/book.svg")
+    }
     Information.Label {
-      x:28; capY:26; text:"Manual"; color:"white"
+      x:54; capY:26; text:"Manual"; color:"white"
       font.family:Shell.Theme.titleFontFamily; font.styleName:"Book"; font.pixelSize:17; font.letterSpacing:0
     }
     HoverHandler { id:manualHover; cursorShape:Qt.PointingHandCursor }
-    TapHandler {}
+    TapHandler { onTapped:Settings.State.openPage("manual") }
   }
   Footer { objectName:"informationFooter"; y:438 }
 }
