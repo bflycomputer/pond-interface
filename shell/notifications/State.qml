@@ -24,7 +24,7 @@ Singleton {
   FileView {
     id: history
     path: (Quickshell.env("XDG_STATE_HOME") || Quickshell.env("HOME") + "/.local/state")
-        + "/pond-default/notifications.json"
+        + "/pond-interface/notifications.json"
     blockLoading: true
     atomicWrites: true
     printErrors: false

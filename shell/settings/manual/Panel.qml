@@ -11,7 +11,7 @@ Settings.Modal {
   contentHeight: manual.height
   roundedContent: true
   closeButtonY: -17
-  closeLabel: "Back to Information"
+  closeLabel: "Close manual"
   Accessible.role: Accessible.Dialog
   Accessible.name: "User Manual"
   onBackRequested: Settings.State.back()

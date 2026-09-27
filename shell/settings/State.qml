@@ -11,6 +11,7 @@ Singleton {
 
   property bool opened: false
   property string page: ""
+  property var pageHistory: []
   property string outputName: ""
   signal opening
   property string pendingSessionAction: ""
@@ -33,11 +34,12 @@ Singleton {
     }
   }
 
-  function open(requestedOutputName) {
+  function open(requestedOutputName, initialPage = "") {
     sessionActionDelay.stop();
     pendingSessionAction = "";
     outputName = requestedOutputName || focusedOutputName();
-    page = "";
+    pageHistory = [];
+    page = initialPage;
     opening();
     opened = true;
   }
@@ -48,10 +50,15 @@ Singleton {
 
   function openPage(name) {
     if (["appearance", "information", "manual", "display", "arrange"].indexOf(name) < 0) return;
+    pageHistory = pageHistory.concat(page);
     page = name;
   }
 
-  function back() { page = page === "manual" ? "information" : page === "arrange" ? "display" : page === "display" ? "appearance" : ""; }
+  function back() {
+    if (!pageHistory.length) { close(); return; }
+    page = pageHistory[pageHistory.length - 1];
+    pageHistory = pageHistory.slice(0, -1);
+  }
 
   function toggle(requestedOutputName) {
     const targetOutput = requestedOutputName || focusedOutputName();

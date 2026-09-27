@@ -14,6 +14,18 @@ ShellRoot {
 
   Shortcuts {}
 
+  FileView {
+    path: Quickshell.screens.length
+        ? (Quickshell.env("XDG_STATE_HOME") || Quickshell.env("HOME") + "/.local/state") + "/pond-interface/manual-shown"
+        : ""
+    printErrors: false
+    onLoadFailed: error => {
+      if (error !== FileViewError.FileNotFound) return;
+      Settings.State.open("", "manual");
+      Qt.callLater(() => setText("shown\n"));
+    }
+  }
+
   IpcHandler {
     target: "sidebar"
     function toggle() { root.expanded = !root.expanded; }
