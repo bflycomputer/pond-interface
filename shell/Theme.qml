@@ -6,7 +6,7 @@ import Quickshell.Io
 
 Singleton {
   id: root
-  property string name: "unthemed"
+  property string name: "daylight"
   readonly property bool daylight: name === "daylight"
   readonly property color sidebarCardOutline: Qt.rgba(1, 1, 1, 0.10)
   readonly property color sidebarHoverFill: Qt.rgba(1, 1, 1, 0.04)
@@ -21,7 +21,7 @@ Singleton {
     printErrors: false
     onFileChanged: reload()
     onLoaded: {
-      try { root.name = JSON.parse(text()).theme === "daylight" ? "daylight" : "unthemed"; }
+      try { root.name = JSON.parse(text()).theme === "unthemed" ? "unthemed" : "daylight"; }
       catch (error) { console.warn("Could not read theme selection:", error); }
     }
   }
