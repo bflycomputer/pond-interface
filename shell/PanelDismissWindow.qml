@@ -25,7 +25,7 @@ PanelWindow {
   WlrLayershell.layer: WlrLayer.Top
   WlrLayershell.namespace: "pond-controls-dismiss-"
       + (screen ? screen.name : "unknown")
-  WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+  WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
   WlrLayershell.exclusionMode: ExclusionMode.Ignore
 
   mask: Region {
