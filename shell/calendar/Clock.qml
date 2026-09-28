@@ -1,6 +1,7 @@
 import QtQuick
 import Quickshell
 import ".." as Shell
+import "../battery" as Battery
 
 Shell.Card {
   id: root
@@ -10,6 +11,7 @@ Shell.Card {
   signal clicked
   Accessible.role: Accessible.Button
   Accessible.name: "Open calendar"
+  Accessible.description: Battery.State.description
   Accessible.onPressAction: clicked()
 
   MouseArea {
@@ -21,7 +23,8 @@ Shell.Card {
   implicitWidth: Shell.Theme.lerp(Shell.Theme.sidebarCardExpandedWidth,
       Shell.Theme.sidebarCardCollapsedWidth, Shell.Theme.collapseWidth(collapseProgress))
   implicitHeight: Shell.Theme.lerp(Shell.Theme.sidebarTimeExpandedHeight,
-      105, Shell.Theme.collapseHeight(collapseProgress))
+      105 + batteryHeight, Shell.Theme.collapseHeight(collapseProgress))
+  readonly property real batteryHeight: Battery.State.present ? 22 : 0
   radius: Shell.Theme.lerp(12, Shell.Theme.sidebarCardRadius, Shell.Theme.collapseWidth(collapseProgress))
 
   readonly property real expandedOpacity:
@@ -59,6 +62,14 @@ Shell.Card {
     }
 
     FontMetrics { id: periodMetrics; font: periodText.font }
+
+    Battery.Indicator {
+      x: periodText.x - 3
+      y: 14
+      visible: Battery.State.present
+      percentage: Battery.State.percentage
+      charging: Battery.State.charging
+    }
 
     Text {
       id: periodText
@@ -172,10 +183,18 @@ Shell.Card {
       horizontalAlignment: Text.AlignHCenter
     }
 
+    Battery.Indicator {
+      x: 16
+      y: 53
+      visible: Battery.State.present
+      percentage: Battery.State.percentage
+      charging: Battery.State.charging
+    }
+
     Rectangle {
       id: compactDivider
       x: 16
-      y: 58
+      y: 58 + root.batteryHeight
       width: 16
       height: 1
       color: Shell.Theme.sidebarV3Divider
@@ -184,7 +203,7 @@ Shell.Card {
 
     Text {
       x: 0
-      y: 69 + compactMetrics.capitalHeight - baselineOffset
+      y: 69 + root.batteryHeight + compactMetrics.capitalHeight - baselineOffset
       width: parent.width
       text: Qt.formatDateTime(root.previewTime, "ddd").slice(0, 2).toUpperCase()
       color: Shell.Theme.sidebarV3Foreground
@@ -197,7 +216,7 @@ Shell.Card {
 
     Text {
       x: 0
-      y: 69 + collapsedContent.lineStep + compactMetrics.capitalHeight - baselineOffset
+      y: 69 + root.batteryHeight + collapsedContent.lineStep + compactMetrics.capitalHeight - baselineOffset
       width: parent.width
       text: Qt.formatDate(root.previewTime, "dd")
       color: Shell.Theme.sidebarV3Foreground

@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import "." as Bluetooth
 import ".." as Shell
+import "../battery" as Battery
 Bluetooth.Row {
   id: root
   property var device: ({})
@@ -27,7 +28,7 @@ Bluetooth.Row {
       visible: root.showBattery && root.hovered
       color: Shell.PanelStyle.border
     }
-    BatteryIndicator { x: 211; y: 14; visible: root.showBattery; percentage: root.device.battery || 0 }
+    Battery.Indicator { x: 211; y: 14; visible: root.showBattery; percentage: root.device.battery || 0 }
     Text {
       x: 229; anchors.verticalCenter: parent.verticalCenter; width: 35
       visible: root.showBattery
