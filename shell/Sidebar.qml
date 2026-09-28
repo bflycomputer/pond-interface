@@ -105,7 +105,14 @@ PanelWindow {
       height: Math.max(0, Math.floor(bottomStack.y) - y)
       intersection: Intersection.Subtract
     }
-    Region { item: root.activePanel }
+    // Region.item can retain the opening animation's scaled bounds and leave
+    // the close button outside the input mask. Track the panel bounds directly.
+    Region {
+      x: root.activePanel ? root.activePanel.x : 0
+      y: root.activePanel ? root.activePanel.y : 0
+      width: root.activePanel ? root.activePanel.width : 0
+      height: root.activePanel ? root.activePanel.height : 0
+    }
   }
   anchors { left: true; top: true; bottom: true }
   WlrLayershell.layer: WlrLayer.Top
