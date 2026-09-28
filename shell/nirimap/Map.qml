@@ -147,7 +147,15 @@ Shell.Card {
           onWindowItemsChanged: Qt.callLater(updateWindowStart)
           onActiveWindowIdChanged: Qt.callLater(updateWindowStart)
 
+          Connections {
+            target: dragSession
+            function onActiveChanged() {
+              if (!dragSession.active) expandedWorkspace.updateWindowStart();
+            }
+          }
+
           function updateWindowStart() {
+            if (dragSession.windowDrag) return;
             const columns = Shell.Theme.workspaceGridColumns;
             // Preserve the first icon when windows before it close or move.
             const first = windowItems.findIndex(w => w.winId === firstWindowId);
@@ -330,28 +338,51 @@ Shell.Card {
                 }
               }
 
-              Repeater {
+              DropArea {
+                id: windowDrop
                 parent: expandedLayer
-                model: expandedWorkspace.carouselSlotCount
-                DropArea {
-                  id: windowDrop
-                  required property int index
-                  readonly property int workspaceId: Number(expandedWorkspace.model.workspaceId)
-                  readonly property int slot: Math.min(index, expandedWorkspace.remainingWindows)
-                  readonly property real slotX: windowViewport.x + windowCarousel.x
-                      + index * Shell.Theme.workspaceControlPitch - Shell.Theme.workspaceControlGap / 2
-                  x: Math.max(windowViewport.x, slotX)
-                  y: expandedColumn.y + expandedWorkspace.y + 4
-                  width: Math.max(0, Math.min(windowViewport.x + windowViewport.width, slotX + 48) - x)
-                  height: 56
-                  keys: ["pond-window"]
-                  enabled: expandedLayer.enabled && index <= expandedWorkspace.remainingWindows
-                  onEntered: dragSession.destination = windowDrop
-                  onExited: if (dragSession.held && dragSession.destination === windowDrop) dragSession.destination = null
-                  onDropped: drop => drop.acceptProposedAction()
-                  function snapPosition() {
-                    return windowCarousel.mapToItem(dragSession.parent,
-                        slot * Shell.Theme.workspaceControlPitch, 0);
+                readonly property int workspaceId: Number(expandedWorkspace.model.workspaceId)
+                property int slot: 0
+                readonly property int lastStart: Math.max(0,
+                    expandedWorkspace.remainingWindows + 1 - Shell.Theme.workspaceGridColumns)
+                readonly property real viewportX: drag.x - windowViewport.x
+                readonly property int scrollDirection:
+                    viewportX < 12 && expandedWorkspace.windowStart > 0 ? -1
+                    : viewportX > windowViewport.width - 12 && expandedWorkspace.windowStart < lastStart ? 1 : 0
+                x: 0
+                y: expandedColumn.y + expandedWorkspace.y + 4
+                width: expandedWorkspace.width
+                height: 56
+                keys: ["pond-window"]
+                enabled: expandedLayer.enabled && expandedWorkspace.matchesOutput
+                onEntered: { updateSlot(); dragSession.destination = windowDrop; }
+                onPositionChanged: updateSlot()
+                onExited: if (dragSession.held && dragSession.destination === windowDrop) dragSession.destination = null
+                onDropped: drop => drop.acceptProposedAction()
+                function updateSlot() {
+                  if (!dragSession.held) return;
+                  slot = Math.max(0, Math.min(expandedWorkspace.remainingWindows,
+                      Math.floor((viewportX - windowCarousel.x + Shell.Theme.workspaceControlGap / 2)
+                                 / Shell.Theme.workspaceControlPitch)));
+                }
+                function snapPosition() {
+                  return windowViewport.mapToItem(dragSession.parent,
+                      (slot - expandedWorkspace.windowStart) * Shell.Theme.workspaceControlPitch, 0);
+                }
+
+                // Scrolling moves the slots beneath a stationary drag pointer.
+                Connections {
+                  target: windowCarousel
+                  function onXChanged() { if (windowDrop.containsDrag) windowDrop.updateSlot(); }
+                }
+                Timer {
+                  interval: 300
+                  repeat: true
+                  running: dragSession.held && windowDrop.containsDrag && windowDrop.scrollDirection !== 0
+                  onTriggered: {
+                    expandedWorkspace.windowStart += windowDrop.scrollDirection;
+                    expandedWorkspace.firstWindowId =
+                        expandedWorkspace.windowItems[expandedWorkspace.windowStart]?.winId ?? null;
                   }
                 }
               }

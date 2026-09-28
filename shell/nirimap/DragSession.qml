@@ -14,6 +14,10 @@ Item {
   property bool previewed: false
   property var applied: null
   onDestinationChanged: if (windowDrag && held) preview.restart()
+  Connections {
+    target: root.windowDrag ? root.destination : null
+    function onSlotChanged() { if (root.held) preview.restart(); }
+  }
   readonly property bool active: source !== null
   readonly property bool windowDrag: source?.kind === "window"
   property point origin
