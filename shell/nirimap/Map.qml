@@ -150,7 +150,7 @@ Shell.Card {
           Connections {
             target: dragSession
             function onActiveChanged() {
-              if (!dragSession.active) expandedWorkspace.updateWindowStart();
+              if (!dragSession.active) Qt.callLater(expandedWorkspace.updateWindowStart);
             }
           }
 
@@ -362,7 +362,7 @@ Shell.Card {
                 function updateSlot() {
                   if (!dragSession.held) return;
                   slot = Math.max(0, Math.min(expandedWorkspace.remainingWindows,
-                      Math.floor((viewportX - windowCarousel.x + Shell.Theme.workspaceControlGap / 2)
+                      Math.floor((drag.x - windowViewport.x - windowCarousel.x + Shell.Theme.workspaceControlGap / 2)
                                  / Shell.Theme.workspaceControlPitch)));
                 }
                 function snapPosition() {

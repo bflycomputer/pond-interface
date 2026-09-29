@@ -45,7 +45,7 @@ Item {
   Drag.proposedAction: Qt.MoveAction
 
   function begin(data, item, pressPoint, currentPoint) {
-    if (active)
+    if (active || !item.contains(item.mapFromItem(null, pressPoint.x, pressPoint.y)))
       return;
     source = data;
     origin = item.mapToItem(parent, 0, 0);
