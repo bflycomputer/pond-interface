@@ -7,7 +7,7 @@ import "settings" as Settings
 import "wifi" as Wifi
 import "calendar" as Calendar
 import "media" as Media
-import "nirimap" as Nirimap
+import "minimap" as Minimap
 import "notifications" as Notifications
 import "installs" as Installs
 import Pond.Wallpaper as Wallpaper
@@ -154,7 +154,7 @@ PanelWindow {
       }
     }
 
-    Nirimap.Map {
+    Minimap.Map {
       id: workspacesCard
       screen: root.screen
       collapseProgress: root.collapseProgress

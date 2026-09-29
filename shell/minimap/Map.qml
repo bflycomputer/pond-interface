@@ -3,7 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Shapes
 import Quickshell
-import "." as Nirimap
+import "." as Minimap
 import ".." as Shell
 
 Shell.Card {
@@ -48,7 +48,7 @@ Shell.Card {
   Keys.onEscapePressed: dragSession.cancel()
   onCollapseProgressChanged: if (collapseProgress >= 0.56) dragSession.cancel()
 
-  Nirimap.DragSession {
+  Minimap.DragSession {
     id: dragSession
     parent: root.Window.window?.contentItem ?? root
   }
@@ -298,7 +298,7 @@ Shell.Card {
                     Behavior on opacity { Shell.HoverAnimation {} }
                   }
 
-                  Nirimap.WindowIcon {
+                  Minimap.WindowIcon {
                     id: windowIcon
                     anchors.fill: parent
                     visible: workspaceSlot.hasWindow
@@ -329,7 +329,7 @@ Shell.Card {
                     }
                   }
 
-                  Nirimap.PlusButton {
+                  Minimap.PlusButton {
                     anchors.fill: parent
                     revealed: workspaceSlot.plusRevealed
                     enabled: expandedLayer.enabled && !dragSession.active
@@ -654,7 +654,7 @@ Shell.Card {
               // An array model destroys them on every new JSON snapshot.
               model: collapsedWorkspace.windowItems.length
 
-              delegate: Nirimap.WindowIcon {
+              delegate: Minimap.WindowIcon {
                 required property int index
                 y: index * Shell.Theme.workspaceCollapsedControlPitch * root.heightProgress
                 controlSize: Shell.Theme.workspaceCollapsedControlSize

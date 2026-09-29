@@ -1,5 +1,5 @@
 import QtQuick
-import "." as Nirimap
+import "." as Minimap
 import ".." as Shell
 
 Item {
@@ -162,7 +162,7 @@ Item {
   Behavior on x { enabled: !root.held; Shell.HoverAnimation { duration: Shell.Theme.workspaceDragSnapDuration } }
   Behavior on y { enabled: !root.held; Shell.HoverAnimation { duration: Shell.Theme.workspaceDragSnapDuration } }
 
-  Nirimap.WindowIcon {
+  Minimap.WindowIcon {
     anchors.fill: parent
     visible: root.windowDrag
     windowData: root.source?.windowData ?? ({})
