@@ -1,4 +1,4 @@
-// Shell integration updates with pond-shell
+// Shell integration
 include "./shell/config.kdl"
 
 // Personal settings
