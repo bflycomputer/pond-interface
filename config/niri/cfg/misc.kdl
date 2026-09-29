@@ -10,10 +10,11 @@ environment {
     XDG_SESSION_TYPE "wayland"
 }
 
-cursor {
-    xcursor-theme "capitaine-cursors"
-    xcursor-size 24
-}
+// Default provided by shell/config.kdl. Uncomment to override.
+// cursor {
+//     xcursor-theme "capitaine-cursors"
+//     xcursor-size 24
+// }
 
 debug {
     // Allows notification actions and window activation.

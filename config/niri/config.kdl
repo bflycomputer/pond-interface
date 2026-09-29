@@ -1,3 +1,7 @@
+// Shell integration updates with pond-shell
+include "/usr/share/pond-interface/config/niri/shell/config.kdl"
+
+// Personal settings
 include "./cfg/animation.kdl"
 include "./cfg/autostart.kdl"
 include "./cfg/keybinds.kdl"
