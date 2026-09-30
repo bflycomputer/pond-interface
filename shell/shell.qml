@@ -14,6 +14,18 @@ ShellRoot {
 
   Shortcuts {}
 
+  Process {
+    id: updateReminder
+    command: ["python3", Quickshell.shellDir + "/notifications/update_reminder.py"]
+  }
+  Timer {
+    interval: 60 * 60 * 1000
+    running: Quickshell.screens.length > 0
+    repeat: true
+    triggeredOnStart: true
+    onTriggered: if (!updateReminder.running) updateReminder.running = true
+  }
+
   FileView {
     path: Quickshell.screens.length
         ? (Quickshell.env("XDG_STATE_HOME") || Quickshell.env("HOME") + "/.local/state") + "/pond-interface/manual-shown"
