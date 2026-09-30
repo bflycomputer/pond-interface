@@ -1,7 +1,6 @@
 import QtQuick
-import Quickshell.Widgets
 
-ClippingRectangle {
+Rectangle {
   id: root
   property bool checked: false
   property bool busy: false
@@ -16,7 +15,6 @@ ClippingRectangle {
   color: root.hovered ? PanelStyle.hover : "transparent"
   border.color: PanelStyle.border
   border.width: 1
-  contentInsideBorder: false
 
   Behavior on position {
     NumberAnimation {
