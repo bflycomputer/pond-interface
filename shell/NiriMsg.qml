@@ -294,9 +294,12 @@ Singleton {
   // & every other kitty title is considered idle Codex.
   // This is obviously a dumb hack. Should fix & add support for more stuff.
   function _isWorking(title) { return /^[\u2800-\u28ff\u25d0\u25d1] /.test(title); }
+  // Codex blinks between these markers while input or approval is pending.
+  function _needsAttention(title) { return /^\[\s*[!.]\s*\](?:\s|$)/.test(title); }
   function _isAgent(w) {
     return w.appId === "kitty" && w.title !== ""
-        && (/^[\u2800-\u28ff\u25d0\u25d1\u2733] /.test(w.title) || !/ - \S+$|@/.test(w.title));
+        && (_needsAttention(w.title) || /^[\u2800-\u28ff\u25d0\u25d1\u2733] /.test(w.title)
+            || !/ - \S+$|@/.test(w.title));
   }
 
   function _appInfo(appId) {
@@ -432,7 +435,8 @@ Singleton {
           winId: w.id,
           iconName: info.iconName,
           iconSource: agent ? "" : info.iconSource,
-          dotState: !agent ? "" : _isWorking(w.title) ? "working" : _unread[w.id] ? "unread" : "read",
+          dotState: !agent ? "" : _needsAttention(w.title) ? "attention"
+              : _isWorking(w.title) ? "working" : _unread[w.id] ? "unread" : "read",
           loaderVariant: w.id % 4 + 1
         });
       }

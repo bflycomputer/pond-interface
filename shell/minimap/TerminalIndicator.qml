@@ -12,11 +12,13 @@ Item {
   readonly property int variant: Math.max(1, Math.min(4, loaderVariant))
   readonly property int workingFrameCount: variant === 3 ? 4 : 2
   readonly property bool animating: visible && dotState === "working"
+  readonly property bool orange: dotState === "unread" || dotState === "attention"
 
   width: 24
   height: 24
   Accessible.role: Accessible.Indicator
   Accessible.name: "Terminal " + variant + (dotState === "working" ? " working"
+      : dotState === "attention" ? " waiting for input"
       : dotState === "unread" ? " finished, unread" : " ready, viewed")
 
   onAnimatingChanged: animationFrame = 0
@@ -36,11 +38,11 @@ Item {
     visible: root.variant === 1
     width: 14; height: 14
     preferredRendererType: Shape.CurveRenderer
-    rotation: root.dotState === "unread" || (root.dotState === "working" && root.animationFrame === 1) ? 45 : 0
+    rotation: root.orange || (root.dotState === "working" && root.animationFrame === 1) ? 45 : 0
     ShapePath {
       strokeWidth: -1
       fillColor: root.dotState === "working" ? "#CBA6F7"
-          : root.dotState === "unread" ? "#FF9F67" : "#CBE25B"
+          : root.orange ? "#FF9F67" : "#CBE25B"
       PathRectangle { width: square.width; height: square.height; radius: 1 }
     }
   }
@@ -52,7 +54,7 @@ Item {
       required property int index
       anchors.centerIn: parent
       visible: root.dotState === "working" ? index === root.animationFrame
-          : index === root.workingFrameCount + (root.dotState === "unread" ? 0 : 1)
+          : index === root.workingFrameCount + (root.orange ? 0 : 1)
       // Scale the hourglass artwork from 20px to 18px.
       width: root.variant === 2 ? 36 : 40
       height: width
