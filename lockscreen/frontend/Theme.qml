@@ -13,6 +13,6 @@ QtObject {
     readonly property color iconDisc: "#f0e5ff"
     readonly property color powerLabel: "#ffc5a7"
 
-    readonly property string displayFont: "ABC Gramercy"
+    readonly property string displayFont: "Pond Gramercy"
     readonly property string uiFont: "Onest"
 }

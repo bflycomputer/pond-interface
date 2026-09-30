@@ -80,7 +80,7 @@ Singleton {
   readonly property int mediaRevealDuration: 180
   readonly property int sidebarStrokeWidth: 1
   readonly property string fontFamily: "Onest"
-  readonly property string titleFontFamily: "ABC Gramercy"
+  readonly property string titleFontFamily: "Pond Gramercy"
   readonly property string plexFontFamily: "IBM Plex Mono"
 
   function collapseWidth(progress) { return ramp(progress, 0, 0.56); }
