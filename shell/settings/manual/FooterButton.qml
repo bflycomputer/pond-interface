@@ -5,7 +5,7 @@ import QtQuick.Effects
 Rectangle {
   id: root
   required property string service
-  readonly property string url: service === "discord" ? "https://discord.gg/RRGcVTCqUv"
+  readonly property string url: service === "discord" ? "https://discord.gg/xJeTd5WJAp"
       : service === "x" ? "https://x.com/bflycomputer" : "mailto:hello@butterfly.so"
   readonly property bool highlighted: hover.hovered || activeFocus
   objectName: "manualContact-" + service
