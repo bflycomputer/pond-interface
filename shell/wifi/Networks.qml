@@ -22,7 +22,7 @@ DeviceList {
     onRowClicked: {
       if (modelData.connected)
         root.stackController.push("details", modelData);
-      else if (modelData.locked)
+      else if (modelData.locked && !modelData.known)
         root.stackController.push("join", modelData);
       else
         root.stackController.connectNetwork(modelData.ssid, "", false);

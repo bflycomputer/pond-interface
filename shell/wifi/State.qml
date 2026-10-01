@@ -21,7 +21,8 @@ Singleton {
       .filter(n => n.connected || n.signalStrength > 0)
       .map(n => ({ssid: n.name, signal: n.signalStrength * 100,
                  bars: n.signalStrength >= 0.6 ? 3 : n.signalStrength >= 0.35 ? 2 : 1,
-                 locked: n.security !== WifiSecurityType.Open, connected: n.connected}))
+                 locked: n.security !== WifiSecurityType.Open, connected: n.connected,
+                 known: n.known}))
       .sort((a, b) => Number(b.connected) - Number(a.connected)
           || b.signal - a.signal || a.ssid.localeCompare(b.ssid))
   readonly property string uploadRate: txCounter.rate
