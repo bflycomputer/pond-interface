@@ -14,13 +14,16 @@ Rectangle {
   readonly property bool hovered: fieldHover.hovered
   readonly property bool focused: editor.activeFocus
 
+  function focusEditor() {
+    editor.forceActiveFocus(Qt.OtherFocusReason);
+  }
+
   implicitWidth: PanelStyle.fieldWidth
   implicitHeight: PanelStyle.fieldHeight
   radius: PanelStyle.rowRadius
   color: focused || hovered || highlighted
       ? PanelStyle.pressed : PanelStyle.hover
-  border.width: focused ? 0.5 : 0
-  border.color: PanelStyle.accent
+  border.width: 0
   antialiasing: true
 
   Behavior on color {

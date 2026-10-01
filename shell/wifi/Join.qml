@@ -12,6 +12,9 @@ Item {
   implicitWidth: PanelStyle.width
   implicitHeight: canConnect ? 226 : 167
 
+  Component.onCompleted: if (interactive) password.focusEditor()
+  onInteractiveChanged: if (interactive) password.focusEditor()
+
   Behavior on implicitHeight {
     NumberAnimation {
       duration: PanelStyle.openDuration
