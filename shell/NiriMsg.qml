@@ -233,6 +233,9 @@ Singleton {
         isActive: target && w.output === target.output ? w.id === a.id : w.isActive,
         isFocused: a.focused ? w.id === a.id : w.isFocused
       }));
+      if (a.focused && target && !target.isFocused && !dragOrigin
+          && !Object.values(_windows).some(w => w.workspaceId === a.id))
+        Quickshell.execDetached(["vicinae", "open"]);
     } else if (ev.WorkspaceActiveWindowChanged) {
       const a = ev.WorkspaceActiveWindowChanged;
       workspaces = workspaces.map(w => w.id === a.workspace_id
