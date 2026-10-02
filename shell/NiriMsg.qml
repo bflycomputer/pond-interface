@@ -10,6 +10,7 @@ Singleton {
   property var workspaces: []
   property bool overviewOpen: false
   property var dragOrigin: null
+  property bool _workspaceLauncherOpen: false
   property var _windows: ({})
   property var _appInfoCache: ({})
   property ListModel workspaceRows: ListModel {}
@@ -214,7 +215,6 @@ Singleton {
       return;
     } else if (ev.OverviewOpenedOrClosed) {
       overviewOpen = ev.OverviewOpenedOrClosed.is_open;
-      return;
     } else if (ev.WorkspacesChanged) {
       const list = ev.WorkspacesChanged.workspaces.map(w => ({
         id: w.id, idx: w.idx, name: w.name || "", output: w.output || "",
@@ -233,9 +233,11 @@ Singleton {
         isActive: target && w.output === target.output ? w.id === a.id : w.isActive,
         isFocused: a.focused ? w.id === a.id : w.isFocused
       }));
-      if (a.focused && target && !target.isFocused && !dragOrigin
-          && !Object.values(_windows).some(w => w.workspaceId === a.id))
+      if (a.focused && target && !target.isFocused && !dragOrigin && !overviewOpen
+          && !Object.values(_windows).some(w => w.workspaceId === a.id)) {
+        _workspaceLauncherOpen = true;
         Quickshell.execDetached(["vicinae", "open"]);
+      }
     } else if (ev.WorkspaceActiveWindowChanged) {
       const a = ev.WorkspaceActiveWindowChanged;
       workspaces = workspaces.map(w => w.id === a.workspace_id
@@ -278,6 +280,12 @@ Singleton {
       _windows = wins;
     } else {
       return;
+    }
+    const focusedWorkspace = workspaces.find(w => w.isFocused);
+    if (_workspaceLauncherOpen && (overviewOpen || (focusedWorkspace
+        && Object.values(_windows).some(w => w.workspaceId === focusedWorkspace.id)))) {
+      _workspaceLauncherOpen = false;
+      Quickshell.execDetached(["vicinae", "close"]);
     }
     _recompute();
   }
