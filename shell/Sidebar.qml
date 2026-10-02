@@ -23,8 +23,6 @@ PanelWindow {
   readonly property real cardWidth: Theme.lerp(Theme.sidebarCardExpandedWidth,
       Theme.sidebarCardCollapsedWidth, Theme.collapseWidth(collapseProgress))
   readonly property real notificationCardCenterY: mainStack.y + notificationCard.y + 24
-  property real siblingOpacity: Notifications.State.panelOpen
-      && Notifications.State.panelOutputName === screen.name ? 0.6 : 1
 
   readonly property real panelX: Theme.sidebarOuterMargin + cardWidth + Theme.sidebarCardGap
   readonly property bool panelOpen: wifiPanel.opened || audioPanel.opened || bluetoothPanel.opened
@@ -123,7 +121,6 @@ PanelWindow {
   exclusiveZone: Theme.sidebarOuterMargin + (expanded
       ? Theme.sidebarCardExpandedWidth : Theme.sidebarCardCollapsedWidth)
   Behavior on collapseProgress { Motion {} }
-  Behavior on siblingOpacity { HoverAnimation { duration: 180 } }
 
   Loader {
     active: Theme.daylight
@@ -146,7 +143,6 @@ PanelWindow {
       id: timeCard
       width: root.cardWidth
       collapseProgress: root.collapseProgress
-      opacity: root.siblingOpacity
       onClicked: {
         root.dismissPanels();
         Notifications.State.closePanel();
@@ -162,7 +158,6 @@ PanelWindow {
           bottomStack.y - Theme.sidebarCardGap - mainStack.y
           - timeCard.height - mediaCard.height - notificationCard.height - installsCard.height
           - Theme.sidebarCardGap * (2 + (mediaCard.visible ? 1 : 0) + (installsCard.visible ? 1 : 0)))
-      opacity: root.siblingOpacity
       onFocusRequested: index => NiriMsg.focusWorkspace(index)
       onWindowRequested: windowId => NiriMsg.focusWindow(windowId)
       onAddRequested: workspaceId => NiriMsg.openLauncher(workspaceId)
@@ -171,7 +166,6 @@ PanelWindow {
     Media.Player {
       id: mediaCard
       collapseProgress: root.collapseProgress
-      opacity: root.siblingOpacity
     }
 
     Notifications.SidebarCard {
@@ -185,7 +179,6 @@ PanelWindow {
       id: installsCard
       width: root.cardWidth
       collapseProgress: root.collapseProgress
-      opacity: root.siblingOpacity
     }
   }
 
@@ -236,7 +229,6 @@ PanelWindow {
     anchors.bottomMargin: Theme.sidebarOuterMargin
     width: controls.width
     spacing: Theme.sidebarCardGap
-    opacity: root.siblingOpacity
     Screenshot.Preview {
       width: root.cardWidth
       outputName: root.screen.name

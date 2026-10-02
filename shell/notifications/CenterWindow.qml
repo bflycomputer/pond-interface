@@ -6,8 +6,8 @@ import Quickshell.Wayland
 import "." as Notifications
 import ".." as Shell
 
-// Focused notification pullout. The full-screen surface provides the window
-// shade and outside-click dismissal; the 280px panel itself remains aligned
+// Focused notification pullout. The full-screen surface provides
+// outside-click dismissal; the 280px panel itself remains aligned
 // to the live sidebar edge in both expanded and collapsed states.
 PanelWindow {
   id: root
@@ -37,7 +37,6 @@ PanelWindow {
       : Math.max(Notifications.Style.desktopMargin,
                  Math.min(bar.notificationCardCenterY - panelHeight / 2,
                           height - Notifications.Style.desktopMargin - panelHeight))
-  readonly property real windowStart: panelLeft
 
   screen: bar.screen
   visible: requested || reveal > 0.001
@@ -56,16 +55,6 @@ PanelWindow {
   WlrLayershell.exclusionMode: ExclusionMode.Ignore
 
   Behavior on reveal { Shell.Motion { duration: Notifications.Style.panelDuration } }
-
-  Rectangle {
-    x: root.windowStart
-    y: Notifications.Style.desktopMargin
-    width: Math.max(0, parent.width - x - Notifications.Style.desktopMargin)
-    height: Math.max(0, parent.height - Notifications.Style.desktopMargin * 2)
-    radius: 12
-    color: Qt.rgba(0, 0, 0, 0.4 * root.reveal)
-    antialiasing: true
-  }
 
   MouseArea {
     anchors.fill: parent
