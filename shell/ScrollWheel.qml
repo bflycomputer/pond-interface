@@ -3,16 +3,13 @@ import QtQuick
 WheelHandler {
   id: root
   required property Flickable view
-  parent: view
-  acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+  parent: viewd
+  acceptedDevices: PointerDevice.Mouse
   target: null
   enabled: view.interactive
   onWheel: event => {
-    // Keep touchpad pixel deltas native.
-    if (event.phase !== Qt.NoScrollPhase || event.angleDelta.y === 0) {
-      event.accepted = false;
+    if (event.angleDelta.y === 0)
       return;
-    }
     view.cancelFlick();
     const start = wheelMotion.running ? wheelMotion.to : view.contentY;
     // Each scroll line is 40 logical pixels, independent of card height.
