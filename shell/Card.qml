@@ -1,4 +1,5 @@
 import QtQuick
+import Quickshell
 
 Rectangle {
   id: root
@@ -7,6 +8,10 @@ Rectangle {
   property color classicColor: Theme.sidebarV3Background
   property bool animateClassicColor: false
   readonly property bool cardHovered: cardHover.hovered
+  readonly property Region blurRegion: Region {
+    item: root
+    radius: root.radius
+  }
   color: Theme.daylight ? (cardHovered ? Theme.sidebarCardHoverFill : Theme.sidebarCardFill) : classicColor
   border.width: Theme.daylight ? 1 : 0
   border.color: Theme.sidebarCardOutline

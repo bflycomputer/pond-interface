@@ -85,6 +85,13 @@ PanelWindow {
   }
 
   color: "transparent"
+  BackgroundEffect.blurRegion: Theme.daylight ? cardBlur : null
+  onHeightChanged: cardBlur.changed()
+  Region {
+    id: cardBlur
+    regions: [timeCard.blurRegion, workspacesCard.blurRegion, mediaCard.blurRegion,
+      notificationCard.blurRegion, installsCard.blurRegion, controls.blurRegion]
+  }
   // Keep compositor resizes out of the card animation; only the input area shrinks.
   implicitWidth: Math.ceil(Math.max(Theme.sidebarOuterMargin + Theme.sidebarCardExpandedWidth + Theme.sidebarFadeWidth,
       wifiPanel.visible ? panelX + wifiPanel.width + 67 : 0,
@@ -211,6 +218,7 @@ PanelWindow {
 
   Column {
     id: bottomStack
+    onYChanged: cardBlur.changed()
     x: Theme.sidebarOuterMargin
     anchors.bottom: parent.bottom
     anchors.bottomMargin: Theme.sidebarOuterMargin
@@ -220,6 +228,11 @@ PanelWindow {
       width: root.cardWidth
       outputName: root.screen.name
       collapsed: root.collapseProgress > 0.5
+    }
+    BrightnessFeedback {
+      screen: root.screen
+      collapseProgress: root.collapseProgress
+      expandedBottomMargin: Theme.sidebarOuterMargin + controls.height + 8
     }
     BottomControls {
       id: controls

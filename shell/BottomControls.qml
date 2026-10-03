@@ -1,4 +1,6 @@
 import QtQuick
+import Quickshell
+import Quickshell.Wayland
 import "audio" as Audio
 import "wifi" as Wifi
 
@@ -18,6 +20,7 @@ Card {
   property bool settingsOpen: false
   property bool wifiHoverRetained: false
   property bool keyboardVolumeVisible: false
+  readonly property bool collapsedVolumeVisible: collapseProgress >= 0.56 && keyboardVolumeVisible && !soundOpen
   // Wi-Fi metrics and the compact sound control share the same staged exit:
   // fade the content, hold the shell, then collapse its height.
   property bool hoverHeightRetained: false
@@ -109,12 +112,58 @@ Card {
     width: 132
     height: 32
     externalValue: Audio.State.outputVolume
+    trackColor: Theme.daylight ? Theme.sidebarInnerOutline : PanelStyle.border
     interactive: root.soundSliderRequested
     hoverEnabled: root.soundSliderContentVisible
     visible: opacity > 0.001
     opacity: root.soundSliderContentVisible ? 1 : 0
     onMoved: Audio.State.setOutputVolume(compactSoundSlider.value)
 
+  }
+
+  LazyLoader {
+    active: root.collapsedVolumeVisible
+    PanelWindow {
+      screen: root.QsWindow.window ? root.QsWindow.window.screen : null
+      color: "transparent"
+      BackgroundEffect.blurRegion: Theme.daylight ? volumeCard.blurRegion : null
+      implicitWidth: Theme.sidebarOuterMargin + root.width + 4 + Theme.sidebarCardExpandedWidth + 67
+      implicitHeight: 36 + 134
+      anchors { left: true; bottom: true }
+      margins.bottom: Math.round(Theme.sidebarOuterMargin + root.height - 46 - 36 - 67)
+      WlrLayershell.layer: WlrLayer.Overlay
+      WlrLayershell.namespace: "pond-volume"
+      WlrLayershell.exclusionMode: ExclusionMode.Ignore
+      mask: Region {}
+
+      Item {
+        x: Theme.sidebarOuterMargin + root.width + 4
+        y: 67
+        width: Theme.sidebarCardExpandedWidth
+        height: 36
+        Shadow {
+          anchors.fill: parent
+          cornerRadius: PanelStyle.radius
+          shadows: PanelStyle.controlShadows
+        }
+        Card {
+          id: volumeCard
+          anchors.fill: parent
+          radius: PanelStyle.radius
+          classicColor: PanelStyle.surface
+        }
+        Slider {
+          x: 12
+          width: 132
+          height: 32
+          externalValue: Audio.State.outputVolume
+          trackColor: Theme.daylight ? Theme.sidebarInnerOutline : PanelStyle.border
+          showHandle: false
+          interactive: false
+          hoverEnabled: false
+        }
+      }
+    }
   }
 
   Behavior on height {

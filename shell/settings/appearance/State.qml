@@ -18,6 +18,7 @@ Singleton {
   property string pendingBrightnessOutput: ""
   property bool draggingBrightness: false
   property string error: ""
+  signal keyboardBrightnessChanged(string outputName, real value)
   readonly property bool pickingWallpaper: picker.running
   readonly property bool busy: action.running
   readonly property bool active: Settings.State.opened && Settings.State.page === "appearance"
@@ -117,6 +118,7 @@ Singleton {
   function receiveBrightness(output, value) {
     if (output === display.output && !draggingBrightness && pendingBrightness < 0 && !brightnessWriter.running)
       brightness = value;
+    keyboardBrightnessChanged(output, value);
   }
   function toggleSection(section) { expandedSection = expandedSection === section ? "" : section; }
   function apply(args) {

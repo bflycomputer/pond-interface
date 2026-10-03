@@ -6,6 +6,8 @@ import ".." as Shell
 Item {
   id: root
   property real collapseProgress: 0
+  readonly property alias blurRegion: background.blurRegion
+  onYChanged: blurRegion.changed()
   readonly property bool empty: Notifications.State.notificationCount === 0
   signal panelRequested
   property real transientProgress: Notifications.State.transientVisible ? 1 : 0
@@ -16,6 +18,7 @@ Item {
   Behavior on transientProgress { Shell.Motion {} }
 
   Shell.Card {
+    id: background
     anchors.fill: parent
     radius: root.empty ? 12 : Shell.Theme.sidebarCardRadius
     Item {

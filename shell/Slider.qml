@@ -6,7 +6,9 @@ T.Slider {
 
   property real externalValue: 0
   property bool showInlineValue: true
+  property bool showHandle: true
   property bool interactive: true
+  property color trackColor: PanelStyle.border
   signal dragStarted
   signal dragFinished
   onPressedChanged: pressed ? dragStarted() : dragFinished()
@@ -36,7 +38,7 @@ T.Slider {
     width: parent.width
     height: 12
     radius: 6
-    color: PanelStyle.border
+    color: root.trackColor
   }
 
   Rectangle {
@@ -50,6 +52,7 @@ T.Slider {
 
   Rectangle {
     id: handle
+    visible: root.showHandle
     x: root.handleCenterX - width / 2
     y: root.handleTop
     width: root.handleSize
@@ -95,7 +98,7 @@ T.Slider {
     width: 26
     height: 22
     visible: opacity > 0.001
-    opacity: root.handleHovered || root.pressed ? 1 : 0
+    opacity: root.showHandle && (root.handleHovered || root.pressed) ? 1 : 0
 
     Behavior on opacity {
       NumberAnimation {
