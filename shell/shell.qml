@@ -48,7 +48,6 @@ ShellRoot {
     delegate: Scope {
       required property var modelData
       Wallpaper.Window {
-        id: desktopWallpaper
         screen: modelData
         custom: Appearance.State.wallpaperMode === "custom"
         dimmed: Theme.daylight
@@ -58,7 +57,6 @@ ShellRoot {
         id: sidebar
         screen: modelData
         expanded: root.expanded
-        wallpaper: desktopWallpaper
         onToggleRequested: root.expanded = !root.expanded
       }
       Notifications.ToastWindow { bar: sidebar }

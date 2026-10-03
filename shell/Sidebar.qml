@@ -10,13 +10,11 @@ import "media" as Media
 import "minimap" as Minimap
 import "notifications" as Notifications
 import "installs" as Installs
-import Pond.Wallpaper as Wallpaper
 import Pond.Screenshot as Screenshot
 
 PanelWindow {
   id: root
   required property bool expanded
-  required property Wallpaper.Window wallpaper
   property bool calendarOpen: false
   property real collapseProgress: expanded ? 0 : 1
   signal toggleRequested
@@ -121,17 +119,6 @@ PanelWindow {
   exclusiveZone: Theme.sidebarOuterMargin + (expanded
       ? Theme.sidebarCardExpandedWidth : Theme.sidebarCardCollapsedWidth)
   Behavior on collapseProgress { Motion {} }
-
-  Loader {
-    active: Theme.daylight
-    z: -1
-    width: Theme.sidebarOuterMargin + root.cardWidth + Theme.sidebarFadeWidth
-    height: root.height
-    sourceComponent: Wallpaper.Reveal {
-      wallpaper: root.wallpaper
-      fadeWidth: Theme.sidebarFadeWidth
-    }
-  }
 
   Column {
     id: mainStack

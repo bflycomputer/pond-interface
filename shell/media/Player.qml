@@ -85,7 +85,6 @@ Shell.Card {
           height: 19
           text: root.displayTitle
           textColor: Shell.Theme.sidebarV3Foreground
-          fadeColor: root.color
           fontWeight: Font.Medium
           playing: Media.State.isPlaying
         }
@@ -94,7 +93,6 @@ Shell.Card {
           height: 19
           text: Media.State.subtitle
           textColor: Qt.rgba(0.973, 0.976, 0.976, 0.5)
-          fadeColor: root.color
           fontWeight: Font.Normal
           playing: Media.State.isPlaying
         }

@@ -10,7 +10,8 @@ Card {
   readonly property real heightProgress: Theme.collapseHeight(collapseProgress)
   width: Theme.lerp(156, 48, widthProgress)
   height: Theme.lerp(openExpandedHeight, 168, heightProgress)
-  clip: false
+  contentClipped: false
+  radius: Theme.daylight ? Theme.lerp(12, 16, heightProgress) : Theme.sidebarCardRadius
 
   property bool wifiOpen: false
   property bool soundOpen: false

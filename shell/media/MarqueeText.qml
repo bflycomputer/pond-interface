@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Effects
 import ".." as Shell
 
 // Continuous, low-cost marquee used by the two metadata rows. Overflow always
@@ -9,7 +10,6 @@ Item {
 
   property string text: ""
   property color textColor: Shell.Theme.sidebarV3Foreground
-  property color fadeColor: Shell.Theme.sidebarV3Background
   property string fontFamily: Shell.Theme.fontFamily
   property int fontWeight: Font.Normal
   property real fontPixelSize: 13
@@ -23,8 +23,18 @@ Item {
   readonly property bool overflowing: textWidth > width + 0.5
   readonly property bool shouldScroll: visible && playing && overflowing
   readonly property real cycleWidth: textWidth + marqueeGap
+  readonly property real leftFadeWidth: Math.min(10, Math.max(1, width / 4))
+  readonly property real leftFadeAmount: Math.max(0, Math.min(1,
+      -offset / leftFadeWidth, (cycleWidth + offset) / leftFadeWidth))
 
   clip: true
+  layer.enabled: overflowing
+  layer.effect: MultiEffect {
+    maskEnabled: true
+    maskSource: edgeMask
+    maskThresholdMin: 0.5
+    maskSpreadAtMin: 1
+  }
 
   onTextChanged: reset()
   onWidthChanged: reset()
@@ -38,6 +48,7 @@ Item {
     running: root.shouldScroll
     loops: Animation.Infinite
 
+    PropertyAction { target: root; property: "offset"; value: 0 }
     PauseAnimation { duration: root.startDelay }
     NumberAnimation {
       target: root
@@ -79,26 +90,17 @@ Item {
   }
 
   Rectangle {
-    anchors.left: parent.left
-    width: Math.min(10, parent.width / 4)
+    id: edgeMask
+    width: parent.width
     height: parent.height
-    visible: root.shouldScroll && root.offset < -0.5
+    visible: false
+    layer.enabled: true
     gradient: Gradient {
       orientation: Gradient.Horizontal
-      GradientStop { position: 0; color: root.fadeColor }
+      GradientStop { position: 0; color: Qt.rgba(1, 1, 1, 1 - root.leftFadeAmount) }
+      GradientStop { position: root.leftFadeWidth / Math.max(1, root.width); color: "white" }
+      GradientStop { position: 1 - Math.min(14 / Math.max(1, root.width), 1 / 3); color: "white" }
       GradientStop { position: 1; color: "transparent" }
-    }
-  }
-
-  Rectangle {
-    anchors.right: parent.right
-    width: Math.min(14, parent.width / 3)
-    height: parent.height
-    visible: root.overflowing
-    gradient: Gradient {
-      orientation: Gradient.Horizontal
-      GradientStop { position: 0; color: "transparent" }
-      GradientStop { position: 1; color: root.fadeColor }
     }
   }
 

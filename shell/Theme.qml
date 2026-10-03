@@ -9,6 +9,8 @@ Singleton {
   property string name: "daylight"
   readonly property bool daylight: name === "daylight"
   readonly property color sidebarCardOutline: Qt.rgba(1, 1, 1, 0.10)
+  readonly property color sidebarCardFill: Qt.rgba(0, 0, 0, 0.10)
+  readonly property color sidebarCardHoverFill: Qt.tint(sidebarCardFill, sidebarHoverFill)
   readonly property color sidebarHoverFill: Qt.rgba(1, 1, 1, 0.04)
   readonly property color sidebarClearFill: Qt.rgba(1, 1, 1, 0)
 

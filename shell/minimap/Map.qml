@@ -89,12 +89,12 @@ Shell.Card {
   radius: Shell.Theme.daylight ? 12 : Shell.Theme.sidebarCardRadius
   color: Shell.Theme.daylight
       ? (cardHovered || (dragSession.active && dragSession.windowDrag)
-          ? Shell.Theme.sidebarHoverFill : Shell.Theme.sidebarClearFill)
+          ? Shell.Theme.sidebarCardHoverFill : Shell.Theme.sidebarCardFill)
       : classicColor
   // The number hit target reaches ten pixels outside the expanded card. The
   // panel gutter contains it; clipping returns once the compact layer takes
   // over so its top and bottom rows retain the card radius.
-  clip: collapseProgress >= 0.56
+  contentClipped: collapseProgress >= 0.56
 
   Item {
     id: expandedLayer
