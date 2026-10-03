@@ -17,7 +17,7 @@ import tempfile
 import time
 
 CONFIG = Path(os.environ.get('XDG_CONFIG_HOME', Path.home() / '.config')) / 'niri'
-SCALES = (1, 1.25, 1.5, 1.75, 2)
+SCALES = (0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2)
 
 
 def run(*args):
