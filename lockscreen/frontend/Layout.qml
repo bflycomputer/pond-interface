@@ -13,6 +13,7 @@ Item {
     property var inputTarget: null
     property string revealText: ""
     property bool showPassword: false
+    property bool passwordTooltipVisible: false
     readonly property bool revealContentVisible: lockDisplay.revealContentVisible
     property alias displayPhase: lockDisplay.displayPhase
     property bool interactive: true
@@ -146,6 +147,26 @@ Item {
                 enabled: root.interactive
                 onUserStepRequested: direction => root.userStepRequested(direction)
                 onCompositorRequested: index => root.compositorRequested(index)
+            }
+
+            Text {
+                id: passwordTooltip
+                objectName: "passwordTooltip"
+                renderType: Text.CurveRendering
+                visible: root.passwordTooltipVisible && root.interactive && lockDisplay.dateTimeVisible
+                    && root.controller.visibleCellCount === 13
+                x: (canvas.width - width) / 2
+                y: 238 - (baselineOffset - tooltipMetrics.capitalHeight)
+                width: 87
+                text: "Enter\nPassword"
+                horizontalAlignment: Text.AlignHCenter
+                color: theme.text
+                font.family: theme.displayFont
+                font.styleName: "Book"
+                font.pixelSize: 20
+                lineHeightMode: Text.FixedHeight
+                lineHeight: 20
+                FontMetrics { id: tooltipMetrics; font: passwordTooltip.font }
             }
 
             Text {
