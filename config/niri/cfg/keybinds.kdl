@@ -33,8 +33,8 @@ binds {
 
     Mod+Left                            { focus-column-left; }
     Mod+Right                           { focus-column-right; }
-    Mod+Up                              { focus-window-up; }
-    Mod+Down                            { focus-window-down; }
+    Mod+Up                              { focus-window-or-workspace-up; }
+    Mod+Down                            { focus-window-or-workspace-down; }
 
     Mod+CTRL+Left                       { move-column-left; }
     Mod+CTRL+Right                      { move-column-right; }
