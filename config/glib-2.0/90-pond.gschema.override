@@ -1,0 +1,4 @@
+# Keep gtk-theme in sync with gtk-theme-name in the GTK settings.ini files.
+[org.gnome.desktop.interface]
+gtk-theme='Adwaita'
+color-scheme='prefer-dark'
