@@ -3,11 +3,16 @@ import QtQuick
 WheelHandler {
   id: root
   required property Flickable view
-  parent: viewd
-  acceptedDevices: PointerDevice.Mouse
+  parent: view
+  acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
   target: null
   enabled: view.interactive
   onWheel: event => {
+    if (event.pixelDelta.y !== 0) {
+      wheelMotion.stop();
+      view.contentY = clamp(view.contentY - event.pixelDelta.y);
+      return;
+    }
     if (event.angleDelta.y === 0)
       return;
     view.cancelFlick();
@@ -15,11 +20,15 @@ WheelHandler {
     // Each scroll line is 40 logical pixels, independent of card height.
     const delta = event.angleDelta.y / 120 * Qt.styleHints.wheelScrollLines * 40;
     wheelMotion.from = view.contentY;
-    const minimum = view.originY - view.topMargin;
-    const maximum = Math.max(minimum, view.originY + view.contentHeight - view.height + view.bottomMargin);
-    wheelMotion.to = Math.max(minimum, Math.min(maximum, start - delta));
+    wheelMotion.to = clamp(start - delta);
     wheelMotion.restart();
     event.accepted = true;
+  }
+
+  function clamp(y) {
+    const minimum = view.originY - view.topMargin;
+    const maximum = Math.max(minimum, view.originY + view.contentHeight - view.height + view.bottomMargin);
+    return Math.max(minimum, Math.min(maximum, y));
   }
 
   readonly property Connections dragConnection: Connections {
