@@ -1,5 +1,7 @@
 import QtQuick
+import Quickshell.Widgets
 import ".." as Settings
+import "../.." as Shell
 
 Settings.Modal {
   id: root
@@ -38,14 +40,58 @@ Settings.Modal {
   Image {
     id: manual
     objectName: "manualContent"
-    width: 500; height: 2811
+    width: 500; height: 2984
     source: Qt.resolvedUrl("../../assets/manual/manual.svg")
     sourceSize.width: width * Screen.devicePixelRatio
+    Item {
+      id: note
+      objectName: "manualSuperNote"
+      x: 30; y: 961; width: 440; height: 66
+      HoverHandler { id: noteHover }
+      Image {
+        anchors.fill: parent
+        visible: noteHover.hovered
+        source: Qt.resolvedUrl("../../assets/manual/super-note-hover.svg")
+        sourceSize.width: width * Screen.devicePixelRatio
+      }
+    }
+
     Row {
-      x: 180; y: 2731; spacing: 10
+      x: 180; y: 2894; spacing: 10
       FooterButton { service: "discord" }
       FooterButton { service: "x" }
       FooterButton { service: "mail" }
+    }
+  }
+
+  // Keep the visualizer outside the rounded, scrolling document clip.
+  overlay: Item {
+    objectName: "manualSuperKeyTip"
+    x: root.width + 10; y: note.y - 33 - root.scrollItem.contentY
+    width: 231; height: 144
+    visible: noteHover.hovered
+    Accessible.role: Accessible.ToolTip
+    Accessible.name: "The Super key is between Ctrl and Alt."
+
+    Item {
+      anchors { fill: parent; margins: -90; bottomMargin: -180 }
+      layer.enabled: true
+      layer.format: ShaderEffectSource.RGBA16F
+      Shell.Shadow {
+        anchors { fill: parent; margins: 90; bottomMargin: 180 }
+        cornerRadius: 24
+        shadows: Shell.PanelStyle.controlShadows.map(s => Object.assign({}, s, { blur: s.blur * 2.4 }))
+      }
+    }
+    ClippingRectangle {
+      anchors.fill: parent
+      radius: 24
+      color: Settings.Style.card
+      Image {
+        anchors.fill: parent
+        source: Qt.resolvedUrl("../../assets/manual/super-tip.svg")
+        sourceSize.width: width * Screen.devicePixelRatio
+      }
     }
   }
 }
