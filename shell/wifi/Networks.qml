@@ -19,6 +19,10 @@ DeviceList {
     network: modelData
     interactive: root.interactive
     onDisconnectClicked: Wifi.State.disconnect()
+    onDetailsRequested: {
+      if (modelData.connected || modelData.known)
+        root.stackController.push("details", modelData);
+    }
     onRowClicked: {
       if (modelData.connected)
         root.stackController.push("details", modelData);

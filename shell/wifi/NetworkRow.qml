@@ -6,6 +6,7 @@ Item {
   property var network: ({})
   property bool interactive: true
   signal rowClicked
+  signal detailsRequested
   signal disconnectClicked
   implicitWidth: PanelStyle.rowWidth
   implicitHeight: PanelStyle.rowHeight
@@ -18,8 +19,14 @@ Item {
   MouseArea {
     anchors.fill: parent
     enabled: root.interactive
+    acceptedButtons: Qt.LeftButton | Qt.RightButton
     cursorShape: Qt.PointingHandCursor
-    onClicked: root.rowClicked()
+    onClicked: mouse => {
+      if (mouse.button === Qt.RightButton)
+        root.detailsRequested();
+      else
+        root.rowClicked();
+    }
   }
   SignalIcon {
     x: 12; y: 12; width: 20; height: 20

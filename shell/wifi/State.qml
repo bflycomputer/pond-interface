@@ -16,13 +16,12 @@ Singleton {
   readonly property var adapter: adapters.find(d => d.connected) || adapters[0] || null
   readonly property string device: adapter ? adapter.name : ""
   readonly property string connectedSsid: networks.find(n => n.connected)?.ssid || ""
-  property string connectedUuid: ""
   readonly property var networks: (adapter ? adapter.networks.values : [])
       .filter(n => n.connected || n.signalStrength > 0)
       .map(n => ({ssid: n.name, signal: n.signalStrength * 100,
                  bars: n.signalStrength >= 0.6 ? 3 : n.signalStrength >= 0.35 ? 2 : 1,
                  locked: n.security !== WifiSecurityType.Open, connected: n.connected,
-                 known: n.known}))
+                 known: n.known, uuids: n.nmSettings.map(s => s.uuid)}))
       .sort((a, b) => Number(b.connected) - Number(a.connected)
           || b.signal - a.signal || a.ssid.localeCompare(b.ssid))
   readonly property string uploadRate: txCounter.rate
@@ -57,7 +56,6 @@ Singleton {
 
   onPanelOpenChanged: refreshDetails()
   onConnectedSsidChanged: {
-    connectedUuid = "";
     linkSpeed = band = ipv4 = gateway = dns = "—";
     refreshDetails();
   }
@@ -70,7 +68,6 @@ Singleton {
   }
 
   onDeviceChanged: {
-    connectedUuid = "";
     linkSpeed = band = "—";
     ipv4 = gateway = dns = "—";
     refreshDetails();
@@ -175,12 +172,9 @@ Singleton {
               connectedSsid);
   }
 
-  function forget() {
-    if (connectedUuid === "")
-      return;
-    runAction("forget",
-              ["/usr/bin/nmcli", "connection", "delete", "uuid", connectedUuid],
-              connectedSsid);
+  function forget(network) {
+    runActionSequence("forget", network.uuids.map(uuid =>
+        ["/usr/bin/nmcli", "connection", "delete", "uuid", uuid]), network.ssid);
   }
 
   function runAction(kind, command, ssid) {
@@ -236,12 +230,11 @@ Singleton {
     id: detailQuery
     command: root.device === "" ? []
         : ["/usr/bin/nmcli", "--escape", "no", "-g",
-           "IP4.ADDRESS,IP4.GATEWAY,IP4.DNS,GENERAL.CON-UUID", "device", "show", root.device]
+           "IP4.ADDRESS,IP4.GATEWAY,IP4.DNS", "device", "show", root.device]
     environment: ({ "LC_ALL": "C" })
     stdout: StdioCollector {
       onStreamFinished: {
-        const [address = "", gateway = "", dns = "", uuid = ""] = text.split("\n");
-        root.connectedUuid = uuid === "--" ? "" : uuid;
+        const [address = "", gateway = "", dns = ""] = text.split("\n");
         root.ipv4 = address.split(" | ")[0].split("/")[0] || "—";
         root.gateway = gateway || "—";
         root.dns = dns.split(" | ")[0] || "—";

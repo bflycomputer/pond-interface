@@ -49,6 +49,7 @@ CardStack {
       if (success)
         root.reconnectingNetwork = null;
       if (success && kind !== "disconnect") {
+        closeDelay.interval = kind === "connect" ? 1500 : 420;
         closeDelay.restart();
       } else if (success || (kind === "connect" && root.reconnectingNetwork)) {
         root.returningToNetworks = true;
