@@ -3,6 +3,7 @@ import QtQuick
 Item {
   id: root
   property alias iconSourceSize: glyph.sourceSize
+  property alias mirrorIcon: glyph.mirror
   property url iconSource
   property real iconWidth: 14
   property real iconHeight: 14

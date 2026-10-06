@@ -18,6 +18,11 @@ import time
 
 CONFIG = Path(os.environ.get('XDG_CONFIG_HOME', Path.home() / '.config')) / 'niri'
 SCALES = (0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2)
+TRANSFORMS = {
+    'Normal': 'normal', '90': '90', '180': '180', '270': '270',
+    'Flipped': 'flipped', 'Flipped90': 'flipped-90',
+    'Flipped180': 'flipped-180', 'Flipped270': 'flipped-270',
+}
 
 
 def run(*args):
@@ -53,6 +58,12 @@ def logical_size(m):
     w, h = mode['width'] / logical['scale'], mode['height'] / logical['scale']
     if str(logical['transform']).lower() in ('90', '270', 'flipped90', 'flipped270'): w, h = h, w
     return w, h
+
+
+def rotated_transform(transform, direction):
+    rotations = ('Flipped', 'Flipped90', 'Flipped180', 'Flipped270') if transform.startswith('Flipped') else ('Normal', '90', '180', '270')
+    step = {'clockwise': -1, 'counterclockwise': 1}[direction]
+    return rotations[(rotations.index(transform) + step) % 4]
 
 
 def placement(m):
@@ -133,7 +144,7 @@ def normalize(rects):
 
 
 def reflow(before, after):
-    """Keep edge relationships when mode/scale changes logical display sizes."""
+    """Keep edge relationships when mode, scale or rotation changes display sizes."""
     old = {r['name']: r for r in geometry(before)}
     pending = geometry(after)
     placed = [pending.pop(0)]
@@ -313,6 +324,7 @@ def restore(before):
         if name not in live or identity(live[name]) != identity(m): continue
         if mode_id(current_mode(live[name])) != mode_id(current_mode(m)): command(name, 'mode', mode_id(current_mode(m)))
         if live[name]['logical']['scale'] != m['logical']['scale']: command(name, 'scale', str(m['logical']['scale']))
+        if live[name]['logical']['transform'] != m['logical']['transform']: command(name, 'transform', TRANSFORMS[m['logical']['transform']])
         if live[name].get('vrr_enabled') != m.get('vrr_enabled'): command(name, 'vrr', 'on' if m.get('vrr_enabled') else 'off')
     rects = [r for r in geometry(before) if r['name'] in live and r['identity'] == identity(live[r['name']])]
     if rects: set_positions(rects)
@@ -342,6 +354,10 @@ def apply(action, name='', value='', expected_identity=''):
                 if not math.isfinite(scale) or scale not in set(SCALES) | {m['logical']['scale']}: raise ValueError('Unsupported display scale')
                 m['logical']['scale'] = scale
                 changes[name] = {'scale': f'scale {scale:g}'}
+            elif action == 'rotate':
+                transform = rotated_transform(m['logical']['transform'], value)
+                m['logical']['transform'] = transform
+                changes[name] = {'transform': 'transform ' + json.dumps(TRANSFORMS[transform])}
             elif action in ('resolution', 'refresh'):
                 mode = current_mode(m)
                 candidates = [(i, x) for i, x in advertised_modes(m) if (f'{x["width"]}x{x["height"]}' == value if action == 'resolution'
@@ -358,7 +374,7 @@ def apply(action, name='', value='', expected_identity=''):
             else: raise ValueError('Unknown display action')
             w, h = map(int, logical_size(m))
             m['logical'].update(width=w, height=h)
-            rects = reflow(before, wanted) if action in ('scale', 'resolution') else geometry(before)
+            rects = reflow(before, wanted) if action in ('scale', 'resolution', 'rotate') else geometry(before)
         if action not in ('refresh', 'vrr'): validate_layout(rects)
         for r in rects:
             wanted[r['name']]['logical'].update(x=r['x'], y=r['y'])

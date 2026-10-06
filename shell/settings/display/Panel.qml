@@ -48,7 +48,7 @@ Settings.Modal {
     enabled: !root.dropdownField && !Display.State.busy
     Item {
       id: previewArea
-      width: parent.width; height: Display.State.monitors.length > 1 ? 233 : parent.height
+      width: parent.width; height: parent.height - 48
       readonly property var layout: Geometry.fit(Display.State.geometry,width,height,48,286)
       readonly property real inset: Display.State.monitors.length > 1 ? 4 : 0
       Repeater {
@@ -93,6 +93,41 @@ Settings.Modal {
       Text { anchors.centerIn: parent; text: "Arrange"; color: "#b3b3b3"; font.family: Shell.Theme.fontFamily; font.pixelSize: 15 }
       HoverHandler { id: arrangeHover; cursorShape: Qt.PointingHandCursor }
       TapHandler { onTapped: Settings.State.openPage("arrange") }
+    }
+    Row {
+      anchors.right: parent.right; anchors.rightMargin: 8
+      y: 233
+      visible: !!root.monitor
+      Repeater {
+        model: ["counterclockwise", "clockwise"]
+        delegate: Shell.IconButton {
+          id: rotationButton
+          required property string modelData
+          readonly property bool highlighted: enabled && (hovered || activeFocus)
+          objectName: "rotateDisplay" + modelData
+          width: 40; height: 40
+          iconWidth: 16; iconHeight: 16
+          iconSource: Qt.resolvedUrl("../../assets/rotate.svg")
+          mirrorIcon: modelData === "counterclockwise"
+          animateGlyphOpacity: false
+          glyphOpacity: highlighted ? 1 : 0.7
+          activeFocusOnTab: enabled
+          accessibleName: "Rotate display 90° " + modelData
+          Accessible.role: Accessible.Button
+          Accessible.name: accessibleName
+          Accessible.onPressAction: rotateDisplay()
+          Keys.onReturnPressed: rotateDisplay()
+          Keys.onSpacePressed: rotateDisplay()
+          onClicked: rotateDisplay()
+          function rotateDisplay() {
+            if (enabled) Display.State.change("rotate", modelData);
+          }
+          Rectangle {
+            anchors.fill: parent; z: -1; radius: 12
+            color: rotationButton.highlighted ? "#262626" : "transparent"
+          }
+        }
+      }
     }
   }
   Column {
