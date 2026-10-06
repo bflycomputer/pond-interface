@@ -6,6 +6,7 @@ import "appearance" as Appearance
 import "display" as Display
 import "information" as Information
 import "manual" as Manual
+import "../battery" as Battery
 import Quickshell
 import Quickshell.Wayland
 
@@ -194,6 +195,20 @@ PanelWindow {
             && root.revealStep >= root.revealRanks[modelData.slot]
         onClicked: Settings.State.requestSessionAction(modelData.action)
       }
+    }
+  }
+
+  Battery.ProfileSelector {
+    z: 2
+    anchors.right: parent.right
+    anchors.rightMargin: 10
+    anchors.verticalCenter: parent.verticalCenter
+    enabled: root.cardsOpen
+    visible: opacity > 0
+    opacity: root.cardsOpen ? 1 : 0
+    Keys.onEscapePressed: Settings.State.close()
+    Behavior on opacity {
+      NumberAnimation { duration: Settings.Style.closeDuration; easing.type: Easing.OutCubic }
     }
   }
 
