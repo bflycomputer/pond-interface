@@ -109,7 +109,7 @@ def wallpaper(mode, path=""):
         image = Path(path).expanduser().resolve(strict=True)
         if not image.is_file() or GdkPixbuf.Pixbuf.get_file_info(str(image))[0] is None:
             raise ValueError("Choose a readable image file")
-        state.update(path=str(image), url=image.as_uri())
+        state.update(path=str(image), url=f"{image.as_uri()}?{image.stat().st_mtime_ns}")
     elif mode != "dynamic":
         raise ValueError("Unknown wallpaper mode")
     atomic_write(CONFIG / "pond-interface/wallpaper.json", json.dumps(state) + "\n")

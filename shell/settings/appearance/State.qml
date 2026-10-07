@@ -75,6 +75,12 @@ Singleton {
     }
     onExited: root.refresh()
   }
+  FileView {
+    path: StandardPaths.writableLocation(StandardPaths.ConfigLocation) + "/background"
+    printErrors: false
+    watchChanges: true
+    onFileChanged: root.apply(["wallpaper", "custom", decodeURIComponent(path.replace(/^file:\/\//, ""))])
+  }
   Process {
     id: picker
     command: ["python3", Quickshell.shellDir + "/settings/appearance/control.py", "pick-wallpaper"]
