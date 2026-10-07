@@ -6,6 +6,7 @@ spawn-sh-at-startup "qs -c pond-shell"
 binds {
     Mod+Space                           repeat=false hotkey-overlay-title="Open Launcher" { spawn "/usr/bin/vicinae" "toggle"; }
     Mod+V                               repeat=false hotkey-overlay-title="Open Clipboard History" { spawn "/usr/bin/vicinae" "vicinae://launch/clipboard/history?toggle=true"; }
+    Mod+K                               hotkey-overlay-title="Switch Keyboard Language" { switch-layout "next"; }
     Mod+ALT+L                           hotkey-overlay-title="Lock Screen" { spawn-sh "/usr/bin/qs -p /usr/share/pond-interface/lockscreen ipc call lockscreen lock || /usr/bin/qs -d -p /usr/share/pond-interface/lockscreen"; }
 
     // ─── Media Controls ───

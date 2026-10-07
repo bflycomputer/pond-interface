@@ -135,7 +135,7 @@ Settings.Modal {
     x: 30; y: 292; width: root.width - 60; spacing: 8
     Repeater {
       model: root.rows.length
-      delegate: Display.Field {
+      delegate: Settings.Field {
         id: field
         required property int index
         readonly property var modelData: root.rows[index] || {key: "", title: "", value: ""}

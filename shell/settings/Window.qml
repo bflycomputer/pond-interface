@@ -6,6 +6,7 @@ import "appearance" as Appearance
 import "display" as Display
 import "information" as Information
 import "manual" as Manual
+import "system" as System
 import "../battery" as Battery
 import Quickshell
 import Quickshell.Wayland
@@ -28,17 +29,22 @@ PanelWindow {
 
   readonly property var primaryButtons: [
     {
-      slot: 0, x: 0, y: 0, width: 538, name: "Appearance",
+      slot: 0, x: 0, y: 0, name: "Appearance", page: "appearance",
       source: Qt.resolvedUrl("../assets/settings/appearance.svg"),
       boxWidth: 48, boxHeight: 48, iconWidth: 48, iconHeight: 48
     },
     {
-      slot: 1, x: 0, y: 274, width: 264, name: "Bluetooth",
+      slot: 1, x: 274, y: 0, name: "Bluetooth", page: "",
       source: Qt.resolvedUrl("../assets/settings/bluetooth.svg"),
       boxWidth: 30, boxHeight: 48, iconWidth: 30, iconHeight: 48
     },
     {
-      slot: 2, x: 274, y: 274, width: 264, name: "Information",
+      slot: 2, x: 0, y: 274, name: "System", page: "system",
+      source: Qt.resolvedUrl("../assets/settings/system.svg"),
+      boxWidth: 48, boxHeight: 48, iconWidth: 42, iconHeight: 36
+    },
+    {
+      slot: 3, x: 274, y: 274, name: "Information", page: "information",
       source: Qt.resolvedUrl("../assets/settings/information.svg"),
       boxWidth: 48, boxHeight: 48, iconWidth: 48, iconHeight: 48
     }
@@ -46,28 +52,28 @@ PanelWindow {
 
   readonly property var sessionButtons: [
     {
-      slot: 3, y: 0, action: "lock", name: "Lock screen",
+      slot: 4, y: 0, action: "lock", name: "Lock screen",
       source: Qt.resolvedUrl("../assets/lock.svg"),
       iconWidth: 32, iconHeight: 32,
       hover: "#FFE51D", control: "#632B0F", labelWidth: 170,
       dot: false
     },
     {
-      slot: 4, y: 137, action: "suspend", name: "Sleep",
+      slot: 5, y: 137, action: "suspend", name: "Sleep",
       source: Qt.resolvedUrl("../assets/settings/sleep.svg"),
       iconWidth: 32, iconHeight: 32,
       hover: "#E99FFF", control: "#681D4F", labelWidth: 74,
       dot: false
     },
     {
-      slot: 5, y: 274, action: "reboot", name: "Restart",
+      slot: 6, y: 274, action: "reboot", name: "Restart",
       source: Qt.resolvedUrl("../assets/settings/restart.svg"),
       iconWidth: 32, iconHeight: 32,
       hover: "#CEF058", control: "#1B322D", labelWidth: 99,
       dot: false
     },
     {
-      slot: 6, y: 411, action: "shutdown", name: "Power off",
+      slot: 7, y: 411, action: "shutdown", name: "Power off",
       source: Qt.resolvedUrl("../assets/settings/power.svg"),
       iconWidth: 32, iconHeight: 32,
       hover: "#FE6146", control: "#632B0F", labelWidth: 127,
@@ -89,7 +95,8 @@ PanelWindow {
   WlrLayershell.layer: WlrLayer.Overlay
   WlrLayershell.namespace: "pond-settings-"
       + (screen ? screen.name : "unknown")
-  WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
+  WlrLayershell.keyboardFocus: root.targetOpen
+      ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
   WlrLayershell.exclusionMode: ExclusionMode.Ignore
 
   mask: Region {
@@ -154,7 +161,7 @@ PanelWindow {
 
         x: modelData.x
         y: modelData.y
-        width: modelData.width
+        width: 264
         height: 264
         iconSource: modelData.source
         iconBoxWidth: modelData.boxWidth
@@ -163,9 +170,8 @@ PanelWindow {
         iconHeight: modelData.iconHeight
         accessibleName: modelData.name
         onClicked: {
-          if (modelData.name === "Bluetooth") Settings.State.openBluetooth();
-          else if (modelData.name === "Appearance") Settings.State.openPage("appearance");
-          else if (modelData.name === "Information") Settings.State.openPage("information");
+          if (modelData.page) Settings.State.openPage(modelData.page);
+          else Settings.State.openBluetooth();
         }
         revealed: root.cardsOpen
             && root.revealStep >= root.revealRanks[modelData.slot]
@@ -218,10 +224,10 @@ PanelWindow {
     z: 3
     anchors.centerIn: parent
     active: root.presented && (root.modalOpen || opacity > 0)
-    sourceComponent: root.displayedPage === "information" ? informationPage
-        : root.displayedPage === "manual" ? manualPage
-        : root.displayedPage === "display" ? displayPage
-        : root.displayedPage === "arrange" ? arrangePage : appearancePage
+    sourceComponent: ({
+      information: informationPage, manual: manualPage, display: displayPage, arrange: arrangePage,
+      system: systemPage, keyboard: keyboardPage, timezone: timezonePage
+    })[root.displayedPage] || appearancePage
     enabled: root.modalOpen
     opacity: root.modalOpen ? 1 : 0
     scale: root.modalOpen ? 1 : 0.96
@@ -253,6 +259,33 @@ PanelWindow {
   Component {
     id: informationPage
     Information.Panel {
+      availableHeight: Math.max(200, root.height - 70)
+      scale: Math.min(1, (root.width - 60) / implicitWidth)
+    }
+  }
+  Component {
+    id: systemPage
+    System.Panel {
+      availableHeight: Math.max(200, root.height - 70)
+      scale: Math.min(1, (root.width - 60) / implicitWidth)
+    }
+  }
+  Component {
+    id: keyboardPage
+    System.Picker {
+      title: "Keyboard language"; placeholder: "Search languages"; multiple: true
+      options: System.State.languages; selected: System.State.selectedLanguages
+      onPicked: id => System.State.toggleLanguage(id)
+      availableHeight: Math.max(200, root.height - 70)
+      scale: Math.min(1, (root.width - 60) / implicitWidth)
+    }
+  }
+  Component {
+    id: timezonePage
+    System.Picker {
+      title: "Timezone"; placeholder: "Search timezone"
+      options: System.State.timezones; selected: [System.State.timezone]
+      onPicked: id => System.State.setTimezone(id)
       availableHeight: Math.max(200, root.height - 70)
       scale: Math.min(1, (root.width - 60) / implicitWidth)
     }

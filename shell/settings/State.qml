@@ -49,7 +49,7 @@ Singleton {
   }
 
   function openPage(name) {
-    if (["appearance", "information", "manual", "display", "arrange"].indexOf(name) < 0) return;
+    if (["appearance", "information", "manual", "display", "arrange", "system", "keyboard", "timezone"].indexOf(name) < 0) return;
     pageHistory = pageHistory.concat(page);
     page = name;
   }

@@ -64,7 +64,7 @@ Rectangle {
       }
     }
   }
-  Item { id: overlays; anchors.fill: parent; z: 4 }
+  Item { id: overlays; anchors.fill: parent; z: 6 }
   Shell.PanelCloseButton {
     objectName: "settingsModalClose"
     x: parent.width - 20; y: root.closeButtonY; z: 5

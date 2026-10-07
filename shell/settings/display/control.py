@@ -16,6 +16,9 @@ import sys
 import tempfile
 import time
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from kdl import atomic_write, nodes, tokens
+
 CONFIG = Path(os.environ.get('XDG_CONFIG_HOME', Path.home() / '.config')) / 'niri'
 SCALES = (0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2)
 TRANSFORMS = {
@@ -172,60 +175,7 @@ def reflow(before, after):
     return normalize(placed)
 
 
-# A position-preserving KDL scanner. Comments/quoted strings are opaque; /-
-# nodes are skipped. Only direct children of an active output are modified.
-def tokens(text):
-    result, i = [], 0
-    while i < len(text):
-        if text.startswith('//', i):
-            end = text.find('\n', i); i = len(text) if end < 0 else end
-        elif text.startswith('/*', i):
-            depth = 1; i += 2
-            while depth and i < len(text):
-                if text.startswith('/*', i): depth += 1; i += 2
-                elif text.startswith('*/', i): depth -= 1; i += 2
-                else: i += 1
-            if depth: raise ValueError('Unclosed KDL comment')
-        elif text[i] in ' \t\r': i += 1
-        else:
-            start = i
-            if text.startswith('/-', i): i += 2
-            elif text[i] == '"':
-                i += 1
-                while i < len(text):
-                    if text[i] == '\\': i += 2
-                    elif text[i] == '"': i += 1; break
-                    else: i += 1
-            elif text[i] in '{};\n': i += 1
-            else:
-                while i < len(text) and not text[i].isspace() and text[i] not in '{};"': i += 1
-            result.append((text[start:i], start, i))
-    return result
-
-
-def nodes(ts, start=0, end=None):
-    end = len(ts) if end is None else end
-    i = start
-    while i < end:
-        if ts[i][0] in ('\n', ';'): i += 1; continue
-        disabled = ts[i][0] == '/-'
-        if disabled: i += 1
-        first = i; depth = 0; opening = closing = None
-        while i < end:
-            t = ts[i][0]
-            if depth == 0 and t in ('\n', ';', '}'): break
-            if t == '{':
-                if depth == 0: opening = i
-                depth += 1
-            elif t == '}':
-                depth -= 1
-                if depth == 0: closing = i; i += 1; break
-            i += 1
-        if i == first: raise ValueError('Unexpected KDL token')
-        if not disabled: yield first, i, opening, closing
-        if i < end and ts[i][0] in ('\n', ';'): i += 1
-
-
+# Only direct children of an active output are modified.
 def patch_output(text, names, changes):
     ts = tokens(text)
     matches = []
@@ -264,15 +214,6 @@ def patch_output(text, names, changes):
         edits.append((insertion, insertion, ('' if standalone else '\n') + ''.join(missing)))
     for start, end, value in sorted(edits, reverse=True): text = text[:start] + value + text[end:]
     return text
-
-
-def atomic_write(path, text):
-    with tempfile.NamedTemporaryFile(mode='w', dir=path.parent, delete=False) as f:
-        temporary = Path(f.name); f.write(text); f.flush(); os.fsync(f.fileno())
-    try:
-        if path.exists(): temporary.chmod(path.stat().st_mode)
-        os.replace(temporary, path)
-    finally: temporary.unlink(missing_ok=True)
 
 
 def validate_config(text):
