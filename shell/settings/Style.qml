@@ -3,7 +3,7 @@ import QtQuick
 
 QtObject {
   readonly property color overlay: "#101010"
-  readonly property real overlayOpacity: 0.9
+  readonly property real overlayOpacity: 0.7
   readonly property color card: "#1D1D1D"
   readonly property color hover: "#262626"
   readonly property color sessionControl: "#2C2C2C"
