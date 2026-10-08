@@ -21,7 +21,7 @@ Singleton {
       .map(n => ({ssid: n.name, signal: n.signalStrength * 100,
                  bars: n.signalStrength >= 0.6 ? 3 : n.signalStrength >= 0.35 ? 2 : 1,
                  locked: n.security !== WifiSecurityType.Open, connected: n.connected,
-                 known: n.known, uuids: n.nmSettings.map(s => s.uuid)}))
+                 known: n.known, uuids: n.nmSettings.filter(s => s).map(s => s.uuid)}))
       .sort((a, b) => Number(b.connected) - Number(a.connected)
           || b.signal - a.signal || a.ssid.localeCompare(b.ssid))
   readonly property string uploadRate: txCounter.rate
@@ -41,6 +41,8 @@ Singleton {
 
   property string _actionKind: ""
   property string _actionError: ""
+  property string _connectionUuid: ""
+  property bool _passwordFailed: false
   property var _actionQueue: []
   property bool _actionSequenceActive: false
 
@@ -150,7 +152,16 @@ Singleton {
       runActionSequence("connect", [
         addCommand,
         ["/usr/bin/nmcli", "connection", "up", "uuid", uuid]
-      ], target);
+      ], target, uuid);
+      return;
+    }
+
+    const savedNetwork = networks.find(n => n.ssid === target && n.known);
+    if (!password && savedNetwork && savedNetwork.uuids.length > 0) {
+      const uuid = savedNetwork.uuids[0];
+      runActionSequence("connect", [
+        ["/usr/bin/nmcli", "connection", "up", "uuid", uuid]
+      ], target, uuid);
       return;
     }
 
@@ -181,12 +192,14 @@ Singleton {
     runActionSequence(kind, [command], ssid);
   }
 
-  function runActionSequence(kind, commands, ssid) {
+  function runActionSequence(kind, commands, ssid, connectionUuid) {
     if (actionProcess.running || _actionSequenceActive
         || !commands || commands.length === 0)
       return;
     _actionKind = kind;
     _actionError = "";
+    _connectionUuid = String(connectionUuid || "");
+    _passwordFailed = false;
     _actionQueue = commands.slice(1);
     _actionSequenceActive = true;
     pendingSsid = ssid;
@@ -286,7 +299,18 @@ Singleton {
     }
     onExited: exitCode => {
       const success = exitCode === 0;
-      if (success && root._actionQueue.length > 0) {
+      if (!success && !root._passwordFailed && root._actionKind === "connect"
+          && (root._actionError.includes("Secrets were required")
+              || root._actionError.includes("no secrets provided"))) {
+        root._passwordFailed = true;
+        const network = root.adapter && root.adapter.networks.values
+            .find(n => n.name === root.pendingSsid);
+        const uuid = root._connectionUuid || (network?.nmSettings[0]?.uuid) || "";
+        root._connectionUuid = uuid;
+        root._actionQueue = uuid
+            ? [["/usr/bin/nmcli", "connection", "delete", "uuid", uuid]] : [];
+      }
+      if ((success || root._passwordFailed) && root._actionQueue.length > 0) {
         const nextCommand = root._actionQueue.shift();
         root._actionError = "";
         Qt.callLater(function() {
@@ -297,14 +321,26 @@ Singleton {
       }
       root._actionQueue = [];
       root._actionSequenceActive = false;
-      root.phase = success ? "complete" : "failed";
-      root.statusText = success
-          ? (root._actionKind === "connect"
-             ? "Connected to “" + root.pendingSsid + "”"
-             : "Wi-Fi updated")
-          : (root._actionError !== "" ? root._actionError
-                                       : "Unable to update Wi-Fi");
-      root.actionFinished(root._actionKind, success, root.statusText);
+      const succeeded = success && !root._passwordFailed;
+      if (root._passwordFailed && !success && root._connectionUuid !== "")
+        console.warn("Failed Wi-Fi profile cleanup:", root._actionError);
+      root.phase = succeeded ? "complete" : "failed";
+      if (succeeded) {
+        root.statusText = root._actionKind === "connect"
+            ? "Connected to “" + root.pendingSsid + "”" : "Wi-Fi updated";
+      } else if (root._actionKind === "connect") {
+        if (root._passwordFailed)
+          root.statusText = "Incorrect password";
+        else if (root._actionError.includes("No network with SSID"))
+          root.statusText = "Network not found";
+        else if (root._actionError.includes("Timeout"))
+          root.statusText = "Connection timeout";
+        else
+          root.statusText = "Connection failed";
+      } else {
+        root.statusText = root._actionError || "Unable to update Wi-Fi";
+      }
+      root.actionFinished(root._actionKind, succeeded, root.statusText);
       root.refreshDetails();
     }
   }

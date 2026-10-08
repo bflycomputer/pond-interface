@@ -5,15 +5,15 @@ import ".."
 CardStack {
   id: root
   property bool returningToNetworks: false
-  property var reconnectingNetwork: null
   pageComponents: ({drawer: drawerComponent, join: joinComponent, add: addComponent,
                     details: detailsComponent, status: statusComponent})
   onOpenedChanged: {
     closeDelay.stop();
+    passwordErrorDelay.stop();
     returningToNetworks = false;
-    reconnectingNetwork = null;
     Wifi.State.panelOpen = opened;
   }
+  onPagePopping: passwordErrorDelay.stop()
   onTransitionRunningChanged: if (!transitionRunning) Qt.callLater(syncPage)
 
   function syncPage() {
@@ -24,9 +24,6 @@ CardStack {
       return;
     }
     returningToNetworks = false;
-    if (reconnectingNetwork)
-      push("join", reconnectingNetwork);
-    reconnectingNetwork = null;
   }
 
   function showStatus() {
@@ -35,8 +32,7 @@ CardStack {
   }
   function connectNetwork(ssid, password, hidden, securityMode) {
     closeDelay.stop();
-    reconnectingNetwork = !password && !securityMode
-        && Wifi.State.networks.find(n => n.ssid === ssid && n.known && n.locked);
+    passwordErrorDelay.stop();
     Wifi.State.connectNetwork(ssid, password, hidden, securityMode);
     showStatus();
   }
@@ -46,16 +42,17 @@ CardStack {
     function onActionFinished(kind, success, message) {
       if (!root.opened || kind === "toggle")
         return;
-      if (success)
-        root.reconnectingNetwork = null;
       if (success && kind !== "disconnect") {
         closeDelay.interval = kind === "connect" ? 1500 : 420;
         closeDelay.restart();
-      } else if (success || (kind === "connect" && root.reconnectingNetwork)) {
+      } else if (success) {
         root.returningToNetworks = true;
         Qt.callLater(root.syncPage);
-      } else if (root.currentPage !== "status") {
-        root.showStatus();
+      } else {
+        if (root.currentPage !== "status")
+          root.showStatus();
+        if (kind === "connect" && message === "Incorrect password")
+          passwordErrorDelay.restart();
       }
     }
   }
@@ -64,6 +61,11 @@ CardStack {
     id: closeDelay
     interval: 420
     onTriggered: root.closeAll()
+  }
+  Timer {
+    id: passwordErrorDelay
+    interval: 1000
+    onTriggered: if (root.currentPage === "status") root.pop()
   }
   Component { id: drawerComponent; Networks {} }
   Component { id: joinComponent; Join {} }
