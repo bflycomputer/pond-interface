@@ -30,8 +30,8 @@ Rectangle {
     height: parent.height
     gradient: Gradient {
       orientation: Gradient.Horizontal
-      GradientStop { position: 0; color: Qt.rgba(55 / 255, 55 / 255, 55 / 255, 0.4) }
-      GradientStop { position: 1; color: Qt.rgba(55 / 255, 55 / 255, 55 / 255, 0) }
+      GradientStop { position: 0; color: Qt.rgba(0, 0, 0, 0.4) }
+      GradientStop { position: 1; color: Qt.rgba(0, 0, 0, 0) }
     }
   }
 }
