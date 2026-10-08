@@ -21,6 +21,8 @@ Singleton {
       .map(n => ({ssid: n.name, signal: n.signalStrength * 100,
                  bars: n.signalStrength >= 0.6 ? 3 : n.signalStrength >= 0.35 ? 2 : 1,
                  locked: n.security !== WifiSecurityType.Open, connected: n.connected,
+                 enterprise: n.security === WifiSecurityType.WpaEap
+                     || n.security === WifiSecurityType.Wpa2Eap,
                  known: n.known, uuids: n.nmSettings.filter(s => s).map(s => s.uuid)}))
       .sort((a, b) => Number(b.connected) - Number(a.connected)
           || b.signal - a.signal || a.ssid.localeCompare(b.ssid))
@@ -99,7 +101,7 @@ Singleton {
     });
   }
 
-  function connectNetwork(ssid, password, hidden, securityMode) {
+  function connectNetwork(ssid, password, hidden, securityMode, enterprise) {
     const target = String(ssid || "");
     if (target === "")
       return;
@@ -143,6 +145,21 @@ Singleton {
                         "802-11-wireless-security.wep-key0", secret,
                         "802-11-wireless-security.wep-key-type", "key");
         break;
+      case "wpa-eap": {
+        const caCertificate = enterprise.caCertificate;
+        addCommand.push("802-11-wireless-security.key-mgmt", "wpa-eap",
+                        "802-1x.eap", enterprise.eap,
+                        "802-1x.phase2-auth", enterprise.phase2,
+                        "802-1x.identity", enterprise.identity,
+                        "802-1x.password", secret,
+                        "802-1x.domain-suffix-match", enterprise.domain,
+                        "802-1x.system-ca-certs", caCertificate ? "no" : "yes");
+        if (enterprise.anonymousIdentity)
+          addCommand.push("802-1x.anonymous-identity", enterprise.anonymousIdentity);
+        if (caCertificate)
+          addCommand.push("802-1x.ca-cert", caCertificate);
+        break;
+      }
       default:
         addCommand.push("802-11-wireless-security.key-mgmt", "wpa-psk",
                         "802-11-wireless-security.psk", secret);
@@ -333,6 +350,8 @@ Singleton {
           root.statusText = "Incorrect password";
         else if (root._actionError.includes("No network with SSID"))
           root.statusText = "Network not found";
+        else if (root._actionError.includes("802-1x.ca-cert"))
+          root.statusText = "Unable to read CA certificate";
         else if (root._actionError.includes("Timeout"))
           root.statusText = "Connection timeout";
         else

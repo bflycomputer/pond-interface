@@ -1,25 +1,43 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import QtQuick.Controls as Controls
 import ".."
 
 Item {
   id: root
   property bool open: false
+  property Item anchorItem
   property string currentMode: "wpa-psk"
-  property var options: [
+  readonly property var securityOptions: [
     { label: "Open (No password)", mode: "open" },
     { label: "Enhanced Open (OWE)", mode: "owe" },
     { label: "WPA Personal (Legacy)", mode: "wpa" },
     { label: "WPA2 Personal", mode: "wpa2" },
     { label: "WPA2/WPA3 Personal", mode: "wpa-psk" },
     { label: "WPA3 Personal Only", mode: "sae" },
+    { label: "WPA2/3 Enterprise", mode: "wpa-eap" },
     { label: "WEP Key (Legacy)", mode: "wep" }
   ]
+  property var options: securityOptions
   signal selected(string label, string mode)
+  signal dismissed()
+
+  onOpenChanged: if (open) {
+    const position = anchorItem.mapToItem(parent, 0, 0);
+    x = position.x;
+    y = Math.max(16, Math.min(parent.height - height - 16, position.y - height / 2));
+    optionList.currentIndex = Math.max(0, options.findIndex(option => option.mode === currentMode));
+    optionList.positionViewAtIndex(optionList.currentIndex, ListView.Contain);
+    optionList.forceActiveFocus();
+  } else {
+    Qt.callLater(() => {
+      if (!root.open && root.anchorItem?.enabled) root.anchorItem.forceActiveFocus();
+    });
+  }
 
   implicitWidth: 276
-  implicitHeight: 272
+  implicitHeight: Math.min(272, options.length * 40 + 16)
   visible: root.open || root.opacity > 0.001
   enabled: root.open
   opacity: root.open ? 1 : 0
@@ -61,15 +79,30 @@ Item {
       x: 8
       y: 8
       width: 259
-      height: 256
+      height: root.implicitHeight - 16
       model: root.options
+      keyNavigationEnabled: true
+      onCurrentIndexChanged: positionViewAtIndex(currentIndex, ListView.Contain)
+      Keys.onEscapePressed: root.dismissed()
+      Keys.onReturnPressed: root.selected(root.options[currentIndex].label, root.options[currentIndex].mode)
+      Keys.onEnterPressed: root.selected(root.options[currentIndex].label, root.options[currentIndex].mode)
+      Keys.onSpacePressed: root.selected(root.options[currentIndex].label, root.options[currentIndex].mode)
+      Controls.ScrollBar.vertical: Controls.ScrollBar {
+        width: 2
+        padding: 0
+        policy: size < 1 ? Controls.ScrollBar.AlwaysOn : Controls.ScrollBar.AlwaysOff
+        contentItem: Rectangle { radius: 2; color: Qt.rgba(1, 1, 1, 0.2) }
+        background: null
+      }
       delegate: Rectangle {
         id: optionRow
         required property var modelData
+        required property int index
         width: optionList.width
         height: 40
         radius: 12
         color: modelData.mode === root.currentMode || rowHover.hovered
+            || (optionList.activeFocus && index === optionList.currentIndex)
             ? PanelStyle.hover : "transparent"
 
         Text {
@@ -87,18 +120,6 @@ Item {
                                   optionRow.modelData.mode)
         }
       }
-    }
-
-    Rectangle {
-      x: 271.5
-      y: 15.5 + (optionList.contentHeight <= optionList.height ? 0
-          : optionList.contentY / (optionList.contentHeight - optionList.height)
-            * (140 - height))
-      width: 2
-      height: 116
-      radius: 17
-      color: "white"
-      opacity: 0.2
     }
   }
 }

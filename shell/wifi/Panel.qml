@@ -30,10 +30,10 @@ CardStack {
     if (currentPage !== "status")
       push("status", null);
   }
-  function connectNetwork(ssid, password, hidden, securityMode) {
+  function connectNetwork(ssid, password, hidden, securityMode, enterprise) {
     closeDelay.stop();
     passwordErrorDelay.stop();
-    Wifi.State.connectNetwork(ssid, password, hidden, securityMode);
+    Wifi.State.connectNetwork(ssid, password, hidden, securityMode, enterprise);
     showStatus();
   }
 

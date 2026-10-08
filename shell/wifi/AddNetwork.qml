@@ -4,21 +4,23 @@ import ".."
 Item {
   id: root
   readonly property real headerDividerY: 63.5
-  readonly property bool headerDividerVisible: !dropdownVisible
+  readonly property bool headerDividerVisible: !securityMenu.visible || securityMenu.y > headerDividerY
   property var stackController
   property bool interactive: true
+  property var menu: ({})
   property bool dropdownOpen: false
-  readonly property bool dropdownVisible: securityMenu.visible
   property string securityValue: "WPA2/WPA3 Personal"
   property string securityMode: "wpa-psk"
   property bool hiddenNetwork: false
+  readonly property bool isEnterprise: securityMode === "wpa-eap"
   readonly property bool needsPassword: securityMode !== "open"
-      && securityMode !== "owe"
+      && securityMode !== "owe" && !isEnterprise
   readonly property bool canConnect: networkName.text.length > 0
-      && (!needsPassword || password.text.length > 0)
+      && (isEnterprise ? enterprise.complete : !needsPassword || password.text.length > 0)
 
   implicitWidth: PanelStyle.width
-  implicitHeight: canConnect ? 435 : 371
+  implicitHeight: connectButton.y + (canConnect ? 63.5 : isEnterprise ? 0.5 : -0.5)
+  onSecurityModeChanged: form.contentY = 0
 
   Behavior on implicitHeight {
     NumberAnimation {
@@ -32,6 +34,7 @@ Item {
   Item {
     id: cardContent
     anchors.fill: parent
+    enabled: root.interactive && !root.dropdownOpen
     opacity: root.dropdownOpen ? 0.2 : 1
     Behavior on opacity {
       NumberAnimation { duration: PanelStyle.controlDuration }
@@ -46,113 +49,101 @@ Item {
       font.weight: Font.Normal
       font.pixelSize: 20
     }
-    Text {
-      x: 19.5
+
+    FormViewport {
+      id: form
       y: 79.5
-      text: "Network name (SSID)"
-      color: "white"
-      font.family: Theme.fontFamily
-      font.weight: Font.Medium
-      font.pixelSize: 13
-    }
-    Field {
-      id: networkName
-      x: 19.5
-      y: 100.5
-      placeholderText: "Enter network name"
-    }
+      width: parent.width
+      height: root.isEnterprise ? 416 : 292
+      contentHeight: hidden.y + 44
 
-    Text {
-      x: 19.5
-      y: 164.5
-      text: "Security"
-      color: "white"
-      font.family: Theme.fontFamily
-      font.weight: Font.Medium
-      font.pixelSize: 13
-    }
-    Field {
-      id: security
-      x: 19.5
-      y: 185.5
-      text: root.securityValue
-      readOnly: true
-      highlighted: securityHover.hovered || root.dropdownOpen
-      rightPadding: 58
-    }
-    Item {
-      id: securityActivator
-      x: 19.5
-      y: 185.5
-      width: 276
-      height: 44
-
-      Item {
-        anchors.right: parent.right
-        anchors.top: parent.top
-        anchors.bottom: parent.bottom
-        width: 44
-
-        Image {
-          anchors.centerIn: parent
-          width: 16
-          height: 16
-          source: Qt.resolvedUrl("../assets/wifi/chevron.svg")
+      Text {
+        x: 19.5
+        text: "Network name (SSID)"
+        color: "white"
+        font.family: Theme.fontFamily
+        font.weight: Font.Medium
+        font.pixelSize: 13
+      }
+      Field {
+        id: networkName
+        x: 19.5
+        y: 21
+        placeholderText: "Enter network name"
+        onFocusedChanged: if (focused) form.reveal(this)
+      }
+      Text {
+        x: 19.5
+        y: 85
+        text: "Security"
+        color: "white"
+        font.family: Theme.fontFamily
+        font.weight: Font.Medium
+        font.pixelSize: 13
+      }
+      SelectField {
+        x: 19.5
+        y: 106
+        text: root.securityValue
+        onActiveFocusChanged: if (activeFocus) form.reveal(this)
+        onClicked: {
+          root.menu = {setting: "security", options: securityMenu.securityOptions,
+                       mode: root.securityMode, anchor: this};
+          root.dropdownOpen = true;
         }
       }
-      HoverHandler {
-        id: securityHover
-        enabled: root.interactive
-        cursorShape: Qt.PointingHandCursor
-      }
-      TapHandler {
-        enabled: root.interactive
-        onTapped: root.dropdownOpen = !root.dropdownOpen
-      }
-    }
 
-    Text {
-      x: 19.5
-      y: 249.5
-      text: "Password"
-      visible: root.needsPassword
-      color: "white"
-      font.family: Theme.fontFamily
-      font.weight: Font.Medium
-      font.pixelSize: 13
-    }
-    Field {
-      password: true
-      placeholderText: "Enter password"
-      id: password
-      x: 19.5
-      y: 270.5
-      visible: root.needsPassword
-      enabled: root.interactive
-      onAccepted: if (root.canConnect) connectButton.trigger()
-    }
+      Text {
+        x: 19.5
+        y: 170
+        text: "Password"
+        visible: root.needsPassword
+        color: "white"
+        font.family: Theme.fontFamily
+        font.weight: Font.Medium
+        font.pixelSize: 13
+      }
+      Field {
+        id: password
+        x: 19.5
+        y: 191
+        password: true
+        placeholderText: "Enter password"
+        visible: root.needsPassword
+        onAccepted: connectButton.trigger()
+      }
+      EnterpriseFields {
+        id: enterprise
+        x: 19.5
+        y: 170
+        visible: root.isEnterprise
+        onFieldFocused: field => form.reveal(field)
+        onAccepted: connectButton.trigger()
+        onMenuRequested: menu => { root.menu = menu; root.dropdownOpen = true; }
+      }
 
-    CheckBox {
-      x: 19.5
-      y: 326.5
-      checked: root.hiddenNetwork
-      enabled: root.interactive
-      onToggled: checked => root.hiddenNetwork = checked
-    }
-    Text {
-      x: 51.5
-      y: 334.5
-      text: "Hidden network"
-      color: "white"
-      font.family: Theme.fontFamily
-      font.weight: Font.Medium
-      font.pixelSize: 13
+      CheckBox {
+        id: hidden
+        x: 19.5
+        y: root.isEnterprise ? enterprise.y + enterprise.height + 12 : 247
+        checked: root.hiddenNetwork
+        onToggled: checked => root.hiddenNetwork = checked
+      }
+      Text {
+        x: 51.5
+        anchors.verticalCenter: hidden.verticalCenter
+        text: "Hidden network"
+        color: "white"
+        font.family: Theme.fontFamily
+        font.weight: Font.Medium
+        font.pixelSize: 13
+      }
     }
 
     Rectangle {
       id: connectButton
       x: 19.5
-      y: 371.5
+      y: form.y + form.height + (root.isEnterprise ? 16 : 0)
       width: 276
       height: 48
       radius: 100
@@ -163,8 +154,9 @@ Item {
       function trigger() {
         if (root.canConnect)
           root.stackController.connectNetwork(
-              networkName.text, password.text, root.hiddenNetwork,
-              root.securityMode);
+              networkName.text, root.isEnterprise ? enterprise.secret : password.text,
+              root.hiddenNetwork, root.securityMode,
+              root.isEnterprise ? enterprise.settings : undefined);
       }
       Text {
         anchors.centerIn: parent
@@ -174,30 +166,32 @@ Item {
         font.weight: Font.Medium
         font.pixelSize: 15
       }
-      HoverHandler {
-        id: connectHover
-        enabled: root.interactive
-        cursorShape: Qt.PointingHandCursor
-      }
-      TapHandler {
-        enabled: root.interactive
-        onTapped: connectButton.trigger()
-      }
+      HoverHandler { id: connectHover; cursorShape: Qt.PointingHandCursor }
+      TapHandler { onTapped: connectButton.trigger() }
     }
   }
 
+  Item {
+    anchors.fill: parent
+    enabled: root.interactive && root.dropdownOpen
+    TapHandler { onTapped: root.dropdownOpen = false }
+  }
   SecurityMenu {
     id: securityMenu
-    x: 20
-    y: 50
     z: 20
     open: root.dropdownOpen
-    currentMode: root.securityMode
+    anchorItem: root.menu?.anchor ?? null
+    options: root.menu?.options ?? []
+    currentMode: root.menu?.mode ?? ""
+    onDismissed: root.dropdownOpen = false
     onSelected: (label, mode) => {
-      root.securityValue = label;
-      root.securityMode = mode;
+      if (root.menu.setting === "security") {
+        root.securityValue = label;
+        root.securityMode = mode;
+      } else {
+        enterprise.select(root.menu.setting, mode);
+      }
       root.dropdownOpen = false;
     }
   }
-
 }
