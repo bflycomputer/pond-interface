@@ -21,6 +21,12 @@ Singleton {
   property var live: ({})
   property bool historyWritable: false
 
+  SystemClock {
+    id: clock
+    precision: SystemClock.Seconds
+    enabled: root.transientVisible
+  }
+
   FileView {
     id: history
     path: (Quickshell.env("XDG_STATE_HOME") || Quickshell.env("HOME") + "/.local/state")
@@ -209,6 +215,14 @@ Singleton {
       return "";
     return notification.body ? String(notification.body)
                              : String(notification.summary || "");
+  }
+
+  function relativeTimeLabel(timestamp) {
+    const minutes = Math.max(0, Math.floor((clock.date.getTime() - timestamp) / 60000));
+    if (minutes < 1) return "Now";
+    if (minutes < 60) return minutes + "m";
+    if (minutes < 1440) return Math.floor(minutes / 60) + "h";
+    return Math.floor(minutes / 1440) + "d";
   }
 
   function timeLabel(timestamp) {

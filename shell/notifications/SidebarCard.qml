@@ -30,7 +30,8 @@ Item {
 
       Item {
         id: primary
-        width: Notifications.Style.summaryIconSize + (root.empty ? 0 : 2 + caption.implicitWidth)
+        width: Notifications.Style.summaryIconSize + (root.empty ? 0 : 2 + caption.width)
+        opacity: root.previewOpacity && Notifications.State.notificationCount === 1 ? 0.5 : 1
         x: Math.round(Shell.Theme.lerp(
             Shell.Theme.sidebarRowHorizontalPadding,
             (summary.width - width) / 2,
@@ -53,16 +54,18 @@ Item {
         Text {
           id: caption
           x: Notifications.Style.summaryIconSize + (root.empty ? 8 : 2)
-          y: root.empty ? 3 + metrics.capitalHeight - baselineOffset : 0
+          y: 3 + metrics.capitalHeight - baselineOffset
+          width: root.empty ? implicitWidth : Math.max(14, implicitWidth)
           height: Notifications.Style.summaryIconSize
           text: root.empty ? "Notifications" : String(Notifications.State.notificationCount)
           visible: !root.empty || root.collapseProgress < 0.31
           opacity: root.empty ? 0.6 : 1
-          color: Notifications.Style.foreground
+          color: root.empty ? Notifications.Style.foreground : "#B7B7B7"
           font.family: Shell.Theme.fontFamily
           font.weight: Font.Medium
           font.pixelSize: 13
           verticalAlignment: Text.AlignVCenter
+          horizontalAlignment: root.empty ? Text.AlignLeft : Text.AlignHCenter
           FontMetrics { id: metrics; font: caption.font }
         }
       }
@@ -71,7 +74,7 @@ Item {
         id: applications
         x: primary.x + primary.width + 8
         y: primary.y
-        width: Math.max(0, summary.width - x - Shell.Theme.sidebarRowHorizontalPadding)
+        width: Math.max(0, summary.width - x)
         height: Notifications.Style.summaryIconSize
         spacing: 8
         opacity: root.collapseProgress < 0.31 ? 1 : 0
@@ -84,9 +87,7 @@ Item {
         }
 
         Repeater {
-          // Show whole icons only, leaving the same right inset as the bell's left.
-          model: Notifications.State.recentApps.slice(0, Math.max(0, Math.floor(
-              (applications.width - 1) / (Notifications.Style.summaryIconSize + applications.spacing))))
+          model: Notifications.State.recentApps
 
           delegate: IconImage {
             required property var modelData
@@ -128,7 +129,8 @@ Item {
 
   Notifications.CloseButton {
     id: inlineClose
-    x: root.width - 16
+    compact: true
+    x: root.width - width / 2
     y: 60
     z: 3
     opacity: preview.hovered && root.inlineAmount > 0.7 ? 1 : 0
