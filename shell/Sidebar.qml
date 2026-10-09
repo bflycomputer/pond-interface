@@ -151,6 +151,7 @@ PanelWindow {
       maximumHeight: Math.max(64,
           bottomStack.y - Theme.sidebarCardGap - mainStack.y
           - timeCard.height - mediaCard.height - notificationCard.height - installsCard.height
+          - (keyboardFeedback.visible ? keyboardFeedback.height + Theme.sidebarCardGap : 0)
           - Theme.sidebarCardGap * (2 + (mediaCard.visible ? 1 : 0) + (installsCard.visible ? 1 : 0)))
       onFocusRequested: index => NiriMsg.focusWorkspace(index)
       onWindowRequested: windowId => NiriMsg.focusWindow(windowId)
@@ -173,6 +174,12 @@ PanelWindow {
       id: installsCard
       width: root.cardWidth
       collapseProgress: root.collapseProgress
+    }
+    KeyboardFeedback {
+      id: keyboardFeedback
+      screen: root.screen
+      collapseProgress: root.collapseProgress
+      expandedTopMargin: mainStack.y + keyboardFeedback.y
     }
   }
 

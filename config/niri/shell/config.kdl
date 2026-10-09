@@ -43,20 +43,7 @@ layer-rule {
 }
 
 layer-rule {
-    match namespace="^pond-(sidebar|volume|brightness)$"
-    background-effect {
-        xray false
-    }
-}
-
-layer-rule {
-    match namespace="^pond-calendar-"
-    background-effect {
-        xray false
-    }
-}
-
-layer-rule {
+    match namespace="^pond-((sidebar|volume|brightness|keyboard)$|calendar-)"
     match namespace="^vicinae$"
     background-effect {
         xray false

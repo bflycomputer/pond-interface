@@ -8,6 +8,9 @@ Singleton {
   id: root
 
   property var workspaces: []
+  property var keyboardLayouts: []
+  property int keyboardLayoutIndex: 0
+  signal keyboardLayoutSwitched
   property bool overviewOpen: false
   property var dragOrigin: null
   property bool _workspaceLauncherOpen: false
@@ -210,7 +213,15 @@ Singleton {
   }
 
   function _handleEvent(ev) {
-    if (ev.ScreenshotCaptured) {
+    if (ev.KeyboardLayoutsChanged) {
+      keyboardLayouts = ev.KeyboardLayoutsChanged.keyboard_layouts.names;
+      keyboardLayoutIndex = ev.KeyboardLayoutsChanged.keyboard_layouts.current_idx;
+      return;
+    } else if (ev.KeyboardLayoutSwitched) {
+      keyboardLayoutIndex = ev.KeyboardLayoutSwitched.idx;
+      keyboardLayoutSwitched();
+      return;
+    } else if (ev.ScreenshotCaptured) {
       Screenshot.State.receive(ev.ScreenshotCaptured.path, focusedOutputName);
       return;
     } else if (ev.OverviewOpenedOrClosed) {
