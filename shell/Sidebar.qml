@@ -140,12 +140,12 @@ PanelWindow {
   Behavior on collapseProgress { Motion {} }
 
   // Show the desktop behind the cards so windows scrolled underneath stay out of view.
-  // Span the gutter too so the fade ends where the first column begins.
+  // End at the gutter without a fade, so the cards keep an even margin on both sides.
   Wallpaper.Reveal {
     width: Theme.sidebarOuterMargin * 2 + root.cardWidth
     height: root.height
     wallpaper: root.wallpaper
-    fadeWidth: Theme.sidebarFadeWidth
+    fadeWidth: 1
   }
 
   Column {
