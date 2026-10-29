@@ -18,7 +18,9 @@ Singleton {
   property string pendingBrightnessOutput: ""
   property bool draggingBrightness: false
   property string error: ""
-  signal keyboardBrightnessChanged(string outputName, real value)
+  signal keyboardBrightnessChanged(string outputName, real value, int direction, bool fine)
+  // A keyboard brightness change is still waiting to reach the display.
+  property bool keyboardBrightnessBusy: false
   readonly property bool pickingWallpaper: picker.running
   readonly property bool busy: action.running
   readonly property bool active: Settings.State.opened && Settings.State.page === "appearance"
@@ -121,10 +123,10 @@ Singleton {
   function cachedDevice(output) {
     return display.output === output && display.brightnessDevice ? JSON.stringify(display.brightnessDevice) : "";
   }
-  function receiveBrightness(output, value) {
+  function receiveBrightness(output, value, direction, fine) {
     if (output === display.output && !draggingBrightness && pendingBrightness < 0 && !brightnessWriter.running)
       brightness = value;
-    keyboardBrightnessChanged(output, value);
+    keyboardBrightnessChanged(output, value, direction, fine);
   }
   function toggleSection(section) { expandedSection = expandedSection === section ? "" : section; }
   function apply(args) {
@@ -145,7 +147,8 @@ Singleton {
     brightnessDelay.restart();
   }
   function flushBrightness() {
-    if (brightnessWriter.running || pendingBrightness < 0) return;
+    // Each write can stall the display, so a drag only writes where it ends.
+    if (brightnessWriter.running || pendingBrightness < 0 || draggingBrightness) return;
     error = "";
     brightnessWriter.outputName = pendingBrightnessOutput;
     brightnessWriter.command = ["python3", Quickshell.shellDir + "/settings/appearance/control.py", "brightness",

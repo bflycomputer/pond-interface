@@ -70,6 +70,10 @@ Item {
       height: 32
       externalValue: root.selectedVolume
       muted: root.selectedTab === "output" && Audio.State.outputMuted
+      lowIcon: root.selectedTab === "output" ? Qt.resolvedUrl("../assets/sound.svg") : ""
+      lowIconSize: 14
+      highIcon: root.selectedTab === "output" ? Qt.resolvedUrl("../assets/sound-max.svg") : ""
+      ticks: 11
       interactive: root.interactive && root.selectedAudioAvailable
       onMoved: {
         if (root.selectedTab === "output")
