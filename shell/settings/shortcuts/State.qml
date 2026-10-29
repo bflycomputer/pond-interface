@@ -14,6 +14,18 @@ Singleton {
   property var editing: null
   signal reloaded
 
+  readonly property var ipcNames: ({
+    "volume increase": "Increase volume",
+    "volume decrease": "Lower volume",
+    "volume muteOutput": "Mute or unmute the output",
+    "volume muteInput": "Mute or unmute the microphone",
+    "media playPause": "Play or pause the current media",
+    "media next": "Next media track",
+    "media previous": "Previous media track",
+    "brightness increase": "Increase brightness",
+    "brightness decrease": "Decrease brightness"
+  })
+
   readonly property string userKeybinds: Quickshell.env("HOME") + "/.config/niri/cfg/keybinds.kdl"
 
   // Actions the editor offers. Spawn lines mirror config/niri/shell/config.kdl
@@ -80,13 +92,18 @@ Singleton {
 
   function label(bind) {
     if (bind.title) return bind.title;
-    if (!bind.action) return bind.key;
-    const verb = bind.action.replace(/;$/, "").split(" ")[0];
+    const text = String(bind.action || "");
+    // Shell bindings call the Quickshell IPC by internal names ("volume",
+    // "muteOutput"…); readers see those as noise, so name the concept.
+    const call = text.match(/\"ipc\" \"call\" \"(\w+)\" \"(\w+)\"/);
+    if (call && ipcNames[call[1] + " " + call[2]]) return ipcNames[call[1] + " " + call[2]];
+    if (!text) return bind.key;
+    const verb = text.replace(/;$/, "").split(" ")[0];
     if (verb === "spawn" || verb === "spawn-sh") {
-      const literal = bind.action.slice(bind.action.indexOf("\"") + 1, bind.action.lastIndexOf("\""));
+      const literal = text.slice(text.indexOf("\"") + 1, text.lastIndexOf("\""));
       return "Run " + literal;
     }
-    const rest = bind.action.replace(/;$/, "").split(" ").slice(1).join(" ");
+    const rest = text.replace(/;$/, "").split(" ").slice(1).join(" ").replace(/"/g, "");
     return verb.split("-").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ")
         + (rest ? " " + rest : "");
   }
