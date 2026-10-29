@@ -5,72 +5,47 @@ import ".." as Settings
 import "." as Shortcuts
 import "../.." as Shell
 
+// Adds or edits a personal shortcut: what it runs, the keys, an optional
+// name. Built-in actions are rebound from the list itself.
 Settings.Modal {
   id: root
   objectName: "shortcutsEditor"
   title: root.editing ? "Edit shortcut" : "New shortcut"
   bodyTop: 92
-  contentHeight: form.height + 76
+  contentHeight: form.height + 24 + footerHeight
   onBackRequested: Settings.State.back()
   Keys.onEscapePressed: Settings.State.back()
+  // The command is what people come here to type.
+  Component.onCompleted: Qt.callLater(() => commandInput.forceActiveFocus())
 
-  // Chord capture happens inside the combination box: press-and-hold shows
-  // modifier keycaps live, a non-modifier key finalizes, Escape cancels.
+  readonly property real footerHeight: 76
   readonly property var editing: Shortcuts.State.editing
-  readonly property var catalogItem: editing ? root.catalogEntry(editing.action) : null
+  // Binds made before the editor only took commands keep their niri action
+  // until a command replaces it.
+  readonly property string keptAction: editing && commandText(editing.action) === "" ? editing.action : ""
   property string name: editing ? (editing.title || "") : ""
-  // Binds whose action isn't in the catalog reopen as a custom command.
-  property string selectedAction: catalogItem ? catalogItem.action : ""
-  readonly property bool customMode: selectedAction === ""
-  property bool shellCommand: !!editing && !catalogItem && /^spawn-sh /.test(editing.action)
-  property string customCommand: editing && !catalogItem ? root.commandText(editing.action) : ""
+  property bool shellCommand: !!editing && /^spawn-sh /.test(editing.action)
+  property string customCommand: editing ? root.commandText(editing.action) : ""
   property bool repeatAllowed: !!editing && !!editing.flags && editing.flags.repeat !== false
+  property string chord: editing ? editing.key : ""
   property bool saving: false
   property bool recording: false
-  property var stagedMods: []
-  property var chordParts: editing ? String(editing.key).split("+") : []
+  property string staged: ""
   property string hint: ""
 
-  readonly property var order: ["Mod", "Shift", "Ctrl", "Alt", "Super"]
-  readonly property string chord: root.chordParts.join("+")
   readonly property string actionValue: {
-    if (root.customMode) {
-      const command = root.customCommand.trim();
-      if (command === "") return "";
-      return root.shellCommand
-          ? "spawn-sh \"" + command.replace(/[\\"]/g, "\\$&") + "\""
-          : "spawn " + root.splitCommand(command);
-    }
-    return root.selectedAction;
+    const command = root.customCommand.trim();
+    if (command === "") return root.keptAction;
+    return root.shellCommand
+        ? "spawn-sh \"" + command.replace(/[\\"]/g, "\\$&") + "\";"
+        : "spawn " + root.splitCommand(command) + ";";
   }
-  readonly property bool conflict: {
-    if (root.chord === "") return false;
-    const wanted = root.canonical(root.chord);
-    const original = root.editing ? root.canonical(root.editing.key) : "";
-    return wanted !== original
-        && Shortcuts.State.binds.some(bind => root.canonical(bind.key) === wanted);
-  }
+  readonly property var conflict: root.chord === "" ? null
+      : Shortcuts.State.conflictWith(root.chord, root.editing ? root.editing.key : "")
   readonly property bool valid: root.chord !== "" && root.actionValue !== "" && !root.conflict
-
-  // Matches shortcuts.py: niri reads modifiers and keysyms case-insensitively.
-  function canonical(key) {
-    const upper = root.order.map(mod => mod.toUpperCase()), mods = [];
-    let chord = "";
-    for (const part of String(key).split("+")) {
-      const index = upper.indexOf(part.toUpperCase());
-      if (index >= 0) mods.push(index);
-      else if (chord !== "") return "";
-      else chord = part.toLowerCase();
-    }
-    return mods.sort().map(index => upper[index]).join("+") + "+" + chord;
-  }
-
-  function catalogEntry(action) {
-    for (const section of Shortcuts.State.catalog)
-      for (const item of section.items)
-        if (item.action === action) return item;
-    return null;
-  }
+  // What the list will call it when no name is given.
+  readonly property string fallbackName: root.actionValue === "" ? ""
+      : Shortcuts.State.label({ title: "", key: root.chord, action: root.actionValue })
 
   // Inverse of actionValue for spawn and spawn-sh binds.
   function commandText(action) {
@@ -91,24 +66,20 @@ Settings.Modal {
   }
 
   function save() {
-    if (!root.valid || root.saving) return;
+    if (root.saving) return;
+    // Not ready yet: lead to whatever is still missing instead of a dead button.
+    if (root.actionValue === "") { commandInput.forceActiveFocus(); return; }
+    if (root.chord === "") { root.startRecording(); return; }
+    if (!root.valid) return;
     const flags = {};
     if (root.repeatAllowed) flags.repeat = true;
     // Not editable here, but an edit must not drop it.
     if (root.editing && root.editing.flags && root.editing.flags["allow-when-locked"])
       flags["allow-when-locked"] = true;
-    // Without a name a catalog action would read as "Run qs" in the list and
-    // the hotkey overlay; its catalog label is the better default.
-    const chosen = root.customMode ? null : root.catalogEntry(root.selectedAction);
     root.saving = true;
     Shortcuts.State.saveShortcut(
         root.editing ? root.editing.key : "",
-        {
-          key: root.chord,
-          title: root.name.trim() || (chosen ? chosen.label : ""),
-          flags: flags,
-          action: root.actionValue
-        },
+        { key: root.chord, title: root.name.trim(), flags: flags, action: root.actionValue },
         () => Settings.State.back(), () => { root.saving = false; });
   }
 
@@ -119,108 +90,165 @@ Settings.Modal {
         () => Settings.State.back(), () => { root.saving = false; });
   }
 
-  // Modifier snapshot of an event; Super is Qt's MetaModifier.
-  function allMods(modifiers) {
-    const mods = [];
-    if (modifiers & Qt.MetaModifier) mods.push("Mod");
-    if (modifiers & Qt.ShiftModifier) mods.push("Shift");
-    if (modifiers & Qt.ControlModifier) mods.push("Ctrl");
-    if (modifiers & Qt.AltModifier) mods.push("Alt");
-    return mods;
-  }
-
-  // Modifier keys themselves, mapped to the chord name they stand for.
-  readonly property var modifierKeys: ({
-    [Qt.Key_Meta]: "Mod", [Qt.Key_Super_L]: "Mod", [Qt.Key_Super_R]: "Mod",
-    [Qt.Key_Shift]: "Shift", [Qt.Key_Control]: "Ctrl",
-    [Qt.Key_Alt]: "Alt", [Qt.Key_AltGr]: "Alt"
-  })
-  // niri binds name the unshifted key (Mod+Shift+Slash), while Qt reports
-  // the shifted symbol; this folds a US layout back.
-  readonly property var keyNames: ({
-    [Qt.Key_Space]: "Space", [Qt.Key_Tab]: "Tab", [Qt.Key_Backtab]: "Tab",
-    [Qt.Key_Return]: "Return", [Qt.Key_Enter]: "Return",
-    [Qt.Key_Backspace]: "Backspace", [Qt.Key_Delete]: "Delete",
-    [Qt.Key_Insert]: "Insert", [Qt.Key_Home]: "Home", [Qt.Key_End]: "End",
-    [Qt.Key_PageUp]: "Page_Up", [Qt.Key_PageDown]: "Page_Down",
-    [Qt.Key_Left]: "Left", [Qt.Key_Right]: "Right", [Qt.Key_Up]: "Up", [Qt.Key_Down]: "Down",
-    [Qt.Key_Minus]: "Minus", [Qt.Key_Underscore]: "Minus",
-    [Qt.Key_Equal]: "Equal", [Qt.Key_Plus]: "Equal",
-    [Qt.Key_Slash]: "Slash", [Qt.Key_Question]: "Slash",
-    [Qt.Key_Comma]: "Comma", [Qt.Key_Less]: "Comma",
-    [Qt.Key_Period]: "Period", [Qt.Key_Greater]: "Period",
-    [Qt.Key_Semicolon]: "Semicolon", [Qt.Key_Colon]: "Semicolon",
-    [Qt.Key_Apostrophe]: "Apostrophe", [Qt.Key_QuoteDbl]: "Apostrophe",
-    [Qt.Key_BracketLeft]: "BracketLeft", [Qt.Key_BraceLeft]: "BracketLeft",
-    [Qt.Key_BracketRight]: "BracketRight", [Qt.Key_BraceRight]: "BracketRight",
-    [Qt.Key_Backslash]: "Backslash", [Qt.Key_Bar]: "Backslash",
-    [Qt.Key_QuoteLeft]: "Grave", [Qt.Key_AsciiTilde]: "Grave",
-    [Qt.Key_Exclam]: "1", [Qt.Key_At]: "2", [Qt.Key_NumberSign]: "3", [Qt.Key_Dollar]: "4",
-    [Qt.Key_Percent]: "5", [Qt.Key_AsciiCircum]: "6", [Qt.Key_Ampersand]: "7",
-    [Qt.Key_Asterisk]: "8", [Qt.Key_ParenLeft]: "9", [Qt.Key_ParenRight]: "0",
-    [Qt.Key_Print]: "Print",
-    [Qt.Key_MediaPlay]: "XF86AudioPlay", [Qt.Key_MediaPause]: "XF86AudioPause",
-    [Qt.Key_MediaStop]: "XF86AudioStop", [Qt.Key_MediaNext]: "XF86AudioNext",
-    [Qt.Key_MediaPrevious]: "XF86AudioPrev",
-    [Qt.Key_VolumeUp]: "XF86AudioRaiseVolume", [Qt.Key_VolumeDown]: "XF86AudioLowerVolume",
-    [Qt.Key_VolumeMute]: "XF86AudioMute", [Qt.Key_MicMute]: "XF86AudioMicMute"
-  })
-
-  // Held modifiers, in chord order. Whether an event's own modifier key is
-  // already in event.modifiers varies by platform, so it is passed apart.
-  function heldMods(modifiers, pressed, released) {
-    const held = root.allMods(modifiers);
-    if (pressed && held.indexOf(pressed) < 0) held.push(pressed);
-    return root.order.filter(mod => mod !== released && held.indexOf(mod) >= 0);
+  function startRecording() {
+    root.recording = true;
+    root.staged = "";
+    root.hint = "";
+    chordBox.forceActiveFocus();
   }
 
   function stopRecording() {
     root.recording = false;
-    root.stagedMods = [];
-  }
-
-  function capture(event) {
-    const modifier = root.modifierKeys[event.key];
-    if (modifier !== undefined) {
-      root.stagedMods = root.heldMods(event.modifiers, modifier, "");
-      return;
-    }
-    const key = root.keySym(event);
-    if (key === "") return;
-    root.chordParts = root.heldMods(event.modifiers, "", "").concat([key]);
-    root.stopRecording();
-    root.hint = "";
-  }
-
-  function keySym(event) {
-    const key = event.key;
-    if (key >= Qt.Key_A && key <= Qt.Key_Z) return String.fromCharCode(key);
-    if (key >= Qt.Key_0 && key <= Qt.Key_9) return String.fromCharCode(key);
-    if (key >= Qt.Key_F1 && key <= Qt.Key_F35) return "F" + (key - Qt.Key_F1 + 1);
-    const name = root.keyNames[key];
-    if (name !== undefined) return name;
-    if (event.text && event.text.length === 1 && /[a-z0-9]/i.test(event.text))
-      return event.text.toUpperCase();
-    root.hint = "That key isn't supported here. Try another one.";
-    return "";
+    root.staged = "";
   }
 
   Column {
     id: form
     x: 30; width: root.width - 60; spacing: 10
 
-    Text {
-      text: "Name"; color: "#b3b3b3"
-      font.family: Shell.Theme.fontFamily; font.pixelSize: 13
+    Item {
+      width: parent.width; height: 28
+      Text { anchors.verticalCenter: parent.verticalCenter; text: "Runs"; color: "#b3b3b3"; font.family: Shell.Theme.fontFamily; font.pixelSize: 13 }
+      Row {
+        anchors.right: parent.right; spacing: 6
+        Shortcuts.Choice {
+          label: "App"; selected: !root.shellCommand
+          onPicked: { root.shellCommand = false; commandInput.forceActiveFocus(); }
+        }
+        Shortcuts.Choice {
+          label: "Shell script"; selected: root.shellCommand
+          onPicked: { root.shellCommand = true; commandInput.forceActiveFocus(); }
+        }
+      }
     }
+    Rectangle {
+      objectName: "shortcutsCommandInput"
+      width: parent.width; height: 51; radius: 12
+      color: commandInput.activeFocus ? "#303030" : "#262626"
+      Text {
+        x: 20; width: parent.width - 40; anchors.verticalCenter: parent.verticalCenter
+        visible: !commandInput.text; elide: Text.ElideRight
+        text: root.keptAction !== "" ? root.keptAction.replace(/;$/, "")
+            : root.shellCommand ? "~/scripts/screenshot.sh --area" : "firefox --private-window"
+        color: "white"; opacity: 0.2
+        font.family: "JetBrains Mono"; font.pixelSize: 14
+      }
+      TextInput {
+        id: commandInput
+        x: 20; width: parent.width - 40; anchors.verticalCenter: parent.verticalCenter
+        text: root.customCommand
+        onTextChanged: root.customCommand = text
+        clip: true; color: "white"
+        font.family: "JetBrains Mono"; font.pixelSize: 14
+        selectionColor: Shell.PanelStyle.accentText; selectedTextColor: "white"
+        activeFocusOnTab: true
+        Accessible.role: Accessible.EditableText
+        Accessible.name: root.shellCommand ? "Shell script" : "App command"
+        Keys.onReturnPressed: root.save()
+        Keys.onEnterPressed: root.save()
+      }
+    }
+    Text {
+      width: parent.width; wrapMode: Text.Wrap
+      color: "white"; opacity: 0.35
+      font.family: Shell.Theme.fontFamily; font.pixelSize: 12
+      text: root.shellCommand
+          ? "Runs through sh -c, so pipes, ~ and $VARIABLES work."
+          : "The program and its arguments. Quote an argument that contains spaces."
+    }
+
+    Item { width: 1; height: 6 }
+    Text { text: "Keys"; color: "#b3b3b3"; font.family: Shell.Theme.fontFamily; font.pixelSize: 13 }
+    Rectangle {
+      id: chordBox
+      objectName: "shortcutsChord"
+      width: parent.width; height: 51; radius: 12
+      color: root.recording ? "#303030" : chordHover.hovered ? "#2b2b2b" : "#262626"
+      border.width: root.recording || root.conflict ? 1 : 0
+      border.color: root.conflict && !root.recording ? "#ffb4ab" : Shell.PanelStyle.accent
+      activeFocusOnTab: true
+      Accessible.role: Accessible.Button
+      Accessible.name: root.chord === "" ? "Record keys" : "Keys: " + root.chord.split("+").join(" plus ")
+
+      // While recording every key is captured; Escape cancels the
+      // recording instead of leaving the page.
+      Keys.onPressed: event => {
+        if (!root.recording) {
+          if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter || event.key === Qt.Key_Space) {
+            root.startRecording();
+            event.accepted = true;
+          } else {
+            event.accepted = false;
+          }
+          return;
+        }
+        event.accepted = true;
+        if (event.key === Qt.Key_Escape) { root.stopRecording(); return; }
+        const chord = Shortcuts.State.readChord(event, mods => { root.staged = mods.join("+"); });
+        if (chord === null) return;
+        if (chord === "") { root.hint = "That key can't be used in a shortcut. Try another one."; return; }
+        root.chord = chord;
+        root.hint = "";
+        root.stopRecording();
+      }
+      Keys.onReleased: event => {
+        const modifier = Shortcuts.State.modifierKeys[event.key];
+        if (root.recording && modifier !== undefined)
+          root.staged = Shortcuts.State.heldMods(event.modifiers, "", modifier).join("+");
+        event.accepted = root.recording;
+      }
+      onActiveFocusChanged: if (!activeFocus) root.stopRecording()
+
+      Text {
+        x: 20; anchors.verticalCenter: parent.verticalCenter
+        visible: !root.recording && root.chord === ""
+        text: "Click to record keys"
+        color: "white"; opacity: 0.2
+        font.family: Shell.Theme.fontFamily; font.pixelSize: 15
+      }
+      Text {
+        x: 20; anchors.verticalCenter: parent.verticalCenter
+        visible: root.recording && root.staged === ""
+        text: "Hold modifiers, then press a key"
+        color: Shell.PanelStyle.accent; opacity: 0.8
+        font.family: Shell.Theme.fontFamily; font.italic: true; font.pixelSize: 15
+      }
+      Shortcuts.Keys {
+        x: 20; anchors.verticalCenter: parent.verticalCenter
+        chord: root.recording ? root.staged : root.chord
+        complete: !root.recording
+        borderColor: root.recording ? Shell.PanelStyle.accent : "#4a4a4a"
+      }
+      Text {
+        anchors.right: parent.right; anchors.rightMargin: 20
+        anchors.verticalCenter: parent.verticalCenter
+        text: root.recording ? "esc • cancel" : root.chord === "" ? "" : "click to change"
+        color: "white"; opacity: root.recording || chordHover.hovered ? 0.35 : 0
+        font.family: Shell.Theme.fontFamily; font.pixelSize: 11
+      }
+      HoverHandler { id: chordHover; cursorShape: Qt.PointingHandCursor }
+      TapHandler { onTapped: root.startRecording() }
+    }
+    Text {
+      width: parent.width; wrapMode: Text.Wrap
+      visible: text !== ""
+      color: "#ffb4ab"
+      font.family: Shell.Theme.fontFamily; font.pixelSize: 12
+      text: root.conflict
+          ? "Already used by “" + Shortcuts.State.label(root.conflict) + "”. Pick other keys."
+          : root.hint
+    }
+
+    Item { width: 1; height: 6 }
+    Text { text: "Name"; color: "#b3b3b3"; font.family: Shell.Theme.fontFamily; font.pixelSize: 13 }
     Rectangle {
       objectName: "shortcutsNameInput"
       width: parent.width; height: 51; radius: 12
       color: nameInput.activeFocus ? "#303030" : "#262626"
       Text {
-        x: 20; anchors.verticalCenter: parent.verticalCenter
-        visible: !nameInput.text
-        text: "How the shortcut reads in lists (optional)"
+        x: 20; width: parent.width - 40; anchors.verticalCenter: parent.verticalCenter
+        visible: !nameInput.text; elide: Text.ElideRight
+        text: root.fallbackName !== "" ? root.fallbackName + "  (optional)" : "Optional"
         color: "white"; opacity: 0.2
         font.family: Shell.Theme.fontFamily; font.pixelSize: 15
       }
@@ -232,6 +260,11 @@ Settings.Modal {
         clip: true; color: "white"
         selectionColor: Shell.PanelStyle.accentText; selectedTextColor: "white"
         font.family: Shell.Theme.fontFamily; font.pixelSize: 15
+        activeFocusOnTab: true
+        Accessible.role: Accessible.EditableText
+        Accessible.name: "Name"
+        Keys.onReturnPressed: root.save()
+        Keys.onEnterPressed: root.save()
         cursorDelegate: Rectangle {
           id: nameCaret
           width: 1; color: Shell.PanelStyle.accent
@@ -244,261 +277,52 @@ Settings.Modal {
         }
       }
     }
-
     Text {
-      text: "Combination"; color: "#b3b3b3"
-      font.family: Shell.Theme.fontFamily; font.pixelSize: 13
-    }
-    Rectangle {
-      id: chordBox
-      objectName: "shortcutsChord"
-      width: parent.width; height: 51; radius: 12
-      color: root.recording ? "#303030" : "#262626"
-      border.width: root.recording ? 1 : 0
-      border.color: Shell.PanelStyle.accent
-      activeFocusOnTab: true
-      Accessible.role: Accessible.Button
-      Accessible.name: root.chord === "" ? "Record a key combination"
-          : root.chord.split("+").join(" plus ")
-
-      // While recording every key is captured; Escape cancels the recording
-      // instead of leaving the page.
-      Keys.onPressed: event => {
-        if (!root.recording) {
-          event.accepted = false;
-        } else if (event.key === Qt.Key_Escape) {
-          root.stopRecording();
-          event.accepted = true;
-        } else {
-          root.capture(event);
-          event.accepted = true;
-        }
-      }
-      Keys.onReleased: event => {
-        const modifier = root.modifierKeys[event.key];
-        if (root.recording && modifier !== undefined)
-          root.stagedMods = root.heldMods(event.modifiers, "", modifier);
-        event.accepted = root.recording;
-      }
-      onActiveFocusChanged: if (!activeFocus) root.stopRecording()
-
-      Text {
-        x: 20; anchors.verticalCenter: parent.verticalCenter
-        visible: root.chord === "" && !root.recording
-        text: "Click, then press keys to record a combination"
-        color: "white"; opacity: 0.2
-        font.family: Shell.Theme.fontFamily; font.pixelSize: 15
-      }
-      Text {
-        x: 20; anchors.verticalCenter: parent.verticalCenter
-        visible: root.recording && root.stagedMods.length === 0
-        text: "Hold modifiers, then press another key"
-        color: Shell.PanelStyle.accent; opacity: 0.8
-        font.family: Shell.Theme.fontFamily; font.italic: true
-        font.pixelSize: 15
-      }
-      Shortcuts.Keys {
-        id: chordPreview
-        chord: root.recording ? root.stagedMods.join("+") : root.chord
-        visible: chord.length > 0
-        size: 24
-        anchors.left: parent.left; anchors.leftMargin: 20
-        anchors.verticalCenter: parent.verticalCenter
-      }
-      Text {
-        anchors.right: parent.right; anchors.rightMargin: 20
-        anchors.verticalCenter: parent.verticalCenter
-        visible: root.recording
-        text: "esc \u2022 cancel"; color: "white"; opacity: 0.3
-        font.family: Shell.Theme.fontFamily; font.pixelSize: 11
-      }
-      HoverHandler { cursorShape: Qt.PointingHandCursor }
-      TapHandler {
-        onTapped: {
-          root.recording = true;
-          root.hint = "";
-          chordBox.forceActiveFocus();
-        }
-      }
-    }
-    Text {
-      width: parent.width
-      visible: text !== ""
-      text: root.conflict ? "That combination is already in use."
-          : root.hint || Shortcuts.State.error
-      color: "#ffb4ab"; wrapMode: Text.Wrap
+      width: parent.width; wrapMode: Text.Wrap
+      color: "white"; opacity: 0.35
       font.family: Shell.Theme.fontFamily; font.pixelSize: 12
+      text: "Shown in this list and in the hotkey overlay."
     }
 
-    Rectangle {
+    Item { width: 1; height: 6 }
+    Settings.Field {
       objectName: "shortcutsRepeatToggle"
-      width: 190; height: 36; radius: 18
-      color: "transparent"; border.width: 1; border.color: "#303030"
-      Text {
-        x: 16; anchors.verticalCenter: parent.verticalCenter
-        text: "Repeat while held"; color: "white"; opacity: 0.5
-        font.family: Shell.Theme.fontFamily; font.pixelSize: 12
-      }
-      Shell.Toggle {
-        anchors.right: parent.right; anchors.rightMargin: 14
-        anchors.verticalCenter: parent.verticalCenter
-        checked: root.repeatAllowed
-        onToggled: checked => { root.repeatAllowed = checked; }
-      }
-    }
-
-    Text {
-      text: "Action"; color: "#b3b3b3"
-      font.family: Shell.Theme.fontFamily; font.pixelSize: 13
-    }
-    Repeater {
-      model: Shortcuts.State.catalog
-
-      Column {
-        id: section
-        width: parent.width; spacing: 8
-        required property var modelData
-
-        Text {
-          text: section.modelData.name
-          color: "white"; opacity: 0.3
-          font.family: Shell.Theme.fontFamily
-          font.pixelSize: 11; font.letterSpacing: 0.5
-        }
-        Repeater {
-          model: section.modelData.items
-
-          Rectangle {
-            id: action
-            required property var modelData
-            readonly property bool chosen: !root.customMode && root.selectedAction === modelData.action
-            width: section.width; height: 44; radius: 12
-            color: hover.hovered || chosen ? "#262626" : "transparent"
-            Text {
-              x: 20; anchors.verticalCenter: parent.verticalCenter
-              text: action.modelData.label; color: "white"; opacity: action.chosen ? 1 : 0.7
-              font.family: Shell.Theme.fontFamily; font.pixelSize: 15
-            }
-            Text {
-              // Steps aside for the check mark, which sits where the custom
-              // command row puts its own.
-              anchors.right: parent.right; anchors.rightMargin: action.chosen ? 52 : 20
-              anchors.verticalCenter: parent.verticalCenter
-              width: Math.min(180, implicitWidth); elide: Text.ElideMiddle
-              text: action.modelData.action.replace(/;$/, "")
-              color: "white"; opacity: 0.25
-              font.family: "JetBrains Mono"; font.pixelSize: 12
-            }
-            Image {
-              visible: action.chosen
-              x: parent.width - 42; anchors.verticalCenter: parent.verticalCenter
-              width: 20; height: 20; sourceSize: Qt.size(40, 40)
-              source: Qt.resolvedUrl("../../assets/installs/check.svg")
-            }
-            HoverHandler { id: hover; cursorShape: Qt.PointingHandCursor }
-            TapHandler {
-              onTapped: {
-                root.selectedAction = action.modelData.action;
-                root.customCommand = "";
-              }
-            }
-          }
-        }
-      }
-    }
-
-    Rectangle {
-      id: customRow
-      width: parent.width; height: 44; radius: 12
-      color: customHover.hovered || root.customMode ? "#262626" : "transparent"
-      Text {
-        x: 20; anchors.verticalCenter: parent.verticalCenter
-        text: "Custom command" + (root.customMode ? "" : "\u2026")
-        color: "white"; opacity: root.customMode ? 1 : 0.7
-        font.family: Shell.Theme.fontFamily; font.pixelSize: 15
-      }
-      Image {
-        visible: root.customMode
-        x: customRow.width - 42; anchors.verticalCenter: parent.verticalCenter
-        width: 20; height: 20; sourceSize: Qt.size(40, 40)
-        source: Qt.resolvedUrl("../../assets/installs/check.svg")
-      }
-      Text {
-        visible: !root.customMode
-        anchors.right: parent.right; anchors.rightMargin: 20
-        anchors.verticalCenter: parent.verticalCenter
-        text: "any app or script"; color: "white"; opacity: 0.25
-        font.family: "JetBrains Mono"; font.pixelSize: 12
-      }
-      HoverHandler { id: customHover; cursorShape: Qt.PointingHandCursor }
-      TapHandler { onTapped: root.selectedAction = ""; }
-    }
-    Column {
-      visible: root.customMode
-      width: parent.width; spacing: 8
-      Row {
-        spacing: 8
-        Rectangle {
-          width: 96; height: 32; radius: 16
-          color: !root.shellCommand ? "#303030" : "transparent"
-          border.width: 1; border.color: "#303030"
-          Text {
-            anchors.centerIn: parent; text: "App"; color: "white"
-            opacity: !root.shellCommand ? 0.9 : 0.5
-            font.family: Shell.Theme.fontFamily; font.pixelSize: 12
-          }
-          HoverHandler { cursorShape: Qt.PointingHandCursor }
-          TapHandler { onTapped: root.shellCommand = false }
-        }
-        Rectangle {
-          width: 120; height: 32; radius: 16
-          color: root.shellCommand ? "#303030" : "transparent"
-          border.width: 1; border.color: "#303030"
-          Text {
-            anchors.centerIn: parent; text: "Shell script"; color: "white"
-            opacity: root.shellCommand ? 0.9 : 0.5
-            font.family: Shell.Theme.fontFamily; font.pixelSize: 12
-          }
-          HoverHandler { cursorShape: Qt.PointingHandCursor }
-          TapHandler { onTapped: root.shellCommand = true }
-        }
-      }
-      Rectangle {
-        objectName: "shortcutsCommandInput"
-        width: parent.width; height: 51; radius: 12
-        color: commandInput.activeFocus ? "#303030" : "#262626"
-        Text {
-          x: 20; anchors.verticalCenter: parent.verticalCenter
-          visible: !commandInput.text
-          text: root.shellCommand ? "script to run, e.g. ~/scripts/screenshot.sh"
-              : "command with flags, e.g. brave https://bflycomputer.so"
-          color: "white"; opacity: 0.2
-          font.family: "JetBrains Mono"; font.pixelSize: 14
-        }
-        TextInput {
-          id: commandInput
-          x: 20; width: parent.width - 40; anchors.verticalCenter: parent.verticalCenter
-          text: root.customCommand
-          onTextChanged: root.customCommand = text
-          clip: true; color: "white"
-          font.family: "JetBrains Mono"; font.pixelSize: 14
-          selectionColor: Shell.PanelStyle.accentText; selectedTextColor: "white"
-        }
-      }
+      width: parent.width
+      title: "Repeat while held"
+      toggle: true; checked: root.repeatAllowed
+      onToggled: checked => { root.repeatAllowed = checked; }
     }
   }
 
-  // Bottom-right controls sit on the overlay so scrolled content can't
-  // push them off the card.
-  overlay: Row {
-    x: root.width - width - 24; y: root.height - 58; spacing: 8
+  overlay: Item {
+    // A solid footer: scrolled content passes under it, never through it.
+    objectName: "shortcutsEditorFooter"
+    y: root.height - root.footerHeight
+    width: root.width; height: root.footerHeight
 
     Rectangle {
+      anchors.fill: parent
+      radius: root.radius; color: Settings.Style.card
+      Rectangle { width: parent.width; height: root.radius; color: Settings.Style.card }
+      Rectangle { x: 30; width: parent.width - 60; height: 1; color: "#2a2a2a" }
+    }
+    Text {
+      x: 30; width: parent.width - 330; anchors.verticalCenter: parent.verticalCenter
+      visible: Shortcuts.State.error !== ""
+      text: Shortcuts.State.error; color: "#ffb4ab"
+      elide: Text.ElideRight; maximumLineCount: 2; wrapMode: Text.Wrap
+      font.family: Shell.Theme.fontFamily; font.pixelSize: 12
+    }
+    Rectangle {
       objectName: "shortcutsEditorDelete"
-      visible: !!root.editing
+      x: 30; anchors.verticalCenter: parent.verticalCenter
+      visible: !!root.editing && Shortcuts.State.error === ""
       width: 84; height: 40; radius: 8
       color: deleteHover.hovered ? "#3a2622" : "transparent"
       border.width: 1; border.color: "#4a4a4a"
+      Accessible.role: Accessible.Button
+      Accessible.name: "Delete shortcut"
+      Accessible.onPressAction: root.remove()
       Text {
         anchors.centerIn: parent; text: "Delete"
         color: "#ffb4ab"
@@ -507,34 +331,45 @@ Settings.Modal {
       HoverHandler { id: deleteHover; cursorShape: Qt.PointingHandCursor }
       TapHandler { onTapped: root.remove() }
     }
-    Rectangle {
-      objectName: "shortcutsEditorCancel"
-      width: 84; height: 40; radius: 8
-      color: cancelHover.hovered ? "#303030" : "transparent"
-      border.width: 1; border.color: "#4a4a4a"
-      Text {
-        anchors.centerIn: parent; text: "Cancel"
-        color: "white"; opacity: 0.7
-        font.family: Shell.Theme.fontFamily; font.pixelSize: 13
+    Row {
+      x: parent.width - width - 30; anchors.verticalCenter: parent.verticalCenter
+      spacing: 8
+      Rectangle {
+        objectName: "shortcutsEditorCancel"
+        width: 84; height: 40; radius: 8
+        color: cancelHover.hovered ? "#303030" : "transparent"
+        border.width: 1; border.color: "#4a4a4a"
+        Accessible.role: Accessible.Button
+        Accessible.name: "Cancel"
+        Accessible.onPressAction: Settings.State.back()
+        Text {
+          anchors.centerIn: parent; text: "Cancel"
+          color: "white"; opacity: 0.7
+          font.family: Shell.Theme.fontFamily; font.pixelSize: 13
+        }
+        HoverHandler { id: cancelHover; cursorShape: Qt.PointingHandCursor }
+        TapHandler { onTapped: Settings.State.back() }
       }
-      HoverHandler { id: cancelHover; cursorShape: Qt.PointingHandCursor }
-      TapHandler { onTapped: Settings.State.back() }
-    }
-    Rectangle {
-      objectName: "shortcutsEditorSave"
-      width: 110; height: 40; radius: 8
-      color: root.valid ? "#cba6f7" : "#3a2f45"
-      opacity: root.valid && !root.saving ? 1 : 0.45
-      Text {
-        anchors.centerIn: parent
-        text: root.editing ? "Save changes" : "Add shortcut"
-        color: root.valid ? "#1d1d1d" : "white"
-        opacity: root.valid ? 1 : 0.5
-        font.family: Shell.Theme.fontFamily
-        font.weight: Font.DemiBold; font.pixelSize: 13
+      Rectangle {
+        objectName: "shortcutsEditorSave"
+        width: 120; height: 40; radius: 8
+        color: root.valid ? "#cba6f7" : "#3a2f45"
+        opacity: root.valid && !root.saving ? 1 : 0.45
+        Accessible.role: Accessible.Button
+        Accessible.name: saveText.text
+        Accessible.onPressAction: root.save()
+        Text {
+          id: saveText
+          anchors.centerIn: parent
+          text: root.editing ? "Save changes" : "Add shortcut"
+          color: root.valid ? "#1d1d1d" : "white"
+          opacity: root.valid ? 1 : 0.5
+          font.family: Shell.Theme.fontFamily
+          font.weight: Font.DemiBold; font.pixelSize: 13
+        }
+        HoverHandler { cursorShape: Qt.PointingHandCursor }
+        TapHandler { onTapped: root.save() }
       }
-      HoverHandler { id: saveHover; cursorShape: root.valid ? Qt.PointingHandCursor : Qt.ArrowCursor }
-      TapHandler { enabled: root.valid; onTapped: root.save() }
     }
   }
 }

@@ -15,6 +15,9 @@ USER_KEYBINDS = Path.home() / ".config/niri/cfg/keybinds.kdl"
 META = Path.home() / ".config/pond-interface/shortcuts.json"
 MANAGED_COMMENT = "    // ─── Pond shortcuts (managed by Settings → Keyboard shortcuts) ───"
 MODS = ["MOD", "SHIFT", "CTRL", "ALT", "SUPER"]
+# niri has no unbind: a chord moved away from a read-only Pond default is
+# parked on a no-op that the hotkey overlay and this page both hide.
+PARKED = 'spawn-sh "true";'
 
 
 def config_files():
@@ -133,7 +136,59 @@ def active_binds():
             identity = canonical(bind["key"])
             if identity:
                 binds[identity] = bind | {"file": str(path), "personal": path == USER_KEYBINDS}
-    return list(binds.values())
+    return [bind for bind in binds.values() if bind["action"] != PARKED]
+
+
+def check_free(key, ignore=""):
+    if not canonical(key):
+        raise ValueError(f"'{key}' is not a valid niri chord.")
+    for bind in active_binds():
+        identity = canonical(bind["key"])
+        if identity == canonical(key) and identity != canonical(ignore):
+            verb = bind["action"].rstrip(";").split(" ")[0]
+            label = bind["title"] or " ".join(word.capitalize() for word in verb.split("-"))
+            raise ValueError(f"{key} is already used by {label or 'another shortcut'}.")
+
+
+def user_text():
+    return USER_KEYBINDS.read_text() if USER_KEYBINDS.is_file() else DEFAULT_USER_KEYBINDS
+
+
+def user_chords(text):
+    # (chord node, line start, line end) for every bind in the personal file.
+    tokens = kdl.tokens(text)
+    for first, _, opening, closing in kdl.nodes(tokens):
+        if tokens[first][0] != "binds" or opening is None or closing is None:
+            continue
+        for chord_first, chord_last, _, _ in kdl.nodes(tokens, opening + 1, closing):
+            start = text.rfind("\n", 0, tokens[chord_first][1]) + 1
+            end = text.find("\n", tokens[chord_last - 1][2])
+            yield tokens[chord_first], start, len(text) if end < 0 else end + 1
+
+
+def drop_line(text, key):
+    for token, start, end in user_chords(text):
+        if canonical(token[0]) == canonical(key):
+            text = text[:start] + text[end:]
+            # The managed header goes once its section is empty.
+            return text.replace(MANAGED_COMMENT + "\n}", "}"), True
+    return text, False
+
+
+def append_line(text, line):
+    tokens = kdl.tokens(text)
+    closing = next((tokens[closing][1] for first, _, opening, closing in kdl.nodes(tokens)
+                    if tokens[first][0] == "binds" and opening is not None and closing is not None), None)
+    if closing is None:
+        raise ValueError("No binds block in " + str(USER_KEYBINDS) + ".")
+    insert = "" if MANAGED_COMMENT in text else MANAGED_COMMENT + "\n"
+    head = "\n" if closing > 0 and text[closing - 1] != "\n" else ""
+    return text[:closing] + head + insert + line + "\n" + text[closing:]
+
+
+def write_user(text):
+    USER_KEYBINDS.parent.mkdir(parents=True, exist_ok=True)
+    kdl.atomic_write(USER_KEYBINDS, text)
 
 
 def custom_binds():
@@ -164,24 +219,10 @@ def add(key, title, flags, action):
     key, title, action = key.strip(), str(title), (action or "").strip()
     if not key or not action:
         raise ValueError("A chord and an action are required.")
-    if not canonical(key):
-        raise ValueError(f"'{key}' is not a valid niri chord.")
-    conflict = next((bind for bind in active_binds() if canonical(bind["key"]) == canonical(key)), None)
-    if conflict:
-        label = conflict["title"] or conflict["action"] or "an existing shortcut"
-        raise ValueError(f"'{key}' is already bound: {label}.")
-    text = USER_KEYBINDS.read_text() if USER_KEYBINDS.is_file() else DEFAULT_USER_KEYBINDS
-    tokens = kdl.tokens(text)
-    closing = next((tokens[closing][1] for first, _, opening, closing in kdl.nodes(tokens)
-                    if tokens[first][0] == "binds" and opening is not None and closing is not None), None)
-    if closing is None:
-        raise ValueError("No binds block in " + str(USER_KEYBINDS) + ".")
-    USER_KEYBINDS.parent.mkdir(parents=True, exist_ok=True)
+    check_free(key)
     entry = {"key": key, "title": title, "flags": flags or {"repeat": False}, "action": action}
-    insert = "" if MANAGED_COMMENT in text else MANAGED_COMMENT + "\n"
-    head = "\n" if closing > 0 and text[closing - 1] != "\n" else ""
-    text = text[:closing] + head + insert + format_bind(**entry) + "\n" + text[closing:]
-    kdl.atomic_write(USER_KEYBINDS, text)
+    text, _ = drop_line(user_text(), key)  # a parked chord is free to reuse
+    write_user(append_line(text, format_bind(**entry)))
     stored = [value for value in custom_binds() if canonical(value["key"]) != canonical(key)]
     stored.append(entry)
     store_binds(stored)
@@ -189,38 +230,48 @@ def add(key, title, flags, action):
 
 
 def remove(key):
-    text = USER_KEYBINDS.read_text()
-    tokens = kdl.tokens(text)
-    for first, _, opening, closing in kdl.nodes(tokens):
-        if tokens[first][0] != "binds" or opening is None or closing is None:
-            continue
-        for chord_first, chord_last, _, chord_closing in kdl.nodes(tokens, opening + 1, closing):
-            if canonical(tokens[chord_first][0]) != canonical(key):
-                continue
-            start = text.rfind("\n", 0, tokens[chord_first][1]) + 1
-            end = text.find("\n", tokens[chord_last - 1][2])
-            text = text[:start] + text[len(text) if end < 0 else end + 1:]
-            stored = [entry for entry in custom_binds() if canonical(entry["key"]) != canonical(key)]
-            if not stored:
-                text = text.replace(MANAGED_COMMENT + "\n", "")
-            kdl.atomic_write(USER_KEYBINDS, text)
-            store_binds(stored)
-            return {}
-    raise ValueError(f"'{key}' has no custom shortcut to remove.")
+    text, found = drop_line(user_text(), key)
+    if not found:
+        raise ValueError(f"'{key}' has no custom shortcut to remove.")
+    write_user(text)
+    store_binds([entry for entry in custom_binds() if canonical(entry["key"]) != canonical(key)])
+    return {}
 
 
-def save(original, request):
-    # Editing is remove + add; restore both files if the add is refused so a
-    # rejected edit never loses the existing bind.
+def rebind(old, new):
+    # Moves any active bind to a new chord, keeping its action and flags.
+    bind = next((bind for bind in active_binds() if canonical(bind["key"]) == canonical(old)), None)
+    if bind is None:
+        raise ValueError(f"'{old}' is not bound.")
+    if canonical(new) == canonical(old):
+        return bind
+    check_free(new, old)
+    text, _ = drop_line(user_text(), new)
+    if bind["personal"]:
+        # Rewrite the chord in place so hand-written lines keep their spot.
+        token = next(token for token, _, _ in user_chords(text) if canonical(token[0]) == canonical(old))
+        text = text[:token[1]] + new + text[token[2]:]
+    else:
+        text = append_line(text, format_bind(new, bind["title"], bind["flags"], bind["action"]))
+    write_user(text)
+    # A read-only default (or one the personal line was shadowing) would
+    # take the old chord back; park it.
+    if any(canonical(other["key"]) == canonical(old) for other in active_binds()):
+        write_user(append_line(user_text(), "    " + old + " hotkey-overlay-title=null { " + PARKED + " }"))
+    stored = custom_binds()
+    for entry in stored:
+        if canonical(entry["key"]) == canonical(old):
+            entry["key"] = new
+    store_binds(stored)
+    return bind | {"key": new}
+
+
+def transaction(change):
+    # Every write restores both files if any step is refused, so a rejected
+    # edit never loses the existing bind.
     snapshots = {path: path.read_text() if path.is_file() else None for path in (USER_KEYBINDS, META)}
     try:
-        if original:
-            try:
-                remove(original)
-            except (OSError, ValueError):
-                pass
-        return add(request["key"], request.get("title", ""),
-                   request.get("flags", {}), request.get("action", ""))
+        return change()
     except Exception:
         for path, text in snapshots.items():
             if text is None:
@@ -228,6 +279,16 @@ def save(original, request):
             else:
                 kdl.atomic_write(path, text)
         raise
+
+
+def save(original, request):
+    if original:
+        try:
+            remove(original)
+        except (OSError, ValueError):
+            pass
+    return add(request["key"], request.get("title", ""),
+               request.get("flags", {}), request.get("action", ""))
 
 
 DEFAULT_USER_KEYBINDS = """\
@@ -249,9 +310,11 @@ def main():
             binds = [bind | {"custom": canonical(bind["key"]) in identities} for bind in active_binds()]
             print(json.dumps({"binds": binds, "custom": custom}))
         elif command == "save":
-            print(json.dumps(save(sys.argv[2], json.loads(sys.argv[3]))))
+            print(json.dumps(transaction(lambda: save(sys.argv[2], json.loads(sys.argv[3])))))
+        elif command == "rebind":
+            print(json.dumps(transaction(lambda: rebind(sys.argv[2], sys.argv[3]))))
         elif command == "remove":
-            print(json.dumps(remove(sys.argv[2])))
+            print(json.dumps(transaction(lambda: remove(sys.argv[2]))))
         else:
             raise ValueError("Unknown command: " + command)
     except Exception as error:

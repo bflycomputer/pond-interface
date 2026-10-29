@@ -28,44 +28,6 @@ Singleton {
 
   readonly property string userKeybinds: Quickshell.env("HOME") + "/.config/niri/cfg/keybinds.kdl"
 
-  // Actions the editor offers. Spawn lines mirror config/niri/shell/config.kdl
-  // so a fresh bind matches the built-in look on the hotkey overlay.
-  readonly property var catalog: [
-    {
-      name: "Pond", items: [
-        { label: "Open the launcher", action: "spawn \"/usr/bin/vicinae\" \"toggle\";" },
-        { label: "Open clipboard history", action: "spawn \"/usr/bin/vicinae\" \"vicinae://launch/clipboard/history?toggle=true\";" },
-        { label: "Toggle settings", action: "spawn \"qs\" \"-c\" \"pond-shell\" \"ipc\" \"call\" \"settings\" \"toggle\";" },
-        { label: "Open keyboard shortcuts", action: "spawn \"qs\" \"-c\" \"pond-shell\" \"ipc\" \"call\" \"settings\" \"open\" \"shortcuts\";" },
-        { label: "Open display settings", action: "spawn \"qs\" \"-c\" \"pond-shell\" \"ipc\" \"call\" \"settings\" \"open\" \"display\";" },
-        { label: "Toggle the sidebar", action: "spawn \"qs\" \"-c\" \"pond-shell\" \"ipc\" \"call\" \"sidebar\" \"toggle\";" },
-        { label: "Lock the screen", action: "spawn-sh \"/usr/bin/qs -p /usr/share/pond-interface/lockscreen ipc call lockscreen lock || /usr/bin/qs -d -p /usr/share/pond-interface/lockscreen\";" },
-        { label: "Switch keyboard language", action: "switch-layout \"next\";" }
-      ]
-    },
-    {
-      name: "Windows", items: [
-        { label: "Close focused window", action: "close-window;" },
-        { label: "Fullscreen focused window", action: "fullscreen-window;" },
-        { label: "Toggle window floating", action: "toggle-window-floating;" },
-        { label: "Toggle column tabs", action: "toggle-column-tabbed-display;" },
-        { label: "Expand column to available width", action: "expand-column-to-available-width;" },
-        { label: "Center focused column", action: "center-column;" },
-        { label: "Make column narrower", action: "set-column-width \"-10%\";" },
-        { label: "Make column wider", action: "set-column-width \"+10%\";" }
-      ]
-    },
-    {
-      name: "Workspaces", items: [
-        { label: "Move column left", action: "move-column-left;" },
-        { label: "Move column right", action: "move-column-right;" },
-        { label: "Focus previous workspace", action: "focus-workspace-previous;" },
-        { label: "Focus next workspace", action: "focus-workspace-down;" },
-        { label: "Move column to next workspace", action: "move-column-to-workspace-down;" }
-      ]
-    }
-  ]
-
   // The page mirrors whatever is on disk, so external edits show up live.
   FileView { path: root.userKeybinds; watchChanges: true; onFileChanged: root.refresh() }
   FileView {
@@ -101,9 +63,107 @@ Singleton {
 
   // What the keycaps spell out, as text: searching should match both the
   // label and the chips a user sees ("spr k" finds Switch Keyboard Language).
+  // Modifier keys themselves, mapped to the chord name they stand for.
+  readonly property var modifierKeys: ({
+    [Qt.Key_Meta]: "Mod", [Qt.Key_Super_L]: "Mod", [Qt.Key_Super_R]: "Mod",
+    [Qt.Key_Shift]: "Shift", [Qt.Key_Control]: "Ctrl",
+    [Qt.Key_Alt]: "Alt", [Qt.Key_AltGr]: "Alt"
+  })
+  // niri binds name the unshifted key (Mod+Shift+Slash), while Qt reports
+  // the shifted symbol; this folds a US layout back.
+  readonly property var keyNames: ({
+    [Qt.Key_Space]: "Space", [Qt.Key_Tab]: "Tab", [Qt.Key_Backtab]: "Tab",
+    [Qt.Key_Return]: "Return", [Qt.Key_Enter]: "Return",
+    [Qt.Key_Backspace]: "Backspace", [Qt.Key_Delete]: "Delete",
+    [Qt.Key_Insert]: "Insert", [Qt.Key_Home]: "Home", [Qt.Key_End]: "End",
+    [Qt.Key_PageUp]: "Page_Up", [Qt.Key_PageDown]: "Page_Down",
+    [Qt.Key_Left]: "Left", [Qt.Key_Right]: "Right", [Qt.Key_Up]: "Up", [Qt.Key_Down]: "Down",
+    [Qt.Key_Minus]: "Minus", [Qt.Key_Underscore]: "Minus",
+    [Qt.Key_Equal]: "Equal", [Qt.Key_Plus]: "Equal",
+    [Qt.Key_Slash]: "Slash", [Qt.Key_Question]: "Slash",
+    [Qt.Key_Comma]: "Comma", [Qt.Key_Less]: "Comma",
+    [Qt.Key_Period]: "Period", [Qt.Key_Greater]: "Period",
+    [Qt.Key_Semicolon]: "Semicolon", [Qt.Key_Colon]: "Semicolon",
+    [Qt.Key_Apostrophe]: "Apostrophe", [Qt.Key_QuoteDbl]: "Apostrophe",
+    [Qt.Key_BracketLeft]: "BracketLeft", [Qt.Key_BraceLeft]: "BracketLeft",
+    [Qt.Key_BracketRight]: "BracketRight", [Qt.Key_BraceRight]: "BracketRight",
+    [Qt.Key_Backslash]: "Backslash", [Qt.Key_Bar]: "Backslash",
+    [Qt.Key_QuoteLeft]: "Grave", [Qt.Key_AsciiTilde]: "Grave",
+    [Qt.Key_Exclam]: "1", [Qt.Key_At]: "2", [Qt.Key_NumberSign]: "3", [Qt.Key_Dollar]: "4",
+    [Qt.Key_Percent]: "5", [Qt.Key_AsciiCircum]: "6", [Qt.Key_Ampersand]: "7",
+    [Qt.Key_Asterisk]: "8", [Qt.Key_ParenLeft]: "9", [Qt.Key_ParenRight]: "0",
+    [Qt.Key_Print]: "Print",
+    [Qt.Key_MediaPlay]: "XF86AudioPlay", [Qt.Key_MediaPause]: "XF86AudioPause",
+    [Qt.Key_MediaStop]: "XF86AudioStop", [Qt.Key_MediaNext]: "XF86AudioNext",
+    [Qt.Key_MediaPrevious]: "XF86AudioPrev",
+    [Qt.Key_VolumeUp]: "XF86AudioRaiseVolume", [Qt.Key_VolumeDown]: "XF86AudioLowerVolume",
+    [Qt.Key_VolumeMute]: "XF86AudioMute", [Qt.Key_MicMute]: "XF86AudioMicMute"
+  })
+  readonly property var order: ["Mod", "Shift", "Ctrl", "Alt", "Super"]
+
+  // Chord recording, shared by the list and the editor. Returns the chord
+  // ("Mod+Shift+K"), or null while only modifiers are held (staged then
+  // holds them), or "" for a key niri can't bind.
+  function readChord(event, held) {
+    const modifier = modifierKeys[event.key];
+    if (modifier !== undefined) {
+      held(heldMods(event.modifiers, modifier, ""));
+      return null;
+    }
+    const key = keySym(event);
+    return key === "" ? "" : heldMods(event.modifiers, "", "").concat([key]).join("+");
+  }
+
+  // Whether an event's own modifier key is already in event.modifiers
+  // varies by platform, so it is passed apart.
+  function heldMods(modifiers, pressed, released) {
+    const held = [];
+    if (modifiers & Qt.MetaModifier) held.push("Mod");
+    if (modifiers & Qt.ShiftModifier) held.push("Shift");
+    if (modifiers & Qt.ControlModifier) held.push("Ctrl");
+    if (modifiers & Qt.AltModifier) held.push("Alt");
+    if (pressed && held.indexOf(pressed) < 0) held.push(pressed);
+    return order.filter(mod => mod !== released && held.indexOf(mod) >= 0);
+  }
+
+  function keySym(event) {
+    const key = event.key;
+    if (key >= Qt.Key_A && key <= Qt.Key_Z) return String.fromCharCode(key);
+    if (key >= Qt.Key_0 && key <= Qt.Key_9) return String.fromCharCode(key);
+    if (key >= Qt.Key_F1 && key <= Qt.Key_F35) return "F" + (key - Qt.Key_F1 + 1);
+    const name = keyNames[key];
+    if (name !== undefined) return name;
+    if (event.text && event.text.length === 1 && /[a-z0-9]/i.test(event.text))
+      return event.text.toUpperCase();
+    return "";
+  }
+
+  // Matches shortcuts.py: niri reads modifiers and keysyms case-insensitively.
+  function canonical(key) {
+    const upper = order.map(mod => mod.toUpperCase()), mods = [];
+    let chord = "";
+    for (const part of String(key).split("+")) {
+      const index = upper.indexOf(part.toUpperCase());
+      if (index >= 0) mods.push(index);
+      else if (chord !== "") return "";
+      else chord = part.toLowerCase();
+    }
+    return mods.sort().map(index => upper[index]).join("+") + "+" + chord;
+  }
+
+  // The bind already on a chord, ignoring the one being changed.
+  function conflictWith(key, ignore) {
+    const wanted = canonical(key);
+    if (ignore && wanted === canonical(ignore)) return null;
+    return binds.find(bind => canonical(bind.key) === wanted) || null;
+  }
+
+  function chipText(part) {
+    return chipNames[part] !== undefined ? chipNames[part] : part.toLowerCase();
+  }
+
   function chipsText(bind) {
-    return String(bind.key).split("+").map(part =>
-        chipNames[part] !== undefined ? chipNames[part] : part.toLowerCase()).join(" ");
+    return String(bind.key).split("+").map(chipText).join(" ");
   }
 
   function label(bind) {
@@ -145,6 +205,11 @@ Singleton {
       refresh();
       done();
     }, failure => { error = failure; if (failed) failed(); });
+  }
+
+  function rebind(oldKey, newKey, done, failed) {
+    run(["rebind", oldKey, newKey], () => { error = ""; refresh(); if (done) done(); },
+        failure => { error = failure; if (failed) failed(); });
   }
 
   function removeShortcut(key, done, failed) {

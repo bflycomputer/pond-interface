@@ -10,11 +10,12 @@ Row {
   id: root
   property string chord: ""
   property real size: 24
+  // False while recording with only modifiers held: no chip is the key yet.
+  property bool complete: true
+  property color borderColor: "#4a4a4a"
   spacing: 4
 
-  readonly property var parts: chord.split("+")
-  // Kept in State so search can match what users see spelled on the chips.
-  readonly property var labels: Shortcuts.State.chipNames
+  readonly property var parts: chord === "" ? [] : chord.split("+")
 
   Accessible.role: Accessible.StaticText
   Accessible.name: root.parts.join(" plus ")
@@ -26,25 +27,24 @@ Row {
       id: chip
       required property string modelData
       required property int index
-      readonly property bool last: index === root.parts.length - 1
-      readonly property string text: root.labels[modelData] !== undefined
-          ? root.labels[modelData] : modelData.toLowerCase()
+      readonly property bool key: root.complete && index === root.parts.length - 1
+      readonly property string text: Shortcuts.State.chipText(modelData)
 
       height: root.size
       width: label.width + 14
       radius: 4
       color: "transparent"
       border.width: 1
-      border.color: "#4a4a4a"
+      border.color: root.borderColor
 
       Text {
         id: label
         anchors.centerIn: parent
-        text: chip.text.length > 9 ? chip.text.slice(0, 8) + "\u2026" : chip.text
+        text: chip.text.length > 9 ? chip.text.slice(0, 8) + "…" : chip.text
         color: "white"
         font.family: Shell.Theme.fontFamily
-        font.weight: chip.last ? Font.Bold : Font.DemiBold
-        font.pixelSize: chip.last ? 11 : 10
+        font.weight: chip.key ? Font.Bold : Font.DemiBold
+        font.pixelSize: chip.key ? 11 : 10
       }
     }
   }
