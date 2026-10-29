@@ -14,10 +14,16 @@ Settings.Modal {
   contentHeight: list.contentHeight + 16
   onBackRequested: Settings.State.back()
   Keys.onEscapePressed: { if (search.text) search.clear(); else Settings.State.back(); }
-  Keys.onDownPressed: list.currentIndex = Math.min(list.currentIndex + 1, list.count - 1)
-  Keys.onUpPressed: list.currentIndex = Math.max(list.currentIndex - 1, 0)
+  Keys.onDownPressed: root.moveFocus(1)
+  Keys.onUpPressed: root.moveFocus(-1)
 
   readonly property string query: search.text.trim().toLowerCase()
+  // Exactly one highlight is visible at a time: the keyboard's when arrows
+  // are used, the cursor's otherwise. Hover keeps the two in sync so the
+  // states hand over instead of stacking.
+  property string interactMode: "cursor"
+  readonly property real barSize: 58
+
   readonly property var rows: {
     const custom = Shortcuts.State.binds.filter(bind => bind.custom);
     const stock = Shortcuts.State.binds.filter(bind => !bind.custom);
@@ -31,23 +37,38 @@ Settings.Modal {
         (row.label + " " + row.bind.key + " " + row.bind.action).toLowerCase().includes(query)) : ordered;
   }
 
+  function moveFocus(delta) {
+    if (list.count === 0) return;
+    root.interactMode = "keyboard";
+    list.currentIndex = Math.max(0, Math.min(list.count - 1, list.currentIndex + delta));
+    list.positionViewAtIndex(list.currentIndex, ListView.Contain);
+  }
+
+  // Grow the list upward as the focus walker moves back to the top so the
+  // first row keeps its position above the search bar.
+  onInteractModeChanged: if (interactMode === "cursor") list.currentIndex = -1
+
   ListView {
     id: list
     objectName: "shortcutsList"
-    x: 16; width: root.width - 32
-    height: root.scrollItem.height
+    x: 30; width: root.width - 60
+    y: 0
+    height: root.scrollItem.height - root.barSize
     bottomMargin: 16
     boundsBehavior: Flickable.StopAtBounds
     model: root.rows
-    Shell.ScrollWheel { view: list }
+    spacing: 8
     clip: true
+    currentIndex: -1
+    Shell.ScrollWheel { view: list }
 
     delegate: Rectangle {
       id: row
       required property var modelData
       required property int index
       readonly property bool editAccess: modelData.bind.custom
-      readonly property bool highlighted: hover.hovered || list.currentIndex === index
+      readonly property bool highlighted: root.interactMode === "keyboard"
+          ? list.currentIndex === index : hover.hovered
 
       width: list.width; height: 50; radius: 12
       color: highlighted ? "#262626" : "transparent"
@@ -77,43 +98,33 @@ Settings.Modal {
         }
       }
 
-      HoverHandler { id: hover; cursorShape: row.editAccess ? Qt.PointingHandCursor : Qt.ArrowCursor }
-      TapHandler { onTapped: { list.currentIndex = row.index; if (row.editAccess) Shortcuts.State.requestEditor(modelData.bind); } }
-    }
-
-    footer: Rectangle {
-      objectName: "shortcutsAdd"
-      width: list.width; height: 50 + 16
-      color: "transparent"
-      Rectangle {
-        id: addRow
-        x: 0; width: list.width - 16; height: 50
-        anchors.top: parent.top
-        radius: 12
-        color: addHover.hovered || addRow.activeFocus ? "#262626" : "transparent"
-        border.width: 1
-        border.color: addHover.hovered ? "transparent" : "#303030"
-        activeFocusOnTab: true
-        Accessible.role: Accessible.Button
-        Accessible.name: "Add shortcut"
-        Accessible.onPressAction: Shortcuts.State.newShortcut()
-        Keys.onReturnPressed: Shortcuts.State.newShortcut()
-        Keys.onSpacePressed: Shortcuts.State.newShortcut()
-
-        Text {
-          x: 20; anchors.verticalCenter: parent.verticalCenter
-          text: "+"; color: "white"; opacity: 0.7
-          font.family: Shell.Theme.fontFamily; font.pixelSize: 17; font.weight: Font.Bold
+      HoverHandler {
+        id: hover; cursorShape: Qt.PointingHandCursor
+        onHoveredChanged: if (hovered) {
+          root.interactMode = "cursor";
+          list.currentIndex = row.index;
         }
-        Text {
-          x: 44; anchors.verticalCenter: parent.verticalCenter
-          text: "Add shortcut"; color: "white"; opacity: 0.7
-          font.family: Shell.Theme.fontFamily; font.pixelSize: 15
+      }
+      TapHandler {
+        onTapped: {
+          root.interactMode = "cursor";
+          list.currentIndex = row.index;
+          if (row.editAccess) Shortcuts.State.requestEditor(modelData.bind);
         }
-        HoverHandler { id: addHover; cursorShape: Qt.PointingHandCursor }
-        TapHandler { onTapped: Shortcuts.State.newShortcut() }
       }
     }
+  }
+
+  Text {
+    // Empty-list message sits where rows would; only shows for narrow
+    // searches once the custom list is shorter than the viewport.
+    objectName: "shortcutsEmpty"
+    x: 30; y: list.y; width: root.width - 60
+    visible: list.count === 0
+    text: root.query ? "Nothing matches \"" + root.query + "\"" : "No shortcuts found"
+    color: "white"; opacity: 0.3
+    horizontalAlignment: Text.AlignHCenter
+    font.family: Shell.Theme.fontFamily; font.pixelSize: 14
   }
 
   overlay: [
@@ -145,6 +156,9 @@ Settings.Modal {
             onTriggered: caret.opacity = 1 - caret.opacity
           }
         }
+        Keys.onDownPressed: root.moveFocus(1)
+        Keys.onUpPressed: root.moveFocus(-1)
+        Keys.onEscapePressed: root.search.clear()
       }
       Image {
         x: parent.width - 36; anchors.verticalCenter: parent.verticalCenter
@@ -171,9 +185,38 @@ Settings.Modal {
       }
     },
     Rectangle {
-      objectName: "shortcutsOverlayTip"
+      // Pinned add button: hangs under the list so every row stays visible
+      // while scrolling and shortcuts never hide it.
+      objectName: "shortcutsAddPinned"
+      x: 30
+      y: root.height - root.barSize
+      width: root.width - 60
+      height: 50
+      radius: 12
+      color: addHover.hovered ? "#262626" : "transparent"
+      border.width: 1
+      border.color: "#303030"
+      Accessible.role: Accessible.Button
+      Accessible.name: "Add shortcut"
+      Accessible.onPressAction: Shortcuts.State.newShortcut()
+
+      Text {
+        x: 20; anchors.verticalCenter: parent.verticalCenter
+        text: "+"; color: "white"; opacity: 0.7
+        font.family: Shell.Theme.fontFamily; font.pixelSize: 17; font.weight: Font.Bold
+      }
+      Text {
+        x: 44; anchors.verticalCenter: parent.verticalCenter
+        text: "Add shortcut"; color: "white"; opacity: 0.7
+        font.family: Shell.Theme.fontFamily; font.pixelSize: 15
+      }
+      HoverHandler { id: addHover; cursorShape: Qt.PointingHandCursor }
+      TapHandler { onTapped: Shortcuts.State.newShortcut() }
+    },
+    Rectangle {
+      objectName: "shortcutsOverlayError"
       visible: Shortcuts.State.error !== ""
-      x: 30; y: root.height - 46; width: root.width - 60; height: 30
+      x: 30; y: 30; width: root.width - 60; height: 30
       color: "transparent"
       Text {
         anchors.verticalCenter: parent.verticalCenter
@@ -186,7 +229,7 @@ Settings.Modal {
       // Renders in the header, next to the title: how many are personal.
       objectName: "shortcutsCount"
       x: root.width - 130; y: 30
-      visible: Shortcuts.State.binds.some(bind => bind.custom)
+      visible: root.width > 500 && Shortcuts.State.binds.some(bind => bind.custom)
       width: 100; height: 22; radius: 11
       color: "transparent"
       border.width: 1; border.color: "#4a4a4a"
