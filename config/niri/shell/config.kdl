@@ -9,20 +9,21 @@ binds {
     Mod+V                               repeat=false hotkey-overlay-title="Open Clipboard History" { spawn "/usr/bin/vicinae" "vicinae://launch/clipboard/history?toggle=true"; }
     Mod+K                               hotkey-overlay-title="Switch Keyboard Language" { switch-layout "next"; }
     Mod+ALT+L                           hotkey-overlay-title="Lock Screen" { spawn-sh "/usr/bin/qs -p /usr/share/pond-interface/lockscreen ipc call lockscreen lock || /usr/bin/qs -d -p /usr/share/pond-interface/lockscreen"; }
+    Mod+Slash                           hotkey-overlay-title="Open Keyboard Shortcuts" { spawn "qs" "-c" "pond-shell" "ipc" "call" "settings" "open" "shortcuts"; }
 
     // ─── Media Controls ───
-    XF86AudioRaiseVolume                 allow-when-locked=true { spawn "qs" "-c" "pond-shell" "ipc" "call" "volume" "increase"; }
-    XF86AudioLowerVolume                 allow-when-locked=true { spawn "qs" "-c" "pond-shell" "ipc" "call" "volume" "decrease"; }
-    XF86AudioMute                        allow-when-locked=true repeat=false { spawn "qs" "-c" "pond-shell" "ipc" "call" "volume" "muteOutput"; }
-    XF86AudioMicMute                     allow-when-locked=true repeat=false { spawn "qs" "-c" "pond-shell" "ipc" "call" "volume" "muteInput"; }
-    XF86AudioNext                        allow-when-locked=true repeat=false { spawn "qs" "-c" "pond-shell" "ipc" "call" "media" "next"; }
-    XF86AudioPrev                        allow-when-locked=true repeat=false { spawn "qs" "-c" "pond-shell" "ipc" "call" "media" "previous"; }
-    XF86AudioPlay                        allow-when-locked=true repeat=false { spawn "qs" "-c" "pond-shell" "ipc" "call" "media" "playPause"; }
-    XF86AudioPause                       allow-when-locked=true repeat=false { spawn "qs" "-c" "pond-shell" "ipc" "call" "media" "playPause"; }
+    XF86AudioRaiseVolume                allow-when-locked=true hotkey-overlay-title="Raise Volume" { spawn "qs" "-c" "pond-shell" "ipc" "call" "volume" "increase"; }
+    XF86AudioLowerVolume                allow-when-locked=true hotkey-overlay-title="Lower Volume" { spawn "qs" "-c" "pond-shell" "ipc" "call" "volume" "decrease"; }
+    XF86AudioMute                       repeat=false allow-when-locked=true hotkey-overlay-title="Mute Output" { spawn "qs" "-c" "pond-shell" "ipc" "call" "volume" "muteOutput"; }
+    XF86AudioMicMute                    repeat=false allow-when-locked=true hotkey-overlay-title="Mute Microphone" { spawn "qs" "-c" "pond-shell" "ipc" "call" "volume" "muteInput"; }
+    XF86AudioNext                       repeat=false allow-when-locked=true hotkey-overlay-title="Next Track" { spawn "qs" "-c" "pond-shell" "ipc" "call" "media" "next"; }
+    XF86AudioPrev                       repeat=false allow-when-locked=true hotkey-overlay-title="Previous Track" { spawn "qs" "-c" "pond-shell" "ipc" "call" "media" "previous"; }
+    XF86AudioPlay                       repeat=false allow-when-locked=true hotkey-overlay-title="Play or Pause Media" { spawn "qs" "-c" "pond-shell" "ipc" "call" "media" "playPause"; }
+    XF86AudioPause                      repeat=false allow-when-locked=true hotkey-overlay-title="Play or Pause Media" { spawn "qs" "-c" "pond-shell" "ipc" "call" "media" "playPause"; }
 
     // ─── Brightness Controls ───
-    XF86MonBrightnessUp                  allow-when-locked=true { spawn "qs" "-c" "pond-shell" "ipc" "call" "brightness" "increase"; }
-    XF86MonBrightnessDown                allow-when-locked=true { spawn "qs" "-c" "pond-shell" "ipc" "call" "brightness" "decrease"; }
+    XF86MonBrightnessUp                 allow-when-locked=true hotkey-overlay-title="Increase Brightness" { spawn "qs" "-c" "pond-shell" "ipc" "call" "brightness" "increase"; }
+    XF86MonBrightnessDown               allow-when-locked=true hotkey-overlay-title="Decrease Brightness" { spawn "qs" "-c" "pond-shell" "ipc" "call" "brightness" "decrease"; }
 }
 
 cursor {
