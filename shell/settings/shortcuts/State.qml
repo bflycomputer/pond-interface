@@ -15,15 +15,15 @@ Singleton {
   signal reloaded
 
   readonly property var ipcNames: ({
-    "volume increase": "Increase volume",
-    "volume decrease": "Lower volume",
-    "volume muteOutput": "Mute or unmute the output",
-    "volume muteInput": "Mute or unmute the microphone",
-    "media playPause": "Play or pause the current media",
-    "media next": "Next media track",
-    "media previous": "Previous media track",
-    "brightness increase": "Increase brightness",
-    "brightness decrease": "Decrease brightness"
+    "volume increase": "Raise Volume",
+    "volume decrease": "Lower Volume",
+    "volume muteOutput": "Mute Output",
+    "volume muteInput": "Mute Microphone",
+    "media playPause": "Play or Pause Media",
+    "media next": "Next Track",
+    "media previous": "Previous Track",
+    "brightness increase": "Increase Brightness",
+    "brightness decrease": "Decrease Brightness"
   })
 
   readonly property string userKeybinds: Quickshell.env("HOME") + "/.config/niri/cfg/keybinds.kdl"
@@ -64,10 +64,6 @@ Singleton {
         { label: "Move column to next workspace", action: "move-column-to-workspace-down;" }
       ]
     }
-  ]
-  readonly property var toggles: [
-    { label: "Repeat while held", flag: "repeat" },
-    { label: "Also when the screen is locked", flag: "allow-when-locked" }
   ]
 
   // The page mirrors whatever is on disk, so external edits show up live.
@@ -120,41 +116,40 @@ Singleton {
     if (!text) return bind.key;
     const verb = text.replace(/;$/, "").split(" ")[0];
     if (verb === "spawn" || verb === "spawn-sh") {
-      const literal = text.slice(text.indexOf("\"") + 1, text.lastIndexOf("\""));
-      return "Run " + literal;
+      // The program (or script line) only, not every quoted argument.
+      const program = text.match(/"((?:[^"\\]|\\.)*)"/);
+      return "Run " + (program ? program[1].replace(/\\"/g, "\"") : text);
     }
     const rest = text.replace(/;$/, "").split(" ").slice(1).join(" ").replace(/"/g, "");
     return verb.split("-").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ")
         + (rest ? " " + rest : "");
   }
 
-  function chips(key) { return String(key).split("+"); }
-
   function newShortcut() {
     editing = null;
+    error = "";
     Settings.State.openPage("shortcutEditor");
   }
 
   function requestEditor(bind) {
     editing = Object.assign({}, bind);
+    error = "";
     Settings.State.openPage("shortcutEditor");
   }
 
-  function saveShortcut(originalKey, request, done) {
-    // Custom binds are rewritten: remove the previous line, then add the new
-    // one. Removal may fail when the chord never made it to disk; continue.
-    const commit = () => run(["add", JSON.stringify(request)], result => {
+  // The backend swaps the old line for the new one in one step and rolls
+  // back if the new chord is refused, so a failed edit keeps the old bind.
+  function saveShortcut(originalKey, request, done, failed) {
+    run(["save", originalKey, JSON.stringify(request)], () => {
       error = "";
-      load();
+      refresh();
       done();
-    }, failure => { error = failure; });
-    if (originalKey) run(["remove", originalKey], commit, commit);
-    else commit();
+    }, failure => { error = failure; if (failed) failed(); });
   }
 
-  function removeShortcut(key, done) {
-    run(["remove", key], () => { error = ""; load(); if (done) done(); },
-        failure => { error = failure; });
+  function removeShortcut(key, done, failed) {
+    run(["remove", key], () => { error = ""; refresh(); if (done) done(); },
+        failure => { error = failure; if (failed) failed(); });
   }
 
   function load() {
@@ -172,33 +167,39 @@ Singleton {
 
   function run(args, success, failure) {
     queue.push({ args: args, success: success, failure: failure });
-    if (!runner.running) drain();
+    if (!pending) drain();
   }
 
   function drain() {
+    if (pending) return;
     const job = queue.shift();
     if (!job) return;
     pending = job;
+    outputs = 0;
     runner.command = ["python3", Quickshell.shellDir + "/settings/shortcuts/shortcuts.py"].concat(job.args);
     runner.running = true;
   }
 
+  // A job settles once both streams are collected and the process exited;
+  // the exit code alone picks success or failure.
+  function settle() {
+    if (++outputs < 3) return;
+    const job = pending;
+    pending = null;
+    if (exitCode === 0) { if (job.success) job.success(output.text); }
+    else if (job.failure) job.failure(errors.text.trim() || "The shortcuts backend failed.");
+    Qt.callLater(drain);
+  }
+
   property var queue: []
   property var pending: null
+  property int outputs: 0
+  property int exitCode: 0
 
   Process {
     id: runner
-    stdout: StdioCollector {
-      onStreamFinished: {
-        if (root.pending && root.pending.success) root.pending.success(text);
-      }
-    }
-    stderr: StdioCollector {
-      onStreamFinished: {
-        const failure = text.trim();
-        if (failure && root.pending && root.pending.failure) root.pending.failure(failure);
-      }
-    }
-    onExited: Qt.callLater(drain)
+    stdout: StdioCollector { id: output; onStreamFinished: root.settle() }
+    stderr: StdioCollector { id: errors; onStreamFinished: root.settle() }
+    onExited: code => { root.exitCode = code; root.settle(); }
   }
 }

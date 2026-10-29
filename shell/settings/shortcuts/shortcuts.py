@@ -14,7 +14,6 @@ USER_CONFIG = Path.home() / ".config/niri/config.kdl"
 USER_KEYBINDS = Path.home() / ".config/niri/cfg/keybinds.kdl"
 META = Path.home() / ".config/pond-interface/shortcuts.json"
 MANAGED_COMMENT = "    // ─── Pond shortcuts (managed by Settings → Keyboard shortcuts) ───"
-# niri applies later includes last; we keep the first sighting of a chord.
 MODS = ["MOD", "SHIFT", "CTRL", "ALT", "SUPER"]
 
 
@@ -108,6 +107,7 @@ def clean_action(text, tokens, closing):
 
 
 def canonical(chord):
+    # niri parses modifiers and keysyms case-insensitively.
     mods, key = [], ""
     for part in chord.split("+"):
         upper = part.upper()
@@ -116,12 +116,14 @@ def canonical(chord):
         elif key:
             return ""
         else:
-            key = part
+            key = part.lower()
     return "+".join(sorted(set(mods), key=lambda mod: MODS.index(mod.upper())) + [key])
 
 
 def active_binds():
-    binds, taken = [], set()
+    # niri merges binds across includes and a later file's chord replaces an
+    # earlier one, so the last sighting wins (in its first position).
+    binds = {}
     for path in config_files():
         try:
             text = path.read_text()
@@ -129,11 +131,9 @@ def active_binds():
             continue
         for bind in scan_binds(text):
             identity = canonical(bind["key"])
-            if not identity or identity in taken:
-                continue
-            taken.add(identity)
-            binds.append(bind | {"file": str(path), "personal": path == USER_KEYBINDS})
-    return binds
+            if identity:
+                binds[identity] = bind | {"file": str(path), "personal": path == USER_KEYBINDS}
+    return list(binds.values())
 
 
 def custom_binds():
@@ -209,6 +209,27 @@ def remove(key):
     raise ValueError(f"'{key}' has no custom shortcut to remove.")
 
 
+def save(original, request):
+    # Editing is remove + add; restore both files if the add is refused so a
+    # rejected edit never loses the existing bind.
+    snapshots = {path: path.read_text() if path.is_file() else None for path in (USER_KEYBINDS, META)}
+    try:
+        if original:
+            try:
+                remove(original)
+            except (OSError, ValueError):
+                pass
+        return add(request["key"], request.get("title", ""),
+                   request.get("flags", {}), request.get("action", ""))
+    except Exception:
+        for path, text in snapshots.items():
+            if text is None:
+                path.unlink(missing_ok=True)
+            else:
+                kdl.atomic_write(path, text)
+        raise
+
+
 DEFAULT_USER_KEYBINDS = """\
 // Personal key bindings.
 // Anything here applies on top of the Pond defaults in
@@ -223,19 +244,12 @@ def main():
     try:
         command = sys.argv[1]
         if command == "list":
-            encountered, binds = set(), []
-            for bind in active_binds():
-                identity = canonical(bind["key"])
-                if identity in encountered:
-                    continue
-                encountered.add(identity)
-                bind["custom"] = any(canonical(entry["key"]) == identity for entry in custom_binds())
-                binds.append(bind)
-            print(json.dumps({"binds": binds, "custom": custom_binds()}))
-        elif command == "add":
-            request = json.loads(sys.argv[2])
-            print(json.dumps(add(request["key"], request.get("title", ""),
-                                 request.get("flags", {}), request.get("action", ""))))
+            custom = custom_binds()
+            identities = {canonical(entry["key"]) for entry in custom}
+            binds = [bind | {"custom": canonical(bind["key"]) in identities} for bind in active_binds()]
+            print(json.dumps({"binds": binds, "custom": custom}))
+        elif command == "save":
+            print(json.dumps(save(sys.argv[2], json.loads(sys.argv[3]))))
         elif command == "remove":
             print(json.dumps(remove(sys.argv[2])))
         else:

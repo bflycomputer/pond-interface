@@ -11,13 +11,16 @@ Settings.Modal {
   title: "Keyboard shortcuts"
   bodyTop: 143
   roundedContent: true
-  // A short search result must not collapse the card onto the search bar,
-  // or the pinned bar would ride up over it.
-  contentHeight: Math.max(list.contentHeight + 16, list.height + 16)
+  // Sized from the unfiltered list and capped at the window, so searching
+  // never resizes the card and only the list scrolls, never the body.
+  contentHeight: Math.min(entries.length * 58 - 8 + list.bottomMargin + barSize,
+      availableHeight - bodyTop)
   onBackRequested: Settings.State.back()
-  Keys.onEscapePressed: { if (search.text) search.clear(); else Settings.State.back(); }
+  Keys.onEscapePressed: root.dismiss()
   Keys.onDownPressed: root.moveFocus(1)
   Keys.onUpPressed: root.moveFocus(-1)
+  Keys.onReturnPressed: root.activate()
+  Keys.onEnterPressed: root.activate()
 
   readonly property string query: search.text.trim().toLowerCase()
   // Exactly one highlight is visible at a time: the keyboard's when arrows
@@ -29,22 +32,35 @@ Settings.Modal {
   readonly property real bottomGap: 24
   readonly property real barSize: 50 + bottomGap
 
-  readonly property var rows: {
-    const custom = Shortcuts.State.binds.filter(bind => bind.custom);
-    const stock = Shortcuts.State.binds.filter(bind => !bind.custom);
-    const ordered = custom.concat(stock).map(bind => {
+  // Built once per reload; typing only filters.
+  readonly property var entries: {
+    const binds = Shortcuts.State.binds;
+    return binds.filter(bind => bind.custom).concat(binds.filter(bind => !bind.custom)).map(bind => {
+      const label = Shortcuts.State.label(bind);
       return {
-        bind: bind, label: Shortcuts.State.label(bind),
-        chips: Shortcuts.State.chips(bind.key),
-        text: (Shortcuts.State.label(bind) + " " + bind.key + " "
-            + bind.action + " " + Shortcuts.State.chipsText(bind)).toLowerCase()
+        bind: bind, label: label,
+        text: (label + " " + bind.key + " " + bind.action + " "
+            + Shortcuts.State.chipsText(bind)).toLowerCase()
       };
     });
+  }
+  readonly property int customCount: entries.filter(row => row.bind.custom).length
+  readonly property var rows: {
     const words = query.split(/\s+/).filter(word => word !== "");
-    if (words.length === 0) return ordered;
+    if (words.length === 0) return entries;
     // Every word must land somewhere in the row, in any order, so
     // "lock screen" and "spr alt" both find the same bind.
-    return ordered.filter(row => words.every(word => row.text.includes(word)));
+    return entries.filter(row => words.every(word => row.text.includes(word)));
+  }
+
+  function dismiss() {
+    if (search.text) search.clear();
+    else Settings.State.back();
+  }
+
+  function activate() {
+    const row = list.currentIndex >= 0 ? rows[list.currentIndex] : null;
+    if (row && row.bind.custom) Shortcuts.State.requestEditor(row.bind);
   }
 
   function moveFocus(delta) {
@@ -54,8 +70,6 @@ Settings.Modal {
     list.positionViewAtIndex(list.currentIndex, ListView.Contain);
   }
 
-  // Grow the list upward as the focus walker moves back to the top so the
-  // first row keeps its position above the search bar.
   onInteractModeChanged: if (interactMode === "cursor") list.currentIndex = -1
 
   ListView {
@@ -70,6 +84,8 @@ Settings.Modal {
     spacing: 8
     clip: true
     currentIndex: -1
+    // A new result set starts without a keyboard selection.
+    onModelChanged: currentIndex = -1
     Shell.ScrollWheel { view: list }
 
     delegate: Rectangle {
@@ -84,7 +100,7 @@ Settings.Modal {
       color: highlighted ? "#262626" : "transparent"
       Accessible.role: editAccess ? Accessible.Button : Accessible.StaticText
       Accessible.name: modelData.label + ", " + modelData.bind.key
-      Accessible.onPressAction: if (row.editAccess) Shortcuts.State.requestEditor(modelData.bind)
+      Accessible.onPressAction: if (row.editAccess) Shortcuts.State.requestEditor(row.modelData.bind)
 
       Text {
         x: 20; width: 300
@@ -109,7 +125,7 @@ Settings.Modal {
       }
 
       HoverHandler {
-        id: hover; cursorShape: Qt.PointingHandCursor
+        id: hover; cursorShape: row.editAccess ? Qt.PointingHandCursor : Qt.ArrowCursor
         onHoveredChanged: if (hovered) {
           root.interactMode = "cursor";
           list.currentIndex = row.index;
@@ -119,7 +135,7 @@ Settings.Modal {
         onTapped: {
           root.interactMode = "cursor";
           list.currentIndex = row.index;
-          if (row.editAccess) Shortcuts.State.requestEditor(modelData.bind);
+          if (row.editAccess) Shortcuts.State.requestEditor(row.modelData.bind);
         }
       }
     }
@@ -127,24 +143,22 @@ Settings.Modal {
 
   Column {
     // Empty state: only when a search matches nothing (the full list is
-    // normally never empty once binds load).
+    // never empty once binds load).
     objectName: "shortcutsEmpty"
     x: 30; width: root.width - 60
-    y: list.y
-    height: list.height
-    visible: list.count === 0 && Shortcuts.State.binds.length > 0
+    y: list.y + (list.height - height) / 2
+    visible: list.count === 0 && root.query !== ""
     spacing: 6
 
     Text {
       width: parent.width
-      text: root.query === "" ? "No shortcuts yet"
-          : "No shortcut matches \u201c" + root.query + "\u201d"
+      text: "No shortcut matches \u201c" + root.query + "\u201d"
       color: "white"; opacity: 0.5
       horizontalAlignment: Text.AlignHCenter
       font.family: Shell.Theme.fontFamily; font.pixelSize: 15
     }
     Text {
-      width: parent.width; visible: root.query !== ""
+      width: parent.width
       text: "Create it below, or clear the search"
       color: "white"; opacity: 0.3
       horizontalAlignment: Text.AlignHCenter
@@ -183,7 +197,9 @@ Settings.Modal {
         }
         Keys.onDownPressed: root.moveFocus(1)
         Keys.onUpPressed: root.moveFocus(-1)
-        Keys.onEscapePressed: root.search.clear()
+        Keys.onEscapePressed: root.dismiss()
+        Keys.onReturnPressed: root.activate()
+        Keys.onEnterPressed: root.activate()
       }
       Image {
         x: parent.width - 36; anchors.verticalCenter: parent.verticalCenter
@@ -240,11 +256,12 @@ Settings.Modal {
     },
     Rectangle {
       objectName: "shortcutsOverlayError"
+      // Between the title and the search bar; clicking dismisses it.
       visible: Shortcuts.State.error !== ""
-      x: 30; y: 30; width: root.width - 60; height: 30
+      x: 30; y: 62; width: root.width - 60; height: 18
       color: "transparent"
       Text {
-        anchors.verticalCenter: parent.verticalCenter
+        width: parent.width; anchors.verticalCenter: parent.verticalCenter
         text: Shortcuts.State.error; color: "#ffb4ab"; elide: Text.ElideRight
         font.family: Shell.Theme.fontFamily; font.pixelSize: 12
       }
@@ -254,13 +271,13 @@ Settings.Modal {
       // Renders in the header, next to the title: how many are personal.
       objectName: "shortcutsCount"
       x: root.width - 130; y: 30
-      visible: root.width > 500 && Shortcuts.State.binds.some(bind => bind.custom)
+      visible: root.width > 500 && root.customCount > 0
       width: 100; height: 22; radius: 11
       color: "transparent"
       border.width: 1; border.color: "#4a4a4a"
       Text {
         anchors.centerIn: parent
-        text: Shortcuts.State.binds.filter(bind => bind.custom).length + " personal"
+        text: root.customCount + " personal"
         color: "white"; opacity: 0.5
         font.family: Shell.Theme.fontFamily; font.pixelSize: 10
       }
