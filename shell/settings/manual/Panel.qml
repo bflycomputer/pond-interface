@@ -77,7 +77,8 @@ Settings.Modal {
     }
 
     Row {
-      x: 180; y: 3332; spacing: 10
+      x: 155; y: 3332; spacing: 10
+      FooterButton { service: "shortcuts" }
       FooterButton { service: "discord" }
       FooterButton { service: "x" }
       FooterButton { service: "mail" }

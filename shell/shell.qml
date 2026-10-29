@@ -57,6 +57,11 @@ ShellRoot {
   }
 
   IpcHandler {
+    target: "shortcuts"
+    function open() { Settings.State.open("", "shortcuts"); }
+  }
+
+  IpcHandler {
     target: "settings"
     function toggle() { Settings.State.toggle(); }
     function open(page: string) {

@@ -6,6 +6,7 @@ import "appearance" as Appearance
 import "display" as Display
 import "information" as Information
 import "manual" as Manual
+import "shortcuts" as Shortcuts
 import "system" as System
 import "../battery" as Battery
 import "../updates" as Updates
@@ -241,7 +242,8 @@ PanelWindow {
     active: root.presented && (root.modalOpen || opacity > 0)
     sourceComponent: ({
       information: informationPage, manual: manualPage, display: displayPage, arrange: arrangePage,
-      system: systemPage, mouse: mousePage, keyboard: keyboardPage, timezone: timezonePage
+      system: systemPage, mouse: mousePage, keyboard: keyboardPage, timezone: timezonePage,
+      shortcuts: shortcutsPage, shortcutEditor: shortcutEditorPage
     })[root.displayedPage] || appearancePage
     enabled: root.modalOpen
     opacity: root.modalOpen ? 1 : 0
@@ -315,6 +317,20 @@ PanelWindow {
   Component {
     id: manualPage
     Manual.Panel {
+      availableHeight: Math.max(200, root.height - 70)
+      scale: Math.min(1, (root.width - 60) / implicitWidth)
+    }
+  }
+  Component {
+    id: shortcutsPage
+    Shortcuts.Panel {
+      availableHeight: Math.max(200, root.height - 70)
+      scale: Math.min(1, (root.width - 60) / implicitWidth)
+    }
+  }
+  Component {
+    id: shortcutEditorPage
+    Shortcuts.Editor {
       availableHeight: Math.max(200, root.height - 70)
       scale: Math.min(1, (root.width - 60) / implicitWidth)
     }

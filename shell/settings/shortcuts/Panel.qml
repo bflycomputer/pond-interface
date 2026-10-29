@@ -1,0 +1,201 @@
+pragma ComponentBehavior: Bound
+
+import QtQuick
+import ".." as Settings
+import "." as Shortcuts
+import "../.." as Shell
+
+Settings.Modal {
+  id: root
+  objectName: "shortcutsPanel"
+  title: "Keyboard shortcuts"
+  bodyTop: 143
+  roundedContent: true
+  contentHeight: list.contentHeight + 16
+  onBackRequested: Settings.State.back()
+  Keys.onEscapePressed: { if (search.text) search.clear(); else Settings.State.back(); }
+  Keys.onDownPressed: list.currentIndex = Math.min(list.currentIndex + 1, list.count - 1)
+  Keys.onUpPressed: list.currentIndex = Math.max(list.currentIndex - 1, 0)
+
+  readonly property string query: search.text.trim().toLowerCase()
+  readonly property var rows: {
+    const custom = Shortcuts.State.binds.filter(bind => bind.custom);
+    const stock = Shortcuts.State.binds.filter(bind => !bind.custom);
+    const ordered = custom.concat(stock).map(bind => {
+      return {
+        bind: bind, label: Shortcuts.State.label(bind),
+        chips: Shortcuts.State.chips(bind.key)
+      };
+    });
+    return query ? ordered.filter(row =>
+        (row.label + " " + row.bind.key + " " + row.bind.action).toLowerCase().includes(query)) : ordered;
+  }
+
+  ListView {
+    id: list
+    objectName: "shortcutsList"
+    x: 16; width: root.width - 32
+    height: root.scrollItem.height
+    bottomMargin: 16
+    boundsBehavior: Flickable.StopAtBounds
+    model: root.rows
+    Shell.ScrollWheel { view: list }
+    clip: true
+
+    delegate: Rectangle {
+      id: row
+      required property var modelData
+      required property int index
+      readonly property bool editAccess: modelData.bind.custom
+      readonly property bool highlighted: hover.hovered || list.currentIndex === index
+
+      width: list.width; height: 50; radius: 12
+      color: highlighted ? "#262626" : "transparent"
+      Accessible.role: editAccess ? Accessible.Button : Accessible.StaticText
+      Accessible.name: modelData.label + ", " + modelData.bind.key
+      Accessible.onPressAction: if (row.editAccess) Shortcuts.State.requestEditor(modelData.bind)
+
+      Text {
+        x: 20; width: 300
+        anchors.verticalCenter: parent.verticalCenter
+        text: row.modelData.label; elide: Text.ElideRight
+        color: "white"; opacity: row.editAccess ? 1 : 0.7
+        font.family: Shell.Theme.fontFamily; font.pixelSize: 15
+      }
+      Row {
+        anchors.right: parent.right
+        anchors.rightMargin: row.editAccess ? 36 : 12
+        anchors.verticalCenter: parent.verticalCenter
+        spacing: 8
+        Shortcuts.Keys { chord: row.modelData.bind.key; size: 24 }
+        Image {
+          visible: row.editAccess
+          anchors.verticalCenter: parent.verticalCenter
+          width: 16; height: 16; sourceSize: Qt.size(32, 32)
+          source: Qt.resolvedUrl("../../assets/appearance/chevron.svg")
+          rotation: -90
+        }
+      }
+
+      HoverHandler { id: hover; cursorShape: row.editAccess ? Qt.PointingHandCursor : Qt.ArrowCursor }
+      TapHandler { onTapped: { list.currentIndex = row.index; if (row.editAccess) Shortcuts.State.requestEditor(modelData.bind); } }
+    }
+
+    footer: Rectangle {
+      objectName: "shortcutsAdd"
+      width: list.width; height: 50 + 16
+      color: "transparent"
+      Rectangle {
+        id: addRow
+        x: 0; width: list.width - 16; height: 50
+        anchors.top: parent.top
+        radius: 12
+        color: addHover.hovered || addRow.activeFocus ? "#262626" : "transparent"
+        border.width: 1
+        border.color: addHover.hovered ? "transparent" : "#303030"
+        activeFocusOnTab: true
+        Accessible.role: Accessible.Button
+        Accessible.name: "Add shortcut"
+        Accessible.onPressAction: Shortcuts.State.newShortcut()
+        Keys.onReturnPressed: Shortcuts.State.newShortcut()
+        Keys.onSpacePressed: Shortcuts.State.newShortcut()
+
+        Text {
+          x: 20; anchors.verticalCenter: parent.verticalCenter
+          text: "+"; color: "white"; opacity: 0.7
+          font.family: Shell.Theme.fontFamily; font.pixelSize: 17; font.weight: Font.Bold
+        }
+        Text {
+          x: 44; anchors.verticalCenter: parent.verticalCenter
+          text: "Add shortcut"; color: "white"; opacity: 0.7
+          font.family: Shell.Theme.fontFamily; font.pixelSize: 15
+        }
+        HoverHandler { id: addHover; cursorShape: Qt.PointingHandCursor }
+        TapHandler { onTapped: Shortcuts.State.newShortcut() }
+      }
+    }
+  }
+
+  overlay: [
+    Rectangle {
+      objectName: "shortcutsSearch"
+      x: 30; y: 82; width: root.width - 60; height: 51; radius: 12
+      color: search.activeFocus ? "#303030" : "#262626"
+      Text {
+        x: 20; anchors.verticalCenter: parent.verticalCenter
+        visible: !search.text; text: "Search shortcuts"
+        color: "white"; opacity: 0.2
+        font.family: Shell.Theme.fontFamily; font.pixelSize: 15
+      }
+      TextInput {
+        id: search
+        x: 20; width: parent.width - 76; anchors.verticalCenter: parent.verticalCenter
+        clip: true; color: "white"
+        selectionColor: Shell.PanelStyle.accentText; selectedTextColor: "white"
+        font.family: Shell.Theme.fontFamily; font.pixelSize: 15
+        Accessible.role: Accessible.EditableText
+        Accessible.name: "Search shortcuts"
+        cursorDelegate: Rectangle {
+          id: caret
+          width: 1; color: Shell.PanelStyle.accent
+          Timer {
+            running: search.cursorVisible; repeat: true
+            interval: Qt.styleHints.cursorFlashTime / 2
+            onRunningChanged: caret.opacity = 1
+            onTriggered: caret.opacity = 1 - caret.opacity
+          }
+        }
+      }
+      Image {
+        x: parent.width - 36; anchors.verticalCenter: parent.verticalCenter
+        width: 20; height: 20; sourceSize: Qt.size(40, 40)
+        visible: !search.text
+        source: Qt.resolvedUrl("../../assets/search.svg")
+      }
+      Rectangle {
+        objectName: "shortcutsSearchClear"
+        x: parent.width - 46; anchors.verticalCenter: parent.verticalCenter
+        width: 40; height: 40; radius: 4
+        visible: !!search.text
+        color: clearHover.hovered ? "#303030" : "transparent"
+        Accessible.role: Accessible.Button
+        Accessible.name: "Clear search"
+        Accessible.onPressAction: search.clear()
+        Image {
+          anchors.centerIn: parent
+          width: 20; height: 20; sourceSize: Qt.size(40, 40)
+          source: Qt.resolvedUrl("../../assets/wifi/close.svg")
+        }
+        HoverHandler { id: clearHover; cursorShape: Qt.PointingHandCursor }
+        TapHandler { onTapped: { search.clear(); search.forceActiveFocus(); } }
+      }
+    },
+    Rectangle {
+      objectName: "shortcutsOverlayTip"
+      visible: Shortcuts.State.error !== ""
+      x: 30; y: root.height - 46; width: root.width - 60; height: 30
+      color: "transparent"
+      Text {
+        anchors.verticalCenter: parent.verticalCenter
+        text: Shortcuts.State.error; color: "#ffb4ab"; elide: Text.ElideRight
+        font.family: Shell.Theme.fontFamily; font.pixelSize: 12
+      }
+      MouseArea { anchors.fill: parent; onClicked: Shortcuts.State.error = "" }
+    },
+    Rectangle {
+      // Renders in the header, next to the title: how many are personal.
+      objectName: "shortcutsCount"
+      x: root.width - 130; y: 30
+      visible: Shortcuts.State.binds.some(bind => bind.custom)
+      width: 100; height: 22; radius: 11
+      color: "transparent"
+      border.width: 1; border.color: "#4a4a4a"
+      Text {
+        anchors.centerIn: parent
+        text: Shortcuts.State.binds.filter(bind => bind.custom).length + " personal"
+        color: "white"; opacity: 0.5
+        font.family: Shell.Theme.fontFamily; font.pixelSize: 10
+      }
+    }
+  ]
+}

@@ -26,6 +26,12 @@ Settings.Modal {
       onClicked: Settings.State.openPage("keyboard")
     }
     Settings.Field {
+      objectName: "systemShortcuts"
+      width: parent.width; navigation: true
+      title: "Keyboard shortcuts"; value: "Super + / opens the list"
+      onClicked: Settings.State.openPage("shortcuts")
+    }
+    Settings.Field {
       objectName: "systemTimezone"
       width: parent.width; navigation: true
       title: "Timezone"; value: System.State.timezoneLabel

@@ -9,6 +9,7 @@ binds {
     Mod+V                               repeat=false hotkey-overlay-title="Open Clipboard History" { spawn "/usr/bin/vicinae" "vicinae://launch/clipboard/history?toggle=true"; }
     Mod+K                               hotkey-overlay-title="Switch Keyboard Language" { switch-layout "next"; }
     Mod+ALT+L                           hotkey-overlay-title="Lock Screen" { spawn-sh "/usr/bin/qs -p /usr/share/pond-interface/lockscreen ipc call lockscreen lock || /usr/bin/qs -d -p /usr/share/pond-interface/lockscreen"; }
+    Mod+Slash                           hotkey-overlay-title="Open Keyboard Shortcuts" { spawn "qs" "-c" "pond-shell" "ipc" "call" "settings" "open" "shortcuts"; }
 
     // ─── Media Controls ───
     XF86AudioRaiseVolume                 allow-when-locked=true { spawn "qs" "-c" "pond-shell" "ipc" "call" "volume" "increase"; }

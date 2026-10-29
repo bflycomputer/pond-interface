@@ -14,13 +14,18 @@ Rectangle {
   border.width: 1
   border.color: highlighted ? "#cba6f7" : "#4a4a4a"
   activeFocusOnTab: true
-  Accessible.role: Accessible.Link
-  Accessible.name: service === "mail" ? "Email" : service === "x" ? "X" : "Discord"
+  Accessible.role: Accessible.Button
+  Accessible.name: root.service === "mail" ? "Email" : root.service === "x" ? "X"
+      : root.service === "shortcuts" ? "Keyboard shortcuts" : "Discord"
   Accessible.onPressAction: root.open()
   Keys.onReturnPressed: root.open()
   Keys.onSpacePressed: root.open()
 
   function open() {
+    if (root.service === "shortcuts") {
+      Settings.State.openPage("shortcuts");
+      return;
+    }
     Settings.State.close();
     Qt.openUrlExternally(url);
   }

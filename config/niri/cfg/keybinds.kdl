@@ -17,7 +17,8 @@ binds {
 
     // ─── Shell ───
     // Optional: uncomment to enable.
-    // Settings pages: appearance, display, system, mouse, keyboard, timezone, information, manual
+    // Settings pages: appearance, display, system, mouse, keyboard, timezone, information, manual, shortcuts
+    // Mod+Slash (Open Keyboard Shortcuts) is on by default: it lists every binding and lets you add more.
     // Mod+B                               repeat=false hotkey-overlay-title="Toggle Sidebar" { spawn "qs" "-c" "pond-shell" "ipc" "call" "sidebar" "toggle"; }
     // Mod+Comma                           repeat=false hotkey-overlay-title="Toggle Settings" { spawn "qs" "-c" "pond-shell" "ipc" "call" "settings" "toggle"; }
     // Mod+Shift+Comma                     repeat=false hotkey-overlay-title="Open Display Settings" { spawn "qs" "-c" "pond-shell" "ipc" "call" "settings" "open" "display"; }
