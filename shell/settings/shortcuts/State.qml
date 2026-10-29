@@ -90,6 +90,26 @@ Singleton {
 
   Component.onCompleted: load()
 
+  readonly property var chipNames: ({
+    "Mod": "spr", "Super": "spr", "Shift": "shift", "Ctrl": "ctrl", "ALT": "alt",
+    "Return": "enter", "ESCAPE": "esc", "Backspace": "backspace",
+    "WheelScrollUp": "scroll\u2191", "WheelScrollDown": "scroll\u2193",
+    "WheelScrollLeft": "scroll\u2190", "WheelScrollRight": "scroll\u2192",
+    "XF86AudioRaiseVolume": "vol+", "XF86AudioLowerVolume": "vol\u2212",
+    "XF86AudioMute": "mute", "XF86AudioMicMute": "mic",
+    "XF86AudioPlay": "play", "XF86AudioPause": "pause",
+    "XF86AudioNext": "next", "XF86AudioPrev": "prev",
+    "XF86MonBrightnessUp": "light+", "XF86MonBrightnessDown": "light\u2212",
+    "Print": "print", "CapsLock": "caps", "Insert": "ins"
+  })
+
+  // What the keycaps spell out, as text: searching should match both the
+  // label and the chips a user sees ("spr k" finds Switch Keyboard Language).
+  function chipsText(bind) {
+    return String(bind.key).split("+").map(part =>
+        chipNames[part] !== undefined ? chipNames[part] : part.toLowerCase()).join(" ");
+  }
+
   function label(bind) {
     if (bind.title) return bind.title;
     const text = String(bind.action || "");

@@ -11,7 +11,9 @@ Settings.Modal {
   title: "Keyboard shortcuts"
   bodyTop: 143
   roundedContent: true
-  contentHeight: list.contentHeight + 16
+  // A short search result must not collapse the card onto the search bar,
+  // or the pinned bar would ride up over it.
+  contentHeight: Math.max(list.contentHeight + 16, list.height + 16)
   onBackRequested: Settings.State.back()
   Keys.onEscapePressed: { if (search.text) search.clear(); else Settings.State.back(); }
   Keys.onDownPressed: root.moveFocus(1)
@@ -22,7 +24,10 @@ Settings.Modal {
   // are used, the cursor's otherwise. Hover keeps the two in sync so the
   // states hand over instead of stacking.
   property string interactMode: "cursor"
-  readonly property real barSize: 58
+  // Side margins are 30; the bottom gap matches so the pinned bar reads as
+  // part of the card's rhythm.
+  readonly property real bottomGap: 24
+  readonly property real barSize: 50 + bottomGap
 
   readonly property var rows: {
     const custom = Shortcuts.State.binds.filter(bind => bind.custom);
@@ -30,11 +35,16 @@ Settings.Modal {
     const ordered = custom.concat(stock).map(bind => {
       return {
         bind: bind, label: Shortcuts.State.label(bind),
-        chips: Shortcuts.State.chips(bind.key)
+        chips: Shortcuts.State.chips(bind.key),
+        text: (Shortcuts.State.label(bind) + " " + bind.key + " "
+            + bind.action + " " + Shortcuts.State.chipsText(bind)).toLowerCase()
       };
     });
-    return query ? ordered.filter(row =>
-        (row.label + " " + row.bind.key + " " + row.bind.action).toLowerCase().includes(query)) : ordered;
+    const words = query.split(/\s+/).filter(word => word !== "");
+    if (words.length === 0) return ordered;
+    // Every word must land somewhere in the row, in any order, so
+    // "lock screen" and "spr alt" both find the same bind.
+    return ordered.filter(row => words.every(word => row.text.includes(word)));
   }
 
   function moveFocus(delta) {
@@ -115,16 +125,31 @@ Settings.Modal {
     }
   }
 
-  Text {
-    // Empty-list message sits where rows would; only shows for narrow
-    // searches once the custom list is shorter than the viewport.
+  Column {
+    // Empty state: only when a search matches nothing (the full list is
+    // normally never empty once binds load).
     objectName: "shortcutsEmpty"
-    x: 30; y: list.y; width: root.width - 60
-    visible: list.count === 0
-    text: root.query ? "Nothing matches \"" + root.query + "\"" : "No shortcuts found"
-    color: "white"; opacity: 0.3
-    horizontalAlignment: Text.AlignHCenter
-    font.family: Shell.Theme.fontFamily; font.pixelSize: 14
+    x: 30; width: root.width - 60
+    y: list.y
+    height: list.height
+    visible: list.count === 0 && Shortcuts.State.binds.length > 0
+    spacing: 6
+
+    Text {
+      width: parent.width
+      text: root.query === "" ? "No shortcuts yet"
+          : "No shortcut matches \u201c" + root.query + "\u201d"
+      color: "white"; opacity: 0.5
+      horizontalAlignment: Text.AlignHCenter
+      font.family: Shell.Theme.fontFamily; font.pixelSize: 15
+    }
+    Text {
+      width: parent.width; visible: root.query !== ""
+      text: "Create it below, or clear the search"
+      color: "white"; opacity: 0.3
+      horizontalAlignment: Text.AlignHCenter
+      font.family: Shell.Theme.fontFamily; font.pixelSize: 13
+    }
   }
 
   overlay: [

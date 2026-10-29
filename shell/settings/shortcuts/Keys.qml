@@ -1,4 +1,5 @@
 import QtQuick
+import "." as Shortcuts
 import "../.." as Shell
 
 // Keycap chips in the manual/Picker style: "spr"-shaped modifier chips plus
@@ -10,18 +11,8 @@ Row {
   spacing: 4
 
   readonly property var parts: chord.split("+")
-  readonly property var labels: ({
-    "Mod": "spr", "Super": "spr", "Shift": "shift", "Ctrl": "ctrl", "ALT": "alt",
-    "Return": "enter", "ESCAPE": "esc", "Backspace": "backspace",
-    "WheelScrollUp": "scroll\u2191", "WheelScrollDown": "scroll\u2193",
-    "WheelScrollLeft": "scroll\u2190", "WheelScrollRight": "scroll\u2192",
-    "XF86AudioRaiseVolume": "vol+", "XF86AudioLowerVolume": "vol\u2212",
-    "XF86AudioMute": "mute", "XF86AudioMicMute": "mic",
-    "XF86AudioPlay": "play", "XF86AudioPause": "pause",
-    "XF86AudioNext": "next", "XF86AudioPrev": "prev",
-    "XF86MonBrightnessUp": "light+", "XF86MonBrightnessDown": "light\u2212",
-    "Print": "print", "CapsLock": "caps", "Insert": "ins"
-  })
+  // Kept in State so search can match what users see spelled on the chips.
+  readonly property var labels: Shortcuts.State.chipNames
 
   Accessible.role: Accessible.StaticText
   Accessible.name: root.parts.join(" plus ")
