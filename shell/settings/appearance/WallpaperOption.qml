@@ -18,7 +18,7 @@ Rectangle {
   border.color: selected ? "#cba6f7" : hover.hovered || activeFocus ? "#444444" : "#3d3d3d"
   activeFocusOnTab: true
   Accessible.role: Accessible.Button
-  Accessible.name: dynamic ? "Dynamic wallpaper" : "Choose a custom wallpaper"
+  Accessible.name: dynamic ? qsTrId("pond.dynamic_wallpaper") : qsTrId("pond.choose_a_custom_wallpaper")
   Accessible.checked: selected
   Keys.onReturnPressed: clicked()
   Keys.onSpacePressed: clicked()
@@ -27,12 +27,12 @@ Rectangle {
   Behavior on border.color { ColorAnimation { duration: 170; easing.type: Easing.OutCubic } }
   Text {
     x: 20; y: 15
-    text: root.dynamic ? "Dynamic" : "Custom"
+    text: root.dynamic ? qsTrId("pond.dynamic") : qsTrId("pond.custom")
     color: "white"; font.family: Shell.Theme.fontFamily; font.pixelSize: 13
   }
   Text {
     x: 20; y: 32
-    text: root.dynamic ? "Changes with the time of day" : "Set your own wallpaper"
+    text: root.dynamic ? qsTrId("pond.changes_with_the_time_of_day") : qsTrId("pond.set_your_own_wallpaper")
     color: "#80ffffff"; font.family: Shell.Theme.fontFamily; font.pixelSize: 13
   }
   Rectangle {

@@ -5,7 +5,7 @@ import ".."
 
 DeviceList {
   id: root
-  title: "Wifi"
+  title: qsTrId("pond.wifi")
   viewportHeight: 306
   devices: Wifi.State.wiredNetworks.concat(Wifi.State.enabled ? Wifi.State.networks : [])
   headerControl: Component { Toggle {
@@ -60,7 +60,7 @@ DeviceList {
       }
       Text {
         anchors.verticalCenter: parent.verticalCenter
-        text: "Add a network"
+        text: qsTrId("pond.add_a_network")
         color: "white"
         font.family: Theme.fontFamily
         font.weight: Font.Medium

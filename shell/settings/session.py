@@ -16,13 +16,13 @@ def run(action):
     installed = Path('/usr/share/pond-interface/lockscreen')
     local = Path(__file__).resolve().parents[2] / 'lockscreen'
     # Reuse an existing installed or source instance before starting one.
-    paths = list(dict.fromkeys((installed, local)))
+    paths = list(dict.fromkeys((local, installed)))
     for path in paths:
         result = subprocess.run(['qs', '-p', str(path), 'ipc', 'call', 'lockscreen', method],
                                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         if result.returncode == 0:
             return
-    path = installed if installed.is_dir() else local
+    path = local if local.is_dir() else installed
     subprocess.run(['qs', '-d', '-p', str(path)], check=True)
     if action == 'lock':
         return

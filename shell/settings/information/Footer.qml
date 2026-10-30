@@ -16,8 +16,8 @@ Item {
   readonly property var contacts: [
     {key:1, label:"X / Twitter", x:158.8359375, y:35, size:25, plus:7, url:"https://x.com/bflycomputer"},
     {key:2, label:"Instagram", x:185, y:46, size:17, plus:5, url:"https://www.instagram.com/bflycomputer/"},
-    {key:3, label:"Website", x:204, y:36, size:28, plus:6, url:"https://butterfly.so"},
-    {key:4, label:"Email", x:193, y:65, size:24, plus:6, url:"mailto:hello@butterfly.so"}
+    {key:3, label:qsTrId("pond.website"), x:204, y:36, size:28, plus:6, url:"https://butterfly.so"},
+    {key:4, label:qsTrId("pond.email"), x:193, y:65, size:24, plus:6, url:"mailto:hello@butterfly.so"}
   ]
   readonly property var labels: [
     {key:1, x:248, y:57, value:"@", accent:true},
@@ -25,9 +25,9 @@ Item {
     {key:1, x:306, y:77, value:"X / Twitter", accent:false},
     {key:2, x:286, y:37, value:"Instagram", accent:false},
     {key:2, x:264, y:77, value:"@bflycomputer", accent:true},
-    {key:3, x:270, y:57, value:"Website", accent:false},
+    {key:3, x:270, y:57, value:qsTrId("pond.website"), accent:false},
     {key:3, x:293, y:77, value:"butterfly.so", accent:true},
-    {key:4, x:331, y:37, value:"Email", accent:false},
+    {key:4, x:331, y:37, value:qsTrId("pond.email"), accent:false},
     {key:4, x:267, y:57, value:"hello@butterfly.so", accent:true}
   ]
 
@@ -57,7 +57,8 @@ Item {
     Label { x:9; capY:5; text:"V0.1" }
   }
   Label {
-    x:98; capY:62; text:"Early\nPreview"
+    x:98; capY:62; width:52; text:qsTrId("pond.early_preview")
+    fontSizeMode:Text.HorizontalFit; minimumPixelSize:11
     font.family:Shell.Theme.titleFontFamily; font.styleName:"Book"; font.pixelSize:17
     font.letterSpacing:0
     lineHeightMode:Text.FixedHeight; lineHeight:17

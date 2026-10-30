@@ -1,3 +1,4 @@
+import Pond.Localization
 import QtQuick
 import Quickshell.Widgets
 import ".." as Settings
@@ -6,6 +7,8 @@ import "../.." as Shell
 Settings.Modal {
   id: root
   objectName: "manualPanel"
+  // Localized artwork must keep the same document geometry and hover regions.
+  readonly property url manualArtwork: Localization.asset(Qt.resolvedUrl("../../assets/manual/manual.svg"))
   title: ""
   implicitWidth: 500
   implicitHeight: Math.min(672, availableHeight)
@@ -13,9 +16,9 @@ Settings.Modal {
   contentHeight: manual.height
   roundedContent: true
   closeButtonY: -17
-  closeLabel: "Close manual"
+  closeLabel: qsTrId("pond.close_manual")
   Accessible.role: Accessible.Dialog
-  Accessible.name: "User Manual"
+  Accessible.name: qsTrId("pond.user_manual")
   onBackRequested: Settings.State.back()
   Keys.onEscapePressed: Settings.State.back()
   Keys.onDownPressed: scrollBy(56)
@@ -46,7 +49,7 @@ Settings.Modal {
       clip: true
       Image {
         width: 500; height: 2984
-        source: Qt.resolvedUrl("../../assets/manual/manual.svg")
+        source: root.manualArtwork
         sourceSize.width: width * Screen.devicePixelRatio
       }
     }
@@ -55,7 +58,7 @@ Settings.Modal {
       clip: true
       Image {
         y: -1538; width: 500; height: 2984
-        source: Qt.resolvedUrl("../../assets/manual/manual.svg")
+        source: root.manualArtwork
         sourceSize.width: width * Screen.devicePixelRatio
       }
     }
@@ -71,7 +74,7 @@ Settings.Modal {
       Image {
         anchors.fill: parent
         visible: noteHover.hovered
-        source: Qt.resolvedUrl("../../assets/manual/super-note-hover.svg")
+        source: Localization.asset(Qt.resolvedUrl("../../assets/manual/super-note-hover.svg"))
         sourceSize.width: width * Screen.devicePixelRatio
       }
     }
@@ -91,7 +94,7 @@ Settings.Modal {
     width: 231; height: 144
     visible: noteHover.hovered
     Accessible.role: Accessible.ToolTip
-    Accessible.name: "The Super key is between Ctrl and Alt."
+    Accessible.name: qsTrId("pond.the_super_key_is_between_ctrl_and_alt")
 
     Item {
       anchors { fill: parent; margins: -90; bottomMargin: -180 }
@@ -109,7 +112,7 @@ Settings.Modal {
       color: Settings.Style.card
       Image {
         anchors.fill: parent
-        source: Qt.resolvedUrl("../../assets/manual/super-tip.svg")
+        source: Localization.asset(Qt.resolvedUrl("../../assets/manual/super-tip.svg"))
         sourceSize.width: width * Screen.devicePixelRatio
       }
     }

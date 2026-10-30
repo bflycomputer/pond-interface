@@ -126,7 +126,7 @@ Settings.Modal {
         visible: !!search.text
         color: clearHover.hovered ? "#303030" : "transparent"
         Accessible.role: Accessible.Button
-        Accessible.name: "Clear search"
+        Accessible.name: qsTrId("pond.clear_search")
         Accessible.onPressAction: search.clear()
         Image {
           anchors.centerIn: parent
@@ -144,10 +144,10 @@ Settings.Modal {
       color: shortcutHover.hovered ? "#262626" : "transparent"
       border.width: shortcutHover.hovered ? 0 : 1; border.color: "#303030"
       Accessible.role: Accessible.StaticText
-      Accessible.name: "Shortcut: Super+K switches between languages"
+      Accessible.name: qsTrId("pond.shortcut_super_k_switches_between_languages")
       Text {
         anchors.centerIn: parent
-        text: "Shortcut"; color: "white"; opacity: shortcutHover.hovered ? 1 : 0.5
+        text: qsTrId("pond.shortcut"); color: "white"; opacity: shortcutHover.hovered ? 1 : 0.5
         font.family: Shell.Theme.fontFamily; font.weight: Font.DemiBold
         font.pixelSize: 10; font.letterSpacing: 0.1
       }
@@ -172,7 +172,7 @@ Settings.Modal {
         color: Settings.Style.card
         Text {
           x: 20; y: 15; width: 120
-          text: "Switch between languages"; color: "white"
+          text: qsTrId("pond.switch_between_languages"); color: "white"
           wrapMode: Text.WordWrap; lineHeight: 21; lineHeightMode: Text.FixedHeight
           font.family: Shell.Theme.fontFamily; font.weight: Font.Medium; font.pixelSize: 15
         }

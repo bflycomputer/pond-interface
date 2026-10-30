@@ -8,6 +8,9 @@ import subprocess
 import sys
 import tempfile
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from error_codes import error_payload
+
 CONFIG = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config"))
 
 
@@ -142,7 +145,7 @@ def main():
                     "wallpaper": wallpaper, "pick-wallpaper": pick_wallpaper, "theme": theme}
         print(json.dumps(commands[action](*args)))
     except Exception as error:
-        print(json.dumps({"error": str(error)}))
+        print(json.dumps(error_payload(error, 'Could not apply appearance settings')))
         sys.exit(1)
 
 

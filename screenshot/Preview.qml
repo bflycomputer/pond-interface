@@ -127,7 +127,7 @@ Item {
     objectName: "dismissScreenshot"
     x: 8
     y: 8
-    label: "Dismiss screenshot"
+    label: qsTrId("pond.dismiss_screenshot")
     iconSource: Qt.resolvedUrl("assets/close.svg")
     onActivated: Screenshot.State.dismiss()
   }
@@ -135,7 +135,7 @@ Item {
     objectName: "copyScreenshot"
     x: parent.width - width - 8
     y: 8
-    label: "Copy screenshot"
+    label: qsTrId("pond.copy_screenshot")
     iconSource: Qt.resolvedUrl("assets/copy.svg")
     onActivated: Screenshot.State.copy()
   }
@@ -149,7 +149,7 @@ Item {
     visible: Screenshot.State.copied && !root.collapsed
     Text {
       anchors.centerIn: parent
-      text: "Copy’d"
+      text: qsTrId("pond.copy_d")
       color: "#3D2C52"
       font { family: "Onest"; pixelSize: 13; weight: Font.Medium }
     }

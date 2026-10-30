@@ -195,7 +195,7 @@ Card {
     id: noInternetLabel
     anchors.horizontalCenter: parent.horizontalCenter
     y: 14.5 + noInternetMetrics.capitalHeight - baselineOffset
-    text: "No internet"
+    text: qsTrId("pond.no_internet")
     color: "white"
     font.family: Theme.fontFamily
     font.weight: Font.Medium
@@ -308,8 +308,8 @@ Card {
         else root.collapseClicked();
       }
       Accessible.role: Accessible.Button
-      Accessible.name: slot === 0 ? "Wi-Fi" : slot === 1 ? "Sound"
-          : slot === 2 ? "Settings" : root.collapseProgress < 0.5 ? "Collapse sidebar" : "Expand sidebar"
+      Accessible.name: slot === 0 ? "Wi-Fi" : slot === 1 ? qsTrId("pond.sound")
+          : slot === 2 ? qsTrId("pond.settings") : root.collapseProgress < 0.5 ? qsTrId("pond.collapse_sidebar") : qsTrId("pond.expand_sidebar")
       Accessible.onPressAction: action.clicked()
 
       Rectangle {

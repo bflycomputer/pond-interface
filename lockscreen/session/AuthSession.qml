@@ -49,7 +49,7 @@ Item {
         authenticationPending = true;
 
         if (!backend.start()) {
-            finishWithError("Unable to start the authentication service");
+            finishWithError(qsTrId("pond.unable_to_start_the_authentication_service"));
             return false;
         }
         return true;
@@ -61,7 +61,7 @@ Item {
         _terminalHandled = true;
         authenticationPending = false;
         clearPendingCredential();
-        authenticationError(message || "Authentication service error");
+        authenticationError(message || qsTrId("pond.authentication_service_error"));
     }
 
     function handlePamMessage() {
@@ -70,7 +70,7 @@ Item {
         if (_pendingCredential.length === 0) {
             if (backend.active)
                 backend.abort();
-            finishWithError("Authentication requested an unexpected response");
+            finishWithError(qsTrId("pond.authentication_requested_an_unexpected_response"));
             return;
         }
         backend.respond(_pendingCredential);
@@ -89,7 +89,7 @@ Item {
         } else if (result === failedResult || result === maxTriesResult) {
             rejected(result);
         } else {
-            authenticationError(_backendErrorMessage || "Authentication service error");
+            authenticationError(_backendErrorMessage || qsTrId("pond.authentication_service_error"));
         }
     }
 
@@ -105,7 +105,7 @@ Item {
         function onError(error) {
             root._backendErrorMessage = root.backend && root.backend.message
                 ? String(root.backend.message)
-                : "Authentication service error";
+                : qsTrId("pond.authentication_service_error");
         }
 
         function onCompleted(result) {

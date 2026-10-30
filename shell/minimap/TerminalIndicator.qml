@@ -17,9 +17,7 @@ Item {
   width: 24
   height: 24
   Accessible.role: Accessible.Indicator
-  Accessible.name: "Terminal " + variant + (dotState === "working" ? " working"
-      : dotState === "attention" ? " waiting for input"
-      : dotState === "unread" ? " finished, unread" : " ready, viewed")
+  Accessible.name: (dotState === "working" ? qsTrId("pond.terminal_1_working") : dotState === "attention" ? qsTrId("pond.terminal_1_waiting_for_input") : dotState === "unread" ? qsTrId("pond.terminal_1_finished_unread") : qsTrId("pond.terminal_1_ready_viewed")).arg(variant)
 
   onAnimatingChanged: animationFrame = 0
   onLoaderVariantChanged: { animationFrame = 0; if (animating) frameTimer.restart(); }

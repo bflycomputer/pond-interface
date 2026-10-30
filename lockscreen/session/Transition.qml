@@ -24,8 +24,8 @@ Item {
     signal failed(string reason)
 
     onReleasedChanged: if (released) releasedTopology = topology
-    onTopologyChanged: if (active && released && topology !== releasedTopology) failed("Outputs changed during unlock")
-    onReadyChanged: if (active && released && !ready) failed("Unlock overlay lost its surface")
+    onTopologyChanged: if (active && released && topology !== releasedTopology) failed(qsTrId("pond.outputs_changed_during_unlock"))
+    onReadyChanged: if (active && released && !ready) failed(qsTrId("pond.unlock_overlay_lost_its_surface"))
 
     function setReady(name, ready) {
         if (!name)
@@ -76,7 +76,7 @@ Item {
             onHeightChanged: resetFrame()
             Component.onCompleted: root.setReady(outputName, ready)
             Component.onDestruction: root.setReady(outputName, false)
-            onResourcesLost: root.failed("Unlock overlay lost rendering resources")
+            onResourcesLost: root.failed(qsTrId("pond.unlock_overlay_lost_rendering_resources"))
 
             Item {
                 id: content

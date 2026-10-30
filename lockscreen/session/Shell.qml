@@ -1,4 +1,5 @@
 pragma ComponentBehavior: Bound
+import Pond.Localization
 import QtQuick
 import Quickshell
 import Quickshell.Io
@@ -16,6 +17,7 @@ ShellRoot {
         suspendWait.restart();
     }
     Component.onCompleted: {
+        Localization.useUserPreferences();
         // Reloading a secure lock must never destroy its authentication state.
         Quickshell.watchFiles = false;
         if (Quickshell.env("POND_LOCK_NO_START") !== "1")

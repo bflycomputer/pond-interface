@@ -23,7 +23,7 @@ Shell.Card {
   readonly property real playPauseRestingOpacity: Media.State.isPlaying ? 0.5 : 1.0
   readonly property string displayTitle: Media.State.title !== ""
       ? Media.State.title : (Media.State.identity !== ""
-                            ? Media.State.identity : "Unknown track")
+                            ? Media.State.identity : qsTrId("pond.unknown_track"))
 
   width: Shell.Theme.lerp(Shell.Theme.sidebarCardExpandedWidth,
       Shell.Theme.sidebarCardCollapsedWidth, layoutProgress)

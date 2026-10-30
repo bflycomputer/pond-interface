@@ -8,7 +8,7 @@ import "Geometry.js" as Geometry
 Settings.Modal {
   id: root
   objectName: "displayPanel"
-  title: "Display"; closeLabel: "Back to Appearance"; bodyTop: 77
+  title: qsTrId("pond.display"); closeLabel: qsTrId("pond.back_to_appearance"); bodyTop: 77
   contentHeight: fields.y + fields.height + 30
   titleOpacity: dropdownField ? 0.3 : 1
   property string dropdownField: ""
@@ -18,10 +18,10 @@ Settings.Modal {
     const m = monitor;
     if (!m) return [];
     const result = [];
-    if (m.scales.length > 1) result.push({key:"scale",title:"Scale",value:m.scale + "x",current:String(m.scale),options:m.scales.map(s=>({label:s+"x",value:String(s)}))});
-    if (m.resolutions.some(r=>r.value!==m.width+"x"+m.height)) result.push({key:"resolution",title:"Resolution",value:m.width+" x "+m.height,current:m.width+"x"+m.height,options:m.resolutions});
-    if (m.rates.some(r=>r.value!==String(m.refresh))) result.push({key:"refresh",title:"Refresh rate",value:(m.refresh/1000).toFixed(3).replace(/\.?0+$/, "")+" Hz",current:String(m.refresh),options:m.rates});
-    if (m.vrrSupported) result.push({key:"vrr",title:"Adaptive sync",value:m.vrrEnabled?"On":"Off",current:"",options:[]});
+    if (m.scales.length > 1) result.push({key:"scale",title:qsTrId("pond.scale"),value:m.scale + "x",current:String(m.scale),options:m.scales.map(s=>({label:s+"x",value:String(s)}))});
+    if (m.resolutions.some(r=>r.value!==m.width+"x"+m.height)) result.push({key:"resolution",title:qsTrId("pond.resolution"),value:m.width+" x "+m.height,current:m.width+"x"+m.height,options:m.resolutions});
+    if (m.rates.some(r=>r.value!==String(m.refresh))) result.push({key:"refresh",title:qsTrId("pond.refresh_rate"),value:(m.refresh/1000).toFixed(3).replace(/\.?0+$/, "")+" Hz",current:String(m.refresh),options:m.rates});
+    if (m.vrrSupported) result.push({key:"vrr",title:qsTrId("pond.adaptive_sync"),value:m.vrrEnabled?qsTrId("pond.on"):qsTrId("pond.off"),current:"",options:[]});
     return result;
   }
   readonly property var dropdownRow: rows.find(r=>r.key===dropdownField) || null
@@ -76,7 +76,7 @@ Settings.Modal {
       }
       Text {
         anchors.centerIn: parent; visible: !Display.State.monitors.length
-        text: Display.State.loaded ? "No connected displays" : "Loading displays…"
+        text: Display.State.loaded ? qsTrId("pond.no_connected_displays") : qsTrId("pond.loading_displays")
         font.family: Shell.Theme.fontFamily; font.pixelSize: 15; color: "#b3b3b3"
       }
     }
@@ -86,11 +86,11 @@ Settings.Modal {
       visible: Display.State.monitors.length > 1
       color: arrangeHover.hovered || activeFocus ? "#262626" : "transparent"
       activeFocusOnTab: visible && enabled
-      Accessible.role: Accessible.Button; Accessible.name: "Arrange displays"
+      Accessible.role: Accessible.Button; Accessible.name: qsTrId("pond.arrange_displays")
       Accessible.onPressAction: Settings.State.openPage("arrange")
       Keys.onReturnPressed: Settings.State.openPage("arrange")
       Keys.onSpacePressed: Settings.State.openPage("arrange")
-      Text { anchors.centerIn: parent; text: "Arrange"; color: "#b3b3b3"; font.family: Shell.Theme.fontFamily; font.pixelSize: 15 }
+      Text { anchors.centerIn: parent; text: qsTrId("pond.arrange"); color: "#b3b3b3"; font.family: Shell.Theme.fontFamily; font.pixelSize: 15 }
       HoverHandler { id: arrangeHover; cursorShape: Qt.PointingHandCursor }
       TapHandler { onTapped: Settings.State.openPage("arrange") }
     }
@@ -112,7 +112,7 @@ Settings.Modal {
           animateGlyphOpacity: false
           glyphOpacity: highlighted ? 1 : 0.7
           activeFocusOnTab: enabled
-          accessibleName: "Rotate display 90° " + modelData
+          accessibleName: modelData === "counterclockwise" ? qsTrId("pond.rotate_display_90_counterclockwise") : qsTrId("pond.rotate_display_90_clockwise")
           Accessible.role: Accessible.Button
           Accessible.name: accessibleName
           Accessible.onPressAction: rotateDisplay()

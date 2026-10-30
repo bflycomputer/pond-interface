@@ -96,7 +96,7 @@ PanelWindow {
     x: panelBackground.x + Notifications.Style.contentPadding
     y: panelBackground.y + Notifications.Style.contentPadding
     height: 28
-    text: root.itemCount + " Notifications"
+    text: qsTrId("notifications.count", root.itemCount)
     color: Notifications.Style.foreground
     font.family: Shell.Theme.titleFontFamily
     font.weight: Font.Normal
@@ -113,7 +113,7 @@ PanelWindow {
        - Notifications.Style.contentPadding - width
     y: panelBackground.y + 21
     height: 19
-    text: "Clear all"
+    text: qsTrId("pond.clear_all")
     color: Notifications.Style.foreground
     opacity: root.reveal * hoverOpacity
     font.family: Shell.Theme.fontFamily

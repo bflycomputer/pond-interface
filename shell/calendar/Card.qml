@@ -1,4 +1,5 @@
 pragma ComponentBehavior: Bound
+import Pond.Localization
 import QtQuick
 import Quickshell
 import "Dates.js" as Dates
@@ -18,7 +19,7 @@ Shell.PanelBackground {
   readonly property real cellWidth: (width - 20 - 12) / 7
   readonly property real cellHeight: 36
   readonly property real rowPitch: cellHeight + 2
-  readonly property string monthTitle: Qt.locale("en_US").standaloneMonthName(
+  readonly property string monthTitle: Localization.locale.standaloneMonthName(
       displayedMonth.getMonth(), Locale.LongFormat) + ", " + displayedMonth.getFullYear()
 
   implicitWidth: 264
@@ -59,26 +60,26 @@ Shell.PanelBackground {
     iconSource: Qt.resolvedUrl("../assets/navigation/return.svg")
     iconWidth: 14
     iconHeight: 14
-    accessibleName: "Return to today"
+    accessibleName: qsTrId("pond.return_to_today")
     onClicked: root.goToday()
   }
   NavigationButton {
     x: root.width - 60
     y: 13
     iconSource: Qt.resolvedUrl("../assets/navigation/chevron-up.svg")
-    accessibleName: "Previous month"
+    accessibleName: qsTrId("pond.previous_month")
     onClicked: root.moveMonth(-1)
   }
   NavigationButton {
     x: root.width - 36
     y: 13
     iconSource: Qt.resolvedUrl("../assets/navigation/chevron-down.svg")
-    accessibleName: "Next month"
+    accessibleName: qsTrId("pond.next_month")
     onClicked: root.moveMonth(1)
   }
 
   Repeater {
-    model: ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]
+    model: [1, 2, 3, 4, 5, 6, 7].map(day => Localization.locale.standaloneDayName(day, Locale.ShortFormat))
     delegate: Text {
       required property int index
       required property string modelData
@@ -119,7 +120,7 @@ Shell.PanelBackground {
       radius: 8
       color: isToday && root.isCurrentMonth ? "#D1C9FF" : "transparent"
       Accessible.role: Accessible.StaticText
-      Accessible.name: Qt.formatDate(modelData, "dddd, MMMM d, yyyy")
+      Accessible.name: modelData.toLocaleDateString(Localization.locale, Locale.LongFormat)
           + (isToday ? ", today" : "")
 
       MouseArea {

@@ -41,7 +41,7 @@ AuthSession {
 
         onExited: (exitCode, exitStatus) => {
             if (exitCode !== 0)
-                root.authenticationError("No supported PAM service is available");
+                root.authenticationError(qsTrId("pond.no_supported_pam_service_is_available"));
         }
     }
 

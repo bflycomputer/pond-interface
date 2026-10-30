@@ -19,7 +19,8 @@ Singleton {
   property var pending: ({})
   property var failures: ({})
   property var prompt: ({kind: ""})
-  property string errorText: ""
+  property string errorCode: ""
+  readonly property string errorText: errorCode ? qsTrId(errorCode) : ""
   property var discoveryConsumers: []
   property string discoveryPath: ""
   property bool discoveryPending: false
@@ -34,7 +35,7 @@ Singleton {
       path: device.dbusPath, address: device.address,
       name: device.name || device.deviceName || device.address,
       deviceName: device.deviceName, icon: DeviceUtils.classifier(device.icon),
-      type: DeviceUtils.typeLabel(device.icon), connected: device.connected,
+      type: ({"Headphones": qsTrId("pond.headphones"), "Keyboard": qsTrId("pond.keyboard"), "Mouse": qsTrId("pond.mouse"), "Trackpad": qsTrId("pond.trackpad"), "Speaker": qsTrId("pond.speaker"), "Phone": qsTrId("pond.phone"), "Bluetooth device": qsTrId("pond.bluetooth_device")})[DeviceUtils.typeLabel(device.icon)], connected: device.connected,
       paired: device.paired, bonded: device.bonded, trusted: device.trusted,
       blocked: device.blocked, battery: DeviceUtils.batteryPercent(device, power),
       model: power ? power.model : "",
@@ -56,17 +57,17 @@ Singleton {
   }
   function failed(path) { return failures[path] !== undefined; }
   function send(action, path, extra) {
-    if (!transportReady) { errorText = "Bluetooth service is starting. Try again."; return false; }
+    if (!transportReady) { errorCode = "pond.bluetooth_service_is_starting_try_again"; return false; }
     const job = Object.assign({id: ++serial, action: action, path: path}, extra || {});
     const next = Object.assign({}, pending); next[job.id] = job; pending = next;
     const errors = Object.assign({}, failures); delete errors[path]; failures = errors;
-    errorText = "";
+    errorCode = "";
     actions.write(JSON.stringify(job) + "\n");
     return true;
   }
   function activate(device) {
     if (!device || !enabled || isBusy(device.path)) return;
-    if (device.blocked) { errorText = "This device is blocked in Bluetooth settings."; return; }
+    if (device.blocked) { errorCode = "pond.this_device_is_blocked_in_bluetooth_settings"; return; }
     send(device.connected ? "disconnect" : device.paired || device.bonded ? "connect" : "pair", device.path);
   }
   function forget(device) {
@@ -108,7 +109,7 @@ Singleton {
   function receive(message) {
     if (message.event === "ready") { transportReady = true; return; }
     if (message.event === "prompt") { prompt = message; return; }
-    if (message.event === "error") { errorText = message.error; return; }
+    if (message.event === "error") { errorCode = "pond.could_not_change_bluetooth_settings"; return; }
     if (message.event !== "result") return;
     const job = pending[message.id];
     if (!job) return;
@@ -118,14 +119,14 @@ Singleton {
       discoveryOwned = job.action === "scan-start" && message.success;
       if (!discoveryOwned) discoveryPath = "";
       if (!message.success && job.action === "scan-start")
-        errorText = "Couldn’t search for nearby devices. Close and reopen search to try again.";
+        errorCode = "pond.couldn_t_search_for_nearby_devices_close_and_reopen_search_to_try_again";
       else Qt.callLater(syncDiscovery);
     } else if (!message.success) {
       const errors = Object.assign({}, failures); errors[job.path] = Date.now() + 3500; failures = errors;
-      errorText = job.action === "power" ? "Couldn’t change Bluetooth power. Check the adapter or airplane mode."
-          : job.action === "forget" ? "Couldn’t forget this device. Try again."
-          : job.action === "disconnect" ? "Couldn’t disconnect. Try again."
-          : "Couldn’t connect. Make sure the device is on and nearby, then try again.";
+      errorCode = job.action === "power" ? "pond.couldn_t_change_bluetooth_power_check_the_adapter_or_airplane_mode"
+          : job.action === "forget" ? "pond.couldn_t_forget_this_device_try_again"
+          : job.action === "disconnect" ? "pond.couldn_t_disconnect_try_again"
+          : "pond.couldn_t_connect_make_sure_the_device_is_on_and_nearby_then_try_again";
     }
     actionFinished(job.path, job.action, message.success);
   }

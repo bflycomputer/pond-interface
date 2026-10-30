@@ -68,7 +68,8 @@ class Actions:
             self.clear_prompt()
             self.pair_job = None
         emit(event='result', id=job['id'], path=job['path'], action=job['action'],
-             success=error is None, error=str(error or ''))
+             success=error is None, error='pond.could_not_change_bluetooth_settings' if error else '',
+             detail=str(error or ''))
 
     def clear_prompt(self):
         if self.prompt:
@@ -218,7 +219,7 @@ class Actions:
             try:
                 self.command(json.loads(line))
             except (ValueError, TypeError, KeyError) as error:
-                emit(event='error', error=str(error))
+                emit(event='error', error='pond.could_not_change_bluetooth_settings', detail=str(error))
         return True
 
     def run(self):

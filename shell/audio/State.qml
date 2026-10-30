@@ -40,9 +40,9 @@ Singleton {
 
   function displayName(node) {
     if (!node)
-      return "Unknown device";
+      return qsTrId("pond.unknown_device");
     return String(node.description || node.nickname || node.name
-                  || "Unknown device");
+                  || qsTrId("pond.unknown_device"));
   }
 
   function suppressExternalChanges(duration) {

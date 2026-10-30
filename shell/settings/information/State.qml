@@ -1,4 +1,5 @@
 pragma Singleton
+import Pond.Localization
 import QtQuick
 import ".." as Settings
 import Quickshell
@@ -35,26 +36,25 @@ Singleton {
     query.running = true;
   }
   function usage(used, total) {
-    return total > 0
-        ? `${(used / 2 ** 30).toFixed(1)} GiB / ${(total / 2 ** 30).toFixed(1)} GiB`
-        : "Unavailable";
+    return total > 0 ? qsTrId("pond.1_gib_2_gib").arg(Localization.number(used / 2 ** 30, 1)).arg(Localization.number(total / 2 ** 30, 1)) : qsTrId("pond.unavailable");
   }
   function updateFacts(text, usageOnly) {
     const data = {};
     for (const item of JSON.parse(text)) data[item.type] = item.result;
     const disk = data.Disk?.[0]?.bytes;
-    const next = {memory: usage(data.Memory?.used, data.Memory?.total), disk: usage(disk?.total - disk?.free, disk?.total)};
-    if (!usageOnly) {
-      const threads = data.CPU?.cores?.online;
-      Object.assign(next, {
-        os: data.OS?.prettyName || data.OS?.name || "Unavailable",
-        host: data.Title?.hostName || "Unavailable",
-        board: data.Board?.name || "Unavailable",
-        cpu: data.CPU?.cpu ? `${data.CPU.cpu.replace(/\s+\d+-Core Processor$/, "")} (${threads} ${threads === 1 ? "Thread" : "Threads"})` : "Unavailable",
-        gpu: [...new Set((data.GPU || []).map(gpu => gpu.name).filter(Boolean))].join(", ") || "Unavailable"
-      });
-    }
+    const next = {memoryUsed: data.Memory?.used, memoryTotal: data.Memory?.total, diskUsed: disk?.total - disk?.free, diskTotal: disk?.total};
+    if (!usageOnly) Object.assign(next, {
+      os: data.OS?.prettyName || data.OS?.name,
+      host: data.Title?.hostName, board: data.Board?.name,
+      cpu: data.CPU?.cpu?.replace(/\s+\d+-Core Processor$/, ""), threads: data.CPU?.cores?.online,
+      gpu: [...new Set((data.GPU || []).map(gpu => gpu.name).filter(Boolean))].join(", ")
+    });
     facts = Object.assign({}, facts, next);
   }
-  function value(key) { return facts[key] || "…"; }
+  function value(key) {
+    if (key === "memory") return usage(facts.memoryUsed, facts.memoryTotal);
+    if (key === "disk") return usage(facts.diskUsed, facts.diskTotal);
+    if (key === "cpu" && facts.cpu) return facts.cpu + " (" + qsTrId("hardware.threads", facts.threads || 0) + ")";
+    return facts[key] || qsTrId("pond.unavailable");
+  }
 }

@@ -16,15 +16,15 @@ Item {
   Shell.PanelBackground {
     anchors.fill: parent
     Text {
-      x: 20; y: 20; text: "Pair device"; color: "white"
+      x: 20; y: 20; text: qsTrId("pond.pair_device"); color: "white"
       font.family: Shell.Theme.titleFontFamily; font.pixelSize: 20
     }
     Text {
       x: 20; y: 80; width: 276; height: 56; wrapMode: Text.Wrap
-      text: root.prompt.kind === "display" ? "Type this code on your Bluetooth device, then press Enter."
-          : root.prompt.kind === "confirm" ? "Confirm that this code matches the one shown on your device."
-          : root.needsInput ? "Enter the pairing code shown on your device."
-          : "Allow this device to pair?"
+      text: root.prompt.kind === "display" ? qsTrId("pond.type_this_code_on_your_bluetooth_device_then_press_enter")
+          : root.prompt.kind === "confirm" ? qsTrId("pond.confirm_that_this_code_matches_the_one_shown_on_your_device")
+          : root.needsInput ? qsTrId("pond.enter_the_pairing_code_shown_on_your_device")
+          : qsTrId("pond.allow_this_device_to_pair")
       color: "white"; font.family: Shell.Theme.fontFamily; font.pixelSize: 13
     }
     Text {
@@ -36,16 +36,16 @@ Item {
     Shell.Field {
       id: code; x: 20; y: 144
       visible: root.needsInput
-      placeholderText: "Pairing code"
+      placeholderText: qsTrId("pond.pairing_code")
       onAccepted: if (root.canSubmit) root.service.answer(true, text)
     }
     Shell.ActionButton {
-      x: 8; y: 228; text: "Cancel"
+      x: 8; y: 228; text: qsTrId("pond.cancel")
       interactive: root.interactive
       onClicked: root.service.cancelPairing()
     }
     Shell.ActionButton {
-      x: 162; y: 228; text: "Pair"
+      x: 162; y: 228; text: qsTrId("pond.pair")
       visible: root.prompt.kind !== "display"
       interactive: root.interactive && root.canSubmit
       onClicked: root.service.answer(true, code.text)

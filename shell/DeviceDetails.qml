@@ -1,18 +1,21 @@
 pragma ComponentBehavior: Bound
+import Pond.Localization
 import QtQuick
 
 
 // Shared Wi-Fi/Bluetooth details layout. Data and actions belong to the caller.
 Item {
   id: root
+  LayoutMirroring.enabled: Localization.locale.textDirection === Qt.RightToLeft
+  LayoutMirroring.childrenInherit: true
   property var stackController
   property var selection: ({})
   property bool interactive: true
   property string title: ""
   property var detailRows: []
   property Component titleIcon
-  property string primaryText: "Forget"
-  property string secondaryText: "Disconnect"
+  property string primaryText: qsTrId("pond.forget")
+  property string secondaryText: qsTrId("pond.disconnect")
   property bool primaryEnabled: true
   property bool secondaryEnabled: true
   property string message: ""

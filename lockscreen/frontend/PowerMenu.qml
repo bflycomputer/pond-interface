@@ -4,7 +4,7 @@ import QtQuick.VectorImage
 
 Item {
     id: root
-    required property var theme
+        required property var theme
     property bool restartEnabled: false
     property bool expanded: false
     readonly property bool restartShown: expanded && restartEnabled && enabled
@@ -63,7 +63,7 @@ Item {
 
     ActionButton {
         objectName: "shutdownButton"
-        label: "Shut down"
+        label: qsTrId("pond.shut_down")
         iconName: "power"
         onHoveredChanged: { if (hovered && root.restartEnabled) root.expanded = true; }
         onClicked: root.shutdownRequested()
@@ -71,7 +71,7 @@ Item {
     ActionButton {
         objectName: "restartButton"
         y: 80
-        label: "Restart"
+        label: qsTrId("pond.restart")
         iconName: "restart"
         enabled: root.restartShown
         opacity: root.restartShown ? 1 : 0

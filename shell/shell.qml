@@ -1,4 +1,5 @@
 //@ pragma Env QSG_RENDER_LOOP = threaded
+import Pond.Localization
 import QtQuick
 import Quickshell
 import Quickshell.Io
@@ -15,6 +16,7 @@ import Pond.System
 ShellRoot {
   id: root
   property bool expanded: true
+  Component.onCompleted: Localization.useUserPreferences()
 
   Shortcuts {}
 

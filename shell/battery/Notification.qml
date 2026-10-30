@@ -52,7 +52,7 @@ PanelWindow {
       id: label
       x: 12
       y: (parent.height - metrics.capitalHeight) / 2 + metrics.capitalHeight - baselineOffset
-      text: "Battery at " + Battery.State.level + "%"
+      text: qsTrId("pond.battery_at_1").replace("%1", Battery.State.level)
       color: Battery.State.lowColor
       font.family: Shell.Theme.fontFamily
       font.weight: Font.Medium
@@ -81,7 +81,7 @@ PanelWindow {
       layer.effect: MultiEffect { colorization: 1; colorizationColor: Battery.State.lowColor }
       onClicked: Battery.State.alert = 0
       Accessible.role: Accessible.Button
-      Accessible.name: "Dismiss"
+      Accessible.name: qsTrId("pond.dismiss")
       Accessible.onPressAction: Battery.State.alert = 0
     }
   }

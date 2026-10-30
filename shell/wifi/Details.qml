@@ -8,14 +8,14 @@ DeviceDetails {
   title: String(selection.ssid || Wifi.State.connectedSsid)
   titleIcon: Component { SignalIcon { bars: Number(root.selection.bars || 3) } }
   primaryEnabled: (selection.uuids || []).length > 0
-  secondaryText: connected ? "Disconnect" : "Connect"
+  secondaryText: connected ? qsTrId("pond.disconnect") : qsTrId("pond.connect")
   detailRows: connected ? [
-    {label: "Link Speed", value: Wifi.State.linkSpeed},
-    {label: "IPv4 Address", value: Wifi.State.ipv4},
-    {label: "Band / Channel / Width", value: Wifi.State.band},
-    {label: "Default Gateway", value: Wifi.State.gateway},
-    {label: "DNS Server", value: Wifi.State.dns},
-    {label: "Network Interface", value: Wifi.State.device || "—"}
+    {label: qsTrId("pond.link_speed"), value: Wifi.State.linkSpeed},
+    {label: qsTrId("pond.ipv4_address"), value: Wifi.State.ipv4},
+    {label: qsTrId("pond.band_channel_width"), value: Wifi.State.band},
+    {label: qsTrId("pond.default_gateway"), value: Wifi.State.gateway},
+    {label: qsTrId("pond.dns_server"), value: Wifi.State.dns},
+    {label: qsTrId("pond.network_interface"), value: Wifi.State.device || "—"}
   ] : []
   Component.onCompleted: Wifi.State.refreshDetails()
   onPrimaryClicked: {

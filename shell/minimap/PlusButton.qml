@@ -37,7 +37,7 @@ Item {
     hoverEnabled: true
     cursorShape: Qt.PointingHandCursor
     Accessible.role: Accessible.Button
-    Accessible.name: "Open launcher on this workspace"
+    Accessible.name: qsTrId("pond.open_launcher_on_this_workspace")
     Accessible.onPressAction: root.activated()
     onClicked: root.activated()
   }

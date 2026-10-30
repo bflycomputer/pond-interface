@@ -11,7 +11,7 @@ Singleton {
   readonly property real percentage: present ? Math.max(0, Math.min(100, device.percentage * 100)) : 0
   readonly property bool charging: present && (device.state === UPowerDeviceState.Charging || !UPower.onBattery)
   readonly property string description: present
-      ? "Battery " + Math.round(percentage) + "%, " + UPowerDeviceState.toString(device.state) : ""
+      ? qsTrId("pond.battery_1_2").arg(Math.round(percentage)).arg(({[UPowerDeviceState.Charging]: qsTrId("pond.charging"), [UPowerDeviceState.Discharging]: qsTrId("pond.discharging"), [UPowerDeviceState.Empty]: qsTrId("pond.empty"), [UPowerDeviceState.FullyCharged]: qsTrId("pond.charged"), [UPowerDeviceState.PendingCharge]: qsTrId("pond.pending_charge"), [UPowerDeviceState.PendingDischarge]: qsTrId("pond.pending_discharge"), [UPowerDeviceState.Unknown]: qsTrId("pond.unknown")})[device.state] || qsTrId("pond.unknown")) : ""
   readonly property int level: Math.round(percentage)
   readonly property bool low: present && !charging && level <= 10
   readonly property color lowColor: level <= 3 ? "#FD6164" : level <= 5 ? "#FF9F67" : "#FFDC67"
@@ -20,9 +20,9 @@ Singleton {
   property int alert: 0
   property int alerted: 0
   readonly property var profiles: [
-    { profile: PowerProfile.PowerSaver, name: "Eco", icon: "eco", accent: "#CBE25B" },
-    { profile: PowerProfile.Balanced, name: "Balanced", icon: "balanced", accent: "#E99FFF" },
-    { profile: PowerProfile.Performance, name: "Performance", icon: "performance", accent: "#FFE51D" }
+    { profile: PowerProfile.PowerSaver, name: qsTrId("pond.eco"), icon: "eco", accent: "#CBE25B" },
+    { profile: PowerProfile.Balanced, name: qsTrId("pond.balanced"), icon: "balanced", accent: "#E99FFF" },
+    { profile: PowerProfile.Performance, name: qsTrId("pond.performance"), icon: "performance", accent: "#FFE51D" }
   ]
 
   onChargingChanged: if (charging) { alerted = 0; alert = 0; }

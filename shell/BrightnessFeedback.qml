@@ -33,7 +33,7 @@ Item {
     radius: PanelStyle.radius
     classicColor: PanelStyle.surface
     Accessible.role: Accessible.ProgressBar
-    Accessible.name: "Brightness " + Math.round(value * 100) + "%"
+    Accessible.name: qsTrId("pond.brightness_1").arg(Math.round(value * 100))
 
     Row {
       anchors.centerIn: parent

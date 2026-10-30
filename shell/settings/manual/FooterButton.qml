@@ -15,7 +15,7 @@ Rectangle {
   border.color: highlighted ? "#cba6f7" : "#4a4a4a"
   activeFocusOnTab: true
   Accessible.role: Accessible.Link
-  Accessible.name: service === "mail" ? "Email" : service === "x" ? "X" : "Discord"
+  Accessible.name: service === "mail" ? qsTrId("pond.email") : service === "x" ? "X" : "Discord"
   Accessible.onPressAction: root.open()
   Keys.onReturnPressed: root.open()
   Keys.onSpacePressed: root.open()

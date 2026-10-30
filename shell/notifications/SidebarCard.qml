@@ -57,7 +57,7 @@ Item {
           y: 3 + metrics.capitalHeight - baselineOffset
           width: root.empty ? implicitWidth : Math.max(14, implicitWidth)
           height: Notifications.Style.summaryIconSize
-          text: root.empty ? "Notifications" : String(Notifications.State.notificationCount)
+          text: root.empty ? qsTrId("pond.notifications") : String(Notifications.State.notificationCount)
           visible: !root.empty || root.collapseProgress < 0.31
           opacity: root.empty ? 0.6 : 1
           color: root.empty ? Notifications.Style.foreground : "#B7B7B7"

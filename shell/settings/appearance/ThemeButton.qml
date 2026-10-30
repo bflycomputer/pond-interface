@@ -18,7 +18,7 @@ Item {
   implicitWidth: 94; implicitHeight: 94
   activeFocusOnTab: true
   Accessible.role: Accessible.Button
-  Accessible.name: available ? label : "Coming soon"
+  Accessible.name: available ? label : qsTrId("pond.coming_soon")
   Accessible.checkable: available
   Accessible.checked: selected
   Accessible.onPressAction: if (available) clicked()

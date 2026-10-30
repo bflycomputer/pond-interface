@@ -29,8 +29,8 @@ Item {
 
     Repeater {
       model: [
-        {tab: "output", label: "Output", x: 16, width: 75, labelX: 3.5, labelWidth: 65},
-        {tab: "input", label: "Input", x: 91, width: 65, labelX: 5.5, labelWidth: 49}
+        {tab: "output", label: qsTrId("pond.output"), x: 16, width: 75, labelX: 3.5, labelWidth: 65},
+        {tab: "input", label: qsTrId("pond.input"), x: 91, width: 65, labelX: 5.5, labelWidth: 49}
       ]
       delegate: MouseArea {
         id: tabButton
@@ -129,7 +129,7 @@ Item {
       height: 24
       visible: root.deviceCount === 0
       text: root.selectedTab === "output"
-          ? "No output devices" : "No input devices"
+          ? qsTrId("pond.no_output_devices") : qsTrId("pond.no_input_devices")
       color: "white"
       opacity: 0.5
       font.family: Theme.fontFamily

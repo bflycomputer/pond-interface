@@ -10,14 +10,14 @@ Item {
   property Item anchorItem
   property string currentMode: "wpa-psk"
   readonly property var securityOptions: [
-    { label: "Open (No password)", mode: "open" },
-    { label: "Enhanced Open (OWE)", mode: "owe" },
-    { label: "WPA Personal (Legacy)", mode: "wpa" },
-    { label: "WPA2 Personal", mode: "wpa2" },
-    { label: "WPA2/WPA3 Personal", mode: "wpa-psk" },
-    { label: "WPA3 Personal Only", mode: "sae" },
-    { label: "WPA2/3 Enterprise", mode: "wpa-eap" },
-    { label: "WEP Key (Legacy)", mode: "wep" }
+    { label: qsTrId("pond.open_no_password"), mode: "open" },
+    { label: qsTrId("pond.enhanced_open_owe"), mode: "owe" },
+    { label: qsTrId("pond.wpa_personal_legacy"), mode: "wpa" },
+    { label: qsTrId("pond.wpa2_personal"), mode: "wpa2" },
+    { label: qsTrId("pond.wpa2_wpa3_personal"), mode: "wpa-psk" },
+    { label: qsTrId("pond.wpa3_personal_only"), mode: "sae" },
+    { label: qsTrId("pond.wpa2_3_enterprise"), mode: "wpa-eap" },
+    { label: qsTrId("pond.wep_key_legacy"), mode: "wep" }
   ]
   property var options: securityOptions
   signal selected(string label, string mode)

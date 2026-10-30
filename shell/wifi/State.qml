@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 pragma Singleton
 
+import Pond.Localization
 import QtQuick
 import Quickshell
 import Quickshell.Io
@@ -46,7 +47,11 @@ Singleton {
   readonly property string uploadRate: txCounter.rate
   readonly property string downloadRate: rxCounter.rate
   property string phase: "idle"
-  property string statusText: ""
+  property string statusCode: ""
+  readonly property string statusText: {
+    const text = statusCode ? qsTrId(statusCode) : "";
+    return text.includes("%1") ? text.arg(pendingSsid) : text;
+  }
   property string pendingSsid: ""
   property bool panelOpen: false
   property var rateConsumers: []
@@ -65,7 +70,7 @@ Singleton {
   property var _actionQueue: []
   property bool _actionSequenceActive: false
 
-  signal actionFinished(string kind, bool success, string message)
+  signal actionFinished(string kind, bool success, string code)
 
   Binding {
     target: root.adapter
@@ -97,11 +102,11 @@ Singleton {
   function formatRate(bytesPerSecond) {
     const value = Math.max(0, Number(bytesPerSecond) || 0) * 8;
     if (value >= 1e9)
-      return (value / 1e9).toFixed(value >= 1e10 ? 0 : 1) + "Gb";
+      return Localization.number(value / 1e9, value >= 1e10 ? 0 : 1) + "Gb";
     if (value >= 1e6)
-      return (value / 1e6).toFixed(value >= 1e7 ? 0 : 1) + "Mb";
+      return Localization.number(value / 1e6, value >= 1e7 ? 0 : 1) + "Mb";
     if (value >= 1e3)
-      return (value / 1e3).toFixed(value >= 1e4 ? 0 : 1) + "Kb";
+      return Localization.number(value / 1e3, value >= 1e4 ? 0 : 1) + "Kb";
     return Math.round(value) + "b";
   }
 
@@ -238,8 +243,8 @@ Singleton {
     _actionSequenceActive = true;
     pendingSsid = ssid;
     phase = kind === "connect" ? "connecting" : "working";
-    statusText = kind === "connect"
-        ? "Connecting to “" + ssid + "”…" : "Applying Wi-Fi change…";
+    statusCode = kind === "connect"
+        ? "wifi.connecting_to_1" : "wifi.applying_wi_fi_change";
     actionProcess.command = commands[0];
     actionProcess.running = true;
   }
@@ -360,23 +365,23 @@ Singleton {
         console.warn("Failed Wi-Fi profile cleanup:", root._actionError);
       root.phase = succeeded ? "complete" : "failed";
       if (succeeded) {
-        root.statusText = root._actionKind === "connect"
-            ? "Connected to “" + root.pendingSsid + "”" : "Wi-Fi updated";
+        root.statusCode = root._actionKind === "connect"
+            ? "wifi.connected_to_1" : "wifi.wi_fi_updated";
       } else if (root._actionKind === "connect") {
         if (root._passwordFailed)
-          root.statusText = "Incorrect password";
+          root.statusCode = "wifi.incorrect_password";
         else if (root._actionError.includes("No network with SSID"))
-          root.statusText = "Network not found";
+          root.statusCode = "wifi.network_not_found";
         else if (root._actionError.includes("802-1x.ca-cert"))
-          root.statusText = "Unable to read CA certificate";
+          root.statusCode = "wifi.unable_to_read_ca_certificate";
         else if (root._actionError.includes("Timeout"))
-          root.statusText = "Connection timeout";
+          root.statusCode = "wifi.connection_timeout";
         else
-          root.statusText = "Connection failed";
+          root.statusCode = "wifi.connection_failed";
       } else {
-        root.statusText = root._actionError || "Unable to update Wi-Fi";
+        root.statusCode = "wifi.unable_to_update_wi_fi";
       }
-      root.actionFinished(root._actionKind, succeeded, root.statusText);
+      root.actionFinished(root._actionKind, succeeded, root.statusCode);
       root.refreshDetails();
     }
   }

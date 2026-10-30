@@ -10,6 +10,7 @@ import xml.etree.ElementTree as ET
 from PyQt6.QtCore import QDateTime, QLocale, QTimeZone
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from error_codes import error_payload
 from kdl import atomic_write, get_properties, set_properties
 
 INPUT = Path(os.environ.get('XDG_CONFIG_HOME', Path.home() / '.config')) / 'niri/cfg/input.kdl'
@@ -143,5 +144,5 @@ if __name__ == '__main__':
         action, *args = sys.argv[1:]
         print(json.dumps({'load': load, 'keyboard': toggle_language, 'timezone': set_timezone, 'mouse': set_mouse}[action](*args)))
     except Exception as error:
-        print(json.dumps({'error': str(error)}))
+        print(json.dumps(error_payload(error, 'Could not read system settings')))
         sys.exit(1)

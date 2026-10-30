@@ -45,7 +45,7 @@ Item {
       y: 19.5
       width: 260
       elide: Text.ElideRight
-      text: "Join “" + String(root.selection.ssid || "Wifi Network") + "”"
+      text: qsTrId("wifi.join").arg(root.selection.ssid || qsTrId("pond.wifi_network"))
       color: "white"
       font.family: Theme.titleFontFamily
       font.weight: Font.Normal
@@ -54,7 +54,7 @@ Item {
     Text {
       x: 19.5
       y: 79.5
-      text: "Password"
+      text: qsTrId("pond.password")
       visible: !root.isEnterprise
       color: "white"
       font.family: Theme.fontFamily
@@ -67,7 +67,7 @@ Item {
       y: 102.5
       visible: !root.isEnterprise
       password: true
-      placeholderText: "Enter password"
+      placeholderText: qsTrId("pond.enter_password")
       onAccepted: connectButton.trigger()
     }
     FormViewport {
@@ -110,7 +110,7 @@ Item {
       }
       Text {
         anchors.centerIn: parent
-        text: "Connect"
+        text: qsTrId("pond.connect")
         color: PanelStyle.accentText
         font.family: Theme.fontFamily
         font.weight: Font.Medium

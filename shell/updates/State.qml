@@ -60,16 +60,16 @@ Singleton {
       const wasUpdating = root.status === "updating";
       if (result === "updating") {
         root.status = "updating";
-        Installs.State.update("system-update", "Updating", "installing", -1, "");
+        Installs.State.update("system-update", qsTrId("pond.updating"), "installing", -1, "");
       } else if (result === "restart") {
         root.status = "restart";
-        if (wasUpdating) Installs.State.update("system-update", "Update complete", "installed", -1, "");
+        if (wasUpdating) Installs.State.update("system-update", qsTrId("pond.update_complete"), "installed", -1, "");
       } else if (wasUpdating && result === "complete") {
         root.status = "complete";
-        Installs.State.update("system-update", "Update complete", "installed", -1, "");
+        Installs.State.update("system-update", qsTrId("pond.update_complete"), "installed", -1, "");
       } else if (wasUpdating && result === "failed") {
         root.status = "available";
-        Installs.State.update("system-update", "Update failed", "failed", -1, "");
+        Installs.State.update("system-update", qsTrId("pond.update_failed"), "failed", -1, "");
       }
     }
   }

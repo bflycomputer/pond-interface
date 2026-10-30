@@ -9,7 +9,7 @@ Item {
   property bool interactive: true
   property var menu: ({})
   property bool dropdownOpen: false
-  property string securityValue: "WPA2/WPA3 Personal"
+  property string securityValue: qsTrId("pond.wpa2_wpa3_personal")
   property string securityMode: "wpa-psk"
   property bool hiddenNetwork: false
   readonly property bool isEnterprise: securityMode === "wpa-eap"
@@ -43,7 +43,7 @@ Item {
     Text {
       x: 19.5
       y: 19.5
-      text: "Add network"
+      text: qsTrId("pond.add_network")
       color: "white"
       font.family: Theme.titleFontFamily
       font.weight: Font.Normal
@@ -59,7 +59,7 @@ Item {
 
       Text {
         x: 19.5
-        text: "Network name (SSID)"
+        text: qsTrId("pond.network_name_ssid")
         color: "white"
         font.family: Theme.fontFamily
         font.weight: Font.Medium
@@ -69,13 +69,13 @@ Item {
         id: networkName
         x: 19.5
         y: 21
-        placeholderText: "Enter network name"
+        placeholderText: qsTrId("pond.enter_network_name")
         onFocusedChanged: if (focused) form.reveal(this)
       }
       Text {
         x: 19.5
         y: 85
-        text: "Security"
+        text: qsTrId("pond.security")
         color: "white"
         font.family: Theme.fontFamily
         font.weight: Font.Medium
@@ -96,7 +96,7 @@ Item {
       Text {
         x: 19.5
         y: 170
-        text: "Password"
+        text: qsTrId("pond.password")
         visible: root.needsPassword
         color: "white"
         font.family: Theme.fontFamily
@@ -108,7 +108,7 @@ Item {
         x: 19.5
         y: 191
         password: true
-        placeholderText: "Enter password"
+        placeholderText: qsTrId("pond.enter_password")
         visible: root.needsPassword
         onAccepted: connectButton.trigger()
       }
@@ -132,7 +132,7 @@ Item {
       Text {
         x: 51.5
         anchors.verticalCenter: hidden.verticalCenter
-        text: "Hidden network"
+        text: qsTrId("pond.hidden_network")
         color: "white"
         font.family: Theme.fontFamily
         font.weight: Font.Medium
@@ -160,7 +160,7 @@ Item {
       }
       Text {
         anchors.centerIn: parent
-        text: "Connect"
+        text: qsTrId("pond.connect")
         color: PanelStyle.accentText
         font.family: Theme.fontFamily
         font.weight: Font.Medium

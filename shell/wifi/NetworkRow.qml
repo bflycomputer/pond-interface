@@ -73,7 +73,7 @@ Item {
 
     Text {
       anchors.centerIn: parent
-      text: "Disconnect"
+      text: qsTrId("pond.disconnect")
       color: "white"
       opacity: disconnectHover.hovered ? 1 : 0.8
       font.family: Theme.fontFamily

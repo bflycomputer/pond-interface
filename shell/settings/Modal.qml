@@ -1,3 +1,4 @@
+import Pond.Localization
 import QtQuick
 import QtQuick.Effects
 import "." as Settings
@@ -6,11 +7,13 @@ import ".." as Shell
 // Centered settings page with a fixed header and scrolling body.
 Rectangle {
   id: root
+  LayoutMirroring.enabled: Localization.locale.textDirection === Qt.RightToLeft
+  LayoutMirroring.childrenInherit: true
   default property alias content: body.contentItem.data
   property string title
   property real bodyTop: 82
   property real titleOpacity: 1
-  property string closeLabel: "Back to settings"
+  property string closeLabel: qsTrId("pond.back_to_settings")
   property alias overlay: overlays.data
   property alias scrollItem: body
   property real contentHeight: 0
@@ -28,7 +31,8 @@ Rectangle {
   // Stop dialog clicks from reaching the outside-dismiss area.
   MouseArea { anchors.fill: parent; acceptedButtons: Qt.AllButtons }
   Text {
-    x: 30; y: 20
+    x: 30; y: 20; width: root.width - 60
+    elide: Text.ElideRight
     text: root.title
     opacity: root.titleOpacity
     color: "white"

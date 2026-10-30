@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 
+import Pond.Localization
 import QtQuick
 import "." as Settings
 import "appearance" as Appearance
@@ -30,22 +31,22 @@ PanelWindow {
 
   readonly property var primaryButtons: [
     {
-      slot: 0, x: 0, y: 0, name: "Appearance", page: "appearance",
+      slot: 0, x: 0, y: 0, name: qsTrId("pond.appearance"), page: "appearance",
       source: Qt.resolvedUrl("../assets/settings/appearance.svg"),
       boxWidth: 48, boxHeight: 48, iconWidth: 48, iconHeight: 48
     },
     {
-      slot: 1, x: 274, y: 0, name: "Bluetooth", page: "",
+      slot: 1, x: 274, y: 0, name: qsTrId("pond.bluetooth"), page: "",
       source: Qt.resolvedUrl("../assets/settings/bluetooth.svg"),
       boxWidth: 30, boxHeight: 48, iconWidth: 30, iconHeight: 48
     },
     {
-      slot: 2, x: 0, y: 274, name: "System", page: "system",
+      slot: 2, x: 0, y: 274, name: qsTrId("pond.system"), page: "system",
       source: Qt.resolvedUrl("../assets/settings/system.svg"),
       boxWidth: 48, boxHeight: 48, iconWidth: 42, iconHeight: 36
     },
     {
-      slot: 3, x: 274, y: 274, name: "Information", page: "information",
+      slot: 3, x: 274, y: 274, name: qsTrId("pond.information"), page: "information",
       source: Qt.resolvedUrl("../assets/settings/information.svg"),
       boxWidth: 48, boxHeight: 48, iconWidth: 48, iconHeight: 48
     }
@@ -53,30 +54,30 @@ PanelWindow {
 
   readonly property var sessionButtons: [
     {
-      slot: 4, y: 0, action: "lock", name: "Lock screen",
+      slot: 4, y: 0, action: "lock", name: qsTrId("pond.lock_screen"),
       source: Qt.resolvedUrl("../assets/lock.svg"),
       iconWidth: 32, iconHeight: 32,
       hover: "#FFE51D", control: "#632B0F", labelWidth: 170,
       dot: false
     },
     {
-      slot: 5, y: 137, action: "suspend", name: "Sleep",
+      slot: 5, y: 137, action: "suspend", name: qsTrId("pond.sleep"),
       source: Qt.resolvedUrl("../assets/settings/sleep.svg"),
       iconWidth: 32, iconHeight: 32,
       hover: "#E99FFF", control: "#681D4F", labelWidth: 74,
       dot: false
     },
     {
-      slot: 6, y: 274, action: "reboot", name: "Restart",
-      updatingName: "Restart after update", pendingName: "Restarting after update",
+      slot: 6, y: 274, action: "reboot", name: qsTrId("pond.restart"),
+      updatingName: qsTrId("pond.restart_after_update"), pendingName: qsTrId("pond.restarting_after_update"),
       source: Qt.resolvedUrl("../assets/settings/restart.svg"),
       iconWidth: 32, iconHeight: 32,
       hover: "#CEF058", control: "#1B322D", labelWidth: 99,
       dot: false
     },
     {
-      slot: 7, y: 411, action: "shutdown", name: "Power off",
-      updatingName: "Shutdown after update", pendingName: "Shutting down after update",
+      slot: 7, y: 411, action: "shutdown", name: qsTrId("pond.power_off"),
+      updatingName: qsTrId("pond.shutdown_after_update"), pendingName: qsTrId("pond.shutting_down_after_update"),
       source: Qt.resolvedUrl("../assets/settings/power.svg"),
       iconWidth: 32, iconHeight: 32,
       hover: "#FE6146", control: "#632B0F", labelWidth: 127,
@@ -241,7 +242,7 @@ PanelWindow {
     active: root.presented && (root.modalOpen || opacity > 0)
     sourceComponent: ({
       information: informationPage, manual: manualPage, display: displayPage, arrange: arrangePage,
-      system: systemPage, mouse: mousePage, lock: lockPage, keyboard: keyboardPage, timezone: timezonePage
+      system: systemPage, mouse: mousePage, lock: lockPage, keyboard: keyboardPage, timezone: timezonePage, "interface-language": interfaceLanguagePage
     })[root.displayedPage] || appearancePage
     enabled: root.modalOpen
     opacity: root.modalOpen ? 1 : 0
@@ -302,7 +303,7 @@ PanelWindow {
   Component {
     id: keyboardPage
     System.Picker {
-      title: "Keyboard language"; placeholder: "Search languages"; multiple: true
+      title: qsTrId("pond.keyboard_language"); placeholder: qsTrId("pond.search_languages"); multiple: true
       options: System.State.languages; selected: System.State.selectedLanguages
       onPicked: id => System.State.toggleLanguage(id)
       availableHeight: Math.max(200, root.height - 70)
@@ -310,9 +311,26 @@ PanelWindow {
     }
   }
   Component {
+    id: interfaceLanguagePage
+    System.Picker {
+      title: qsTrId("settings.interface_language")
+      placeholder: qsTrId("pond.search_languages")
+      options: [{id: "system", label: qsTrId("settings.follow_system")}].concat(Localization.availableLanguages)
+      selected: [Localization.preference]
+      onPicked: language => {
+        if (!Localization.setPreference(language)) {
+          System.State.errorCode = "localization.save_failed";
+          Settings.State.back();
+        }
+      }
+      availableHeight: Math.max(200, root.height - 70)
+      scale: Math.min(1, (root.width - 60) / implicitWidth)
+    }
+  }
+  Component {
     id: timezonePage
     System.Picker {
-      title: "Timezone"; placeholder: "Search timezone"
+      title: qsTrId("pond.timezone"); placeholder: qsTrId("pond.search_timezone")
       options: System.State.timezones; selected: [System.State.timezone]
       onPicked: id => System.State.setTimezone(id)
       availableHeight: Math.max(200, root.height - 70)

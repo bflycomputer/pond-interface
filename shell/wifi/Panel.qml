@@ -39,7 +39,7 @@ CardStack {
 
   Connections {
     target: Wifi.State
-    function onActionFinished(kind, success, message) {
+    function onActionFinished(kind, success, code) {
       if (!root.opened || kind === "toggle")
         return;
       if (success && kind !== "disconnect") {
@@ -51,7 +51,7 @@ CardStack {
       } else {
         if (root.currentPage !== "status")
           root.showStatus();
-        if (kind === "connect" && message === "Incorrect password")
+        if (kind === "connect" && code === "wifi.incorrect_password")
           passwordErrorDelay.restart();
       }
     }

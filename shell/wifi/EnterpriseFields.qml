@@ -60,20 +60,20 @@ Column {
   }
 
   FormRow {
-    label: "Username"
-    InputField { id: username; placeholderText: "Enter username" }
+    label: qsTrId("pond.username")
+    InputField { id: username; placeholderText: qsTrId("pond.enter_username") }
   }
   FormRow {
-    label: "Password"
+    label: qsTrId("pond.password")
     InputField {
       id: password
       password: true
-      placeholderText: "Enter password"
+      placeholderText: qsTrId("pond.enter_password")
       onAccepted: root.accepted()
     }
   }
   FormRow {
-    label: "Authentication"
+    label: qsTrId("pond.authentication")
     SelectField {
       text: root.eap.toUpperCase()
       onActiveFocusChanged: if (activeFocus) root.fieldFocused(this)
@@ -82,7 +82,7 @@ Column {
     }
   }
   FormRow {
-    label: "Inner authentication"
+    label: qsTrId("pond.inner_authentication")
     visible: root.innerOptions.length > 1
     SelectField {
       text: root.innerOptions.find(option => option.mode === root.innerAuth)?.label || ""
@@ -92,19 +92,19 @@ Column {
     }
   }
   FormRow {
-    label: "Server domain"
+    label: qsTrId("pond.server_domain")
     InputField {
       id: domain
-      placeholderText: "e.g. wifi.example.edu"
+      placeholderText: qsTrId("pond.e_g_wifi_example_edu")
       onAccepted: root.accepted()
     }
   }
   FormRow {
-    label: "Anonymous identity (optional)"
-    InputField { id: anonymous; placeholderText: "Enter anonymous identity" }
+    label: qsTrId("pond.anonymous_identity_optional")
+    InputField { id: anonymous; placeholderText: qsTrId("pond.enter_anonymous_identity") }
   }
   FormRow {
-    label: "CA certificate (optional)"
+    label: qsTrId("pond.ca_certificate_optional")
     InputField {
       id: certificate
       placeholderText: "/path/to/certificate.pem"

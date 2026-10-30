@@ -1,3 +1,4 @@
+import Pond.Localization
 import QtQuick
 import "." as System
 import ".." as Settings
@@ -6,7 +7,7 @@ import "../.." as Shell
 Settings.Modal {
   id: root
   objectName: "systemPanel"
-  title: "System"; bodyTop: 92
+  title: qsTrId("pond.system"); bodyTop: 92
   contentHeight: fields.height + 30
   onBackRequested: Settings.State.back()
   Keys.onEscapePressed: Settings.State.back()
@@ -16,7 +17,7 @@ Settings.Modal {
     Settings.Field {
       objectName: "systemMouse"
       width: parent.width; navigation: true
-      title: "Mouse sensitivity"; value: Math.round(System.State.mouse.speed * 100) + "%"
+      title: qsTrId("pond.mouse_sensitivity"); value: Math.round(System.State.mouse.speed * 100) + "%"
       onClicked: Settings.State.openPage("mouse")
     }
     Settings.Field {
@@ -28,13 +29,20 @@ Settings.Modal {
     Settings.Field {
       objectName: "systemKeyboard"
       width: parent.width; navigation: true
-      title: "Keyboard language"; value: System.State.languageNames.join(", ")
+      title: qsTrId("pond.keyboard_language"); value: System.State.languageNames.join(", ")
       onClicked: Settings.State.openPage("keyboard")
+    }
+    Settings.Field {
+      objectName: "systemInterfaceLanguage"
+      width: parent.width; navigation: true
+      title: qsTrId("settings.interface_language")
+      value: Localization.preference === "system" ? qsTrId("settings.follow_system") : Localization.availableLanguages.find(option => option.id === Localization.preference)?.label || ""
+      onClicked: Settings.State.openPage("interface-language")
     }
     Settings.Field {
       objectName: "systemTimezone"
       width: parent.width; navigation: true
-      title: "Timezone"; value: System.State.timezoneLabel
+      title: qsTrId("pond.timezone"); value: System.State.timezoneLabel
       onClicked: Settings.State.openPage("timezone")
     }
     Text {

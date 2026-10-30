@@ -54,8 +54,8 @@ Rectangle {
       id: label
       anchors.verticalCenter: parent.verticalCenter
       text: ({
-        available: "Update available", updating: "Updating",
-        complete: "Update complete", restart: "Restart recommended"
+        available: qsTrId("pond.update_available"), updating: qsTrId("pond.updating"),
+        complete: qsTrId("pond.update_complete"), restart: qsTrId("pond.restart_recommended")
       })[root.status] ?? ""
       color: root.foreground
       font.family: Shell.Theme.fontFamily
@@ -74,7 +74,7 @@ Rectangle {
     anchors.baseline: parent.top
     anchors.baselineOffset: -14
     visible: root.restartHovered
-    text: "Click to restart"
+    text: qsTrId("pond.click_to_restart")
     color: "#cba6f7"
     font.family: Shell.Theme.fontFamily
     font.pixelSize: 13

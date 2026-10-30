@@ -1,4 +1,5 @@
 pragma ComponentBehavior: Bound
+import Pond.Localization
 import QtQuick
 import QtQml.Models
 import Pond.System
@@ -6,6 +7,7 @@ import "../frontend" as Frontend
 
 Item {
     id: root
+    Component.onCompleted: Localization.useSystemLocale()
     property var loginBackend: sddm
     property var accountModel: userModel
     property var desktopModel: sessionModel

@@ -1,3 +1,4 @@
+import Pond.Localization
 import QtQuick
 import Quickshell
 import ".." as Shell
@@ -15,7 +16,7 @@ Shell.Card {
   readonly property color batteryColor: Battery.State.charging ? "#CBE25B"
       : low ? Battery.State.lowColor : Shell.Theme.sidebarV3Foreground
   Accessible.role: Accessible.Button
-  Accessible.name: "Open calendar"
+  Accessible.name: qsTrId("pond.open_calendar")
   Accessible.onPressAction: clicked()
 
   MouseArea {
@@ -72,7 +73,7 @@ Shell.Card {
       y: 8
       height: 42
       // An unpadded hour leaves room for AM/PM beside every possible time.
-      text: Qt.formatTime(root.previewTime, "h:mm AP").split(" ")[0]
+      text: root.previewTime.toLocaleTimeString(Localization.locale, Localization.locale.timeFormat(Locale.ShortFormat).replace(/\s*AP/g, "")).split(" ")[0]
       color: Shell.Theme.sidebarV3Foreground
       font.family: "Advent Pro"
       font.weight: Font.Normal
@@ -89,7 +90,7 @@ Shell.Card {
 
       x: timeText.x + Math.ceil(timeText.implicitWidth - timeText.font.letterSpacing) + 4
       y: 35 + periodMetrics.capitalHeight - baselineOffset
-      text: Qt.formatTime(root.previewTime, "AP")
+      text: Localization.locale.timeFormat(Locale.ShortFormat).includes("AP") ? root.previewTime.toLocaleTimeString(Localization.locale, "AP") : ""
       color: Shell.Theme.sidebarV3Foreground
       opacity: 0.7
       font.family: Shell.Theme.fontFamily
@@ -119,7 +120,7 @@ Shell.Card {
         x: 1
         y: 9 + dateMetrics.capitalHeight - baselineOffset
         width: parent.width - 2
-        text: Qt.formatDateTime(root.previewTime, "ddd")
+        text: root.previewTime.toLocaleDateString(Localization.locale, "ddd")
         color: Shell.Theme.sidebarV3Foreground
         font.family: Shell.Theme.fontFamily
         font.weight: Font.Normal
@@ -214,7 +215,7 @@ Shell.Card {
         id: bannerText
         anchors.horizontalCenter: parent.horizontalCenter
         y: (parent.height - bannerMetrics.capitalHeight) / 2 + bannerMetrics.capitalHeight - baselineOffset
-        text: "Battery at " + Battery.State.level + "%"
+        text: qsTrId("pond.battery_at_1").replace("%1", Battery.State.level)
         color: Battery.State.lowColor
         font.family: Shell.Theme.fontFamily
         font.weight: Font.Medium
@@ -233,7 +234,7 @@ Shell.Card {
       cursorShape: Qt.PointingHandCursor
       onClicked: root.batteryClicked()
       Accessible.role: Accessible.Button
-      Accessible.name: "Open battery"
+      Accessible.name: qsTrId("pond.open_battery")
       Accessible.description: Battery.State.description
       Accessible.onPressAction: root.batteryClicked()
     }
@@ -257,7 +258,7 @@ Shell.Card {
       x: 0
       y: collapsedContent.topPadding + compactMetrics.capitalHeight - baselineOffset
       width: parent.width
-      text: Qt.formatTime(root.previewTime, "hh AP").split(" ")[0]
+      text: root.previewTime.toLocaleTimeString(Localization.locale, Localization.locale.timeFormat(Locale.ShortFormat).includes("AP") ? "hh" : "HH").split(" ")[0]
       color: Shell.Theme.sidebarV3Foreground
       opacity: Shell.Theme.ramp(root.collapsedProgress, 0.00, 0.32)
       font.family: Shell.Theme.plexFontFamily
@@ -283,7 +284,7 @@ Shell.Card {
       x: 0
       y: collapsedContent.topPadding + 2 * collapsedContent.lineStep + compactMetrics.capitalHeight - baselineOffset
       width: parent.width
-      text: Qt.formatTime(root.previewTime, "AP")
+      text: Localization.locale.timeFormat(Locale.ShortFormat).includes("AP") ? root.previewTime.toLocaleTimeString(Localization.locale, "AP") : ""
       color: Shell.Theme.sidebarV3Foreground
       opacity: 0.3 * Shell.Theme.ramp(root.collapsedProgress, 0.24, 0.56)
       font.family: Shell.Theme.plexFontFamily
@@ -306,7 +307,7 @@ Shell.Card {
       x: 0
       y: 71 + compactMetrics.capitalHeight - baselineOffset
       width: parent.width
-      text: Qt.formatDateTime(root.previewTime, "ddd").slice(0, 2).toUpperCase()
+      text: root.previewTime.toLocaleDateString(Localization.locale, "ddd").slice(0, 2).toUpperCase()
       color: Shell.Theme.sidebarV3Foreground
       opacity: 0.5 * Shell.Theme.ramp(root.collapsedProgress, 0.48, 0.80)
       font.family: Shell.Theme.plexFontFamily
@@ -359,7 +360,7 @@ Shell.Card {
         cursorShape: Qt.PointingHandCursor
         onClicked: root.batteryClicked()
         Accessible.role: Accessible.Button
-        Accessible.name: "Open battery"
+        Accessible.name: qsTrId("pond.open_battery")
         Accessible.description: Battery.State.description
         Accessible.onPressAction: root.batteryClicked()
       }

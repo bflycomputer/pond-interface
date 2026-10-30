@@ -6,15 +6,15 @@ Shell.DeviceList {
   id: root
   readonly property real headerDividerY: 63.5
   property var service: stackController ? stackController.service : Bluetooth.State
-  title: "Nearby devices"
+  title: qsTrId("pond.nearby_devices")
   listBottomPadding: 8
   viewportHeight: 316
   listTop: 68
   devices: service.enabled ? service.nearbyDevices : []
   deviceKey: "path"
-  emptyText: !service.enabled ? "Bluetooth is off."
-      : service.discovering ? "Searching for devices…\nMake sure your device is in pairing mode."
-      : "No nearby devices found."
+  emptyText: !service.enabled ? qsTrId("pond.bluetooth_is_off")
+      : service.discovering ? qsTrId("pond.searching_for_devices_make_sure_your_device_is_in_pairing_mode")
+      : qsTrId("pond.no_nearby_devices_found")
   message: service.errorText
   headerControl: Component { Item {
     StatusAnimation {

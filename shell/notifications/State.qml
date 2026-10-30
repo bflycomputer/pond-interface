@@ -1,4 +1,5 @@
 pragma Singleton
+import Pond.Localization
 import QtQuick
 import Quickshell
 import Quickshell.Io
@@ -219,21 +220,15 @@ Singleton {
 
   function relativeTimeLabel(timestamp) {
     const minutes = Math.max(0, Math.floor((clock.date.getTime() - timestamp) / 60000));
-    if (minutes < 1) return "Now";
-    if (minutes < 60) return minutes + "m";
-    if (minutes < 1440) return Math.floor(minutes / 60) + "h";
-    return Math.floor(minutes / 1440) + "d";
+    if (minutes < 1) return qsTrId("pond.now");
+    if (minutes < 60) return qsTrId("time.minutes", minutes);
+    if (minutes < 1440) return qsTrId("time.hours", Math.floor(minutes / 60));
+    return qsTrId("time.days", Math.floor(minutes / 1440));
   }
 
   function timeLabel(timestamp) {
     const date = new Date(Number(timestamp));
-    let hours = date.getHours();
-    const suffix = hours >= 12 ? "PM" : "AM";
-    hours = hours % 12;
-    if (hours === 0)
-      hours = 12;
-    const minutes = String(date.getMinutes()).padStart(2, "0");
-    return hours + ":" + minutes + " " + suffix;
+    return date.toLocaleTimeString(Localization.locale, Locale.ShortFormat);
   }
 
   function togglePanel(outputName) {

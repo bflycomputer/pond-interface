@@ -231,7 +231,7 @@ Item {
       color: Qt.alpha(root.accent, 0.1)
     }
     Repeater {
-      model: [{id: "keyboard", label: "Keyboard"}, {id: "trackpad", label: "Trackpad"}]
+      model: [{id: "keyboard", label: qsTrId("pond.keyboard")}, {id: "trackpad", label: qsTrId("pond.trackpad")}]
       delegate: MouseArea {
         id: tab
         required property var modelData

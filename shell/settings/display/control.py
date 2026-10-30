@@ -17,6 +17,7 @@ import tempfile
 import time
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from error_codes import error_payload
 from kdl import atomic_write, nodes, tokens
 
 CONFIG = Path(os.environ.get('XDG_CONFIG_HOME', Path.home() / '.config')) / 'niri'
@@ -356,7 +357,7 @@ def main():
         result = status() if action == 'status' else apply(action, *args)
         print(json.dumps(result))
     except Exception as error:
-        print(json.dumps({'error': str(error)})); sys.exit(1)
+        print(json.dumps(error_payload(error, 'Could not apply display settings'))); sys.exit(1)
 
 
 if __name__ == '__main__': main()

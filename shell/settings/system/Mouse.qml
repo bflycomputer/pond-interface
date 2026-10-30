@@ -8,7 +8,7 @@ import "../.." as Shell
 Settings.Modal {
   id: root
   objectName: "mousePanel"
-  title: "Mouse sensitivity"; closeLabel: "Back to System"; bodyTop: 92
+  title: qsTrId("pond.mouse_sensitivity"); closeLabel: qsTrId("pond.back_to_system"); bodyTop: 92
   contentHeight: fields.height + 30
   onBackRequested: Settings.State.back()
   Keys.onEscapePressed: Settings.State.back()
@@ -16,7 +16,7 @@ Settings.Modal {
     id: fields
     x: 30; width: root.width - 60; spacing: 6
     Repeater {
-      model: [{key: "speed", title: "Mouse sensitivity", to: 1}, {key: "scroll", title: "Scrolling sensitivity", to: 2}]
+      model: [{key: "speed", title: qsTrId("pond.mouse_sensitivity"), to: 1}, {key: "scroll", title: qsTrId("pond.scrolling_sensitivity"), to: 2}]
       delegate: Rectangle {
         id: field
         required property var modelData
@@ -69,7 +69,7 @@ Settings.Modal {
     Settings.Field {
       objectName: "mouseAcceleration"
       width: parent.width; toggle: true
-      title: "Pointer acceleration"; checked: System.State.mouse.acceleration
+      title: qsTrId("pond.pointer_acceleration"); checked: System.State.mouse.acceleration
       onToggled: checked => System.State.setMouse("acceleration", checked)
     }
     Text {

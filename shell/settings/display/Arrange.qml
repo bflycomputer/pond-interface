@@ -8,7 +8,7 @@ import "Geometry.js" as Geometry
 Settings.Modal {
   id: root
   objectName: "displayArrangePanel"
-  implicitWidth: 570; title: "Arrange"; closeLabel: "Cancel arrangement and return to Display"; bodyTop: 77
+  implicitWidth: 570; title: qsTrId("pond.arrange"); closeLabel: qsTrId("pond.cancel_arrangement_and_return_to_display"); bodyTop: 77
   contentHeight: 570 + (errorText.visible ? errorText.height + 12 : 0)
   property var baselineSnapshot: []
   property var draft: []
@@ -109,7 +109,7 @@ Settings.Modal {
     enabled: !root.stale && !Display.State.busy && Geometry.valid(root.draft)
     activeFocusOnTab: enabled
     function save() { Display.State.arrange(root.baselineSnapshot,root.draft); }
-    Accessible.role: Accessible.Button; Accessible.name: "Apply display arrangement"
+    Accessible.role: Accessible.Button; Accessible.name: qsTrId("pond.apply_display_arrangement")
     Accessible.onPressAction: save()
     Keys.onReturnPressed: save()
     Keys.onSpacePressed: save()
@@ -121,7 +121,7 @@ Settings.Modal {
     id: errorText
     x: 30; y: 552; width: root.width - 60
     visible: root.stale || !!Display.State.error
-    text: root.stale ? "Displays changed. Close and reopen Arrange to use the current layout." : Display.State.error
+    text: root.stale ? qsTrId("pond.displays_changed_close_and_reopen_arrange_to_use_the_current_layout") : Display.State.error
     font.family: Shell.Theme.fontFamily; font.pixelSize: 13; color: "#ffb4ab"; wrapMode: Text.Wrap
   }
 }

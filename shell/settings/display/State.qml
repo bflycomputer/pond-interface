@@ -12,7 +12,9 @@ Singleton {
   property var monitors: []
   property var geometry: []
   property string selectedName: ""
-  property string error: ""
+  property string errorCode: ""
+  property var errorParameters: []
+  readonly property string error: errorCode ? errorParameters.reduce((text, parameter) => text.includes("%1") ? text.arg(parameter) : text, qsTrId(errorCode)) : ""
   property bool queryFailed: false
   property bool loaded: false
   property int revision: 0
@@ -20,9 +22,9 @@ Singleton {
   readonly property bool active: Settings.State.opened && ["appearance", "display", "arrange"].indexOf(Settings.State.page) >= 0
   readonly property bool busy: action.running
   readonly property var selected: monitors.find(m => m.name === selectedName) || null
-  readonly property string summary: !loaded ? "Loading…" : monitors.length > 1 ? monitors.length + " monitors" : monitors.length ? monitors[0].label : "No displays"
+  readonly property string summary: !loaded ? qsTrId("pond.loading") : monitors.length > 1 ? qsTrId("displays.count", monitors.length) : monitors.length ? monitors[0].label : qsTrId("pond.no_displays")
   signal arrangementApplied
-  onActiveChanged: if (active) { error = ""; refresh(); }
+  onActiveChanged: if (active) { errorCode = ""; refresh(); }
   Connections {
     target: Quickshell
     function onScreensChanged() { root.refresh(); }
@@ -35,7 +37,7 @@ Singleton {
       onStreamFinished: {
         if (root.busy || query.revision !== root.revision) return;
         try { root.accept(JSON.parse(text), true); }
-        catch(e) { root.error = "Could not read connected displays"; root.queryFailed = true; }
+        catch(e) { root.errorCode = "pond.could_not_read_connected_displays"; root.queryFailed = true; }
       }
     }
     onExited: if (root.pendingRefresh) { root.pendingRefresh = false; Qt.callLater(root.refresh); }
@@ -50,7 +52,7 @@ Singleton {
           const result = JSON.parse(text);
           root.accept(result);
           action.succeeded = !result.error;
-        } catch(e) { root.error = "Could not apply display settings"; root.queryFailed = false; }
+        } catch(e) { root.errorCode = "pond.could_not_apply_display_settings"; root.queryFailed = false; }
       }
     }
     onExited: {
@@ -60,9 +62,9 @@ Singleton {
   }
   Timer { interval: 1500; running: root.active; repeat: true; onTriggered: root.refresh() }
   function accept(result, fromQuery = false) {
-    if (result.error) { error = result.error; queryFailed = fromQuery; return; }
+    if (result.error) { errorCode = result.error; errorParameters = result.errorParameters || []; queryFailed = fromQuery; return; }
     if (!result.monitors) return;
-    if (!fromQuery || queryFailed) error = "";
+    if (!fromQuery || queryFailed) errorCode = "";
     queryFailed = false;
     if (JSON.stringify(monitors) !== JSON.stringify(result.monitors)) monitors = result.monitors;
     if (JSON.stringify(geometry) !== JSON.stringify(result.geometry)) geometry = result.geometry;
@@ -77,10 +79,10 @@ Singleton {
     if (query.running) { pendingRefresh = true; return; }
     if (!action.running) { query.revision = revision; query.running = true; }
   }
-  function select(name) { if (!busy) { selectedName = name; error = ""; } }
+  function select(name) { if (!busy) { selectedName = name; errorCode = ""; } }
   function apply(args, arranging) {
     if (busy) return;
-    revision += 1; error = ""; action.arranging = !!arranging; action.succeeded = false;
+    revision += 1; errorCode = ""; action.arranging = !!arranging; action.succeeded = false;
     action.command = ["python3", root.helper].concat(args);
     action.running = true;
   }

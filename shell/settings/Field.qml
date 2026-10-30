@@ -36,6 +36,8 @@ Rectangle {
   Text {
     id: label
     x: root.step > 0 ? 54 : 20; anchors.verticalCenter: parent.verticalCenter
+    width: Math.min(implicitWidth, root.width * 0.6)
+    elide: Text.ElideRight
     text: root.title; color: "#b3b3b3"
     font.family: Shell.Theme.fontFamily; font.pixelSize: 15
   }

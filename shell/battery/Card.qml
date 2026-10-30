@@ -15,7 +15,7 @@ Shell.PanelBackground {
   implicitWidth: 280
   implicitHeight: 217
   Accessible.role: Accessible.Pane
-  Accessible.name: "Battery"
+  Accessible.name: qsTrId("pond.battery")
 
   function duration(seconds) {
     const minutes = Math.round(seconds / 60);
@@ -28,7 +28,7 @@ Shell.PanelBackground {
     acceptedButtons: Qt.LeftButton | Qt.MiddleButton | Qt.RightButton
   }
 
-  Label { x: 20; capTop: 20; text: "Battery"; opacity: 0.7 }
+  Label { x: 20; capTop: 20; text: qsTrId("pond.battery"); opacity: 0.7 }
 
   Image {
     x: status.x - 13
@@ -44,7 +44,7 @@ Shell.PanelBackground {
     x: 260 - width
     capTop: 20
     visible: Battery.State.charging
-    text: root.charging ? "Charging" : "Charged"
+    text: root.charging ? qsTrId("pond.charging") : qsTrId("pond.charged")
     color: "#CBE25B"
   }
 
@@ -115,7 +115,7 @@ Shell.PanelBackground {
     GradientStop { position: 0.48134; color: "#CBE25B" }
   }
 
-  Label { x: 20; capTop: 136; text: "Power profile"; opacity: 0.7 }
+  Label { x: 20; capTop: 136; text: qsTrId("pond.power_profile"); opacity: 0.7 }
   Label {
     x: 260 - width
     capTop: 136

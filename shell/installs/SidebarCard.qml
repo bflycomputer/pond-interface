@@ -29,15 +29,19 @@ Shell.Card {
       readonly property bool canLaunch: status === "installed" && jobId !== "system-update"
           && Installs.State.findApp(name) !== null
       readonly property bool showDismiss: dismiss.visible && (rowHover.hovered || dismiss.hovered)
-      readonly property string summary: status === "installed" ? "Installed"
-          : status === "failed" ? "Failed" : progress < 0 ? "Installing"
-          : "Installing " + Math.round(progress * 100) + "%"
+      readonly property string summary: status === "installed" ? qsTrId("pond.installed")
+          : status === "failed" ? qsTrId("pond.failed") : progress < 0 ? qsTrId("pond.installing")
+          : qsTrId("pond.installing_1").arg(Math.round(progress * 100))
       y: Shell.Theme.lerp(8 + index * 32,
           (root.count === 1 ? 8 : 6) + index * 28, root.heightProgress)
       width: root.width
       height: 32
       Accessible.role: Accessible.ListItem
-      Accessible.name: jobId === "system-update" ? name : name + ": " + summary
+      readonly property string displayName: jobId !== "system-update" ? name
+          : status === "installed" ? qsTrId("pond.update_complete")
+          : status === "failed" ? qsTrId("pond.update_failed")
+          : qsTrId("pond.updating")
+      Accessible.name: jobId === "system-update" ? displayName : name + ": " + summary
       Accessible.onPressAction: Installs.State.dismiss(jobId)
 
       HoverHandler { id: rowHover }
@@ -67,7 +71,7 @@ Shell.Card {
           anchors.verticalCenter: parent.verticalCenter
           anchors.verticalCenterOffset: 1
           width: Math.max(0, parent.width - 12 - x)
-          text: row.name
+          text: row.displayName
           textFormat: Text.PlainText
           elide: Text.ElideRight
           color: "white"

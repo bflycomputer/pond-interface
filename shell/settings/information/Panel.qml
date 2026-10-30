@@ -8,19 +8,27 @@ import QtQuick.Controls
 Settings.Modal {
   id:root
   objectName:"informationPanel"
-  title:"Information"
+  title:qsTrId("pond.information")
   contentHeight:556
   onBackRequested:Settings.State.back()
   Keys.onEscapePressed:Settings.State.back()
   readonly property var rows: [
-    {key:"os", label:"OS", y:92, line:130},
-    {key:"host", label:"Host", y:144, line:184},
-    {key:"board", label:"Board", y:198, line:236},
-    {key:"cpu", label:"CPU", y:250, line:288},
-    {key:"gpu", label:"GPU", y:302, line:340},
-    {key:"memory", label:"Memory", y:354, line:392},
-    {key:"disk", label:"Disk", y:406, line:0}
+    {key:"os", label:qsTrId("pond.os"), y:92, line:130},
+    {key:"host", label:qsTrId("pond.host"), y:144, line:184},
+    {key:"board", label:qsTrId("pond.board"), y:198, line:236},
+    {key:"cpu", label:qsTrId("pond.cpu"), y:250, line:288},
+    {key:"gpu", label:qsTrId("pond.gpu"), y:302, line:340},
+    {key:"memory", label:qsTrId("pond.memory"), y:354, line:392},
+    {key:"disk", label:qsTrId("pond.disk"), y:406, line:0}
   ]
+  FontMetrics {
+    id: labelMetrics
+    font.family: Shell.Theme.fontFamily
+    font.pixelSize: 15
+    font.weight: Font.Medium
+  }
+  readonly property real valueColumnX: Math.min(300, Math.max(130,
+      54 + Math.max(...rows.map(row => labelMetrics.advanceWidth(row.label))) + 16))
   Repeater {
     model:root.rows
     delegate: Item {
@@ -38,14 +46,19 @@ Settings.Modal {
         }
       }
       Information.Label {
-        x:54; capY:7; text:row.modelData.label
+        objectName:"informationLabel-" + row.modelData.key
+        x:54; capY:7; width:root.valueColumnX - x - 16
+        text:row.modelData.label; elide:Text.ElideRight
+        ToolTip.visible:labelHover.hovered && truncated
+        ToolTip.text:text
+        HoverHandler { id:labelHover }
         font.pixelSize:15; font.weight:Font.Medium; font.letterSpacing:0
         color:"#99ffffff"
       }
       Information.Label {
         id:valueText
         objectName:"informationValue-" + row.modelData.key
-        x:130; capY:6; width:390
+        x:root.valueColumnX; capY:6; width:Math.max(0, row.width - x)
         text:Information.State.value(row.modelData.key)
         font.family:Shell.Theme.titleFontFamily; font.styleName:"Book"; font.pixelSize:17
         font.letterSpacing:0; color:"white"; elide:Text.ElideRight
@@ -69,7 +82,7 @@ Settings.Modal {
     border.width:1; border.color:"#343434"
     activeFocusOnTab:true
     Accessible.role:Accessible.Button
-    Accessible.name:"Manual"
+    Accessible.name:qsTrId("pond.manual")
     Accessible.onPressAction:Settings.State.openPage("manual")
     Keys.onReturnPressed:Settings.State.openPage("manual")
     Keys.onSpacePressed:Settings.State.openPage("manual")
@@ -79,7 +92,7 @@ Settings.Modal {
       source:Qt.resolvedUrl("../../assets/manual/book.svg")
     }
     Information.Label {
-      x:54; capY:26; text:"Manual"; color:"white"
+      x:54; capY:26; text:qsTrId("pond.manual"); color:"white"
       font.family:Shell.Theme.titleFontFamily; font.styleName:"Book"; font.pixelSize:17; font.letterSpacing:0
     }
     HoverHandler { id:manualHover; cursorShape:Qt.PointingHandCursor }

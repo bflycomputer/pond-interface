@@ -1,4 +1,5 @@
 pragma Singleton
+import Pond.Localization
 import QtQuick
 import ".." as Settings
 import Quickshell
@@ -8,16 +9,19 @@ Singleton {
   id: root
   readonly property string helper: decodeURIComponent(Qt.resolvedUrl("control.py").toString().replace(/^file:\/\//, ""))
   property var languages: []
-  property var timezones: []
+  property var rawTimezones: []
+  readonly property var timezones: rawTimezones.map(zone => Object.assign({}, zone, {label: Localization.timeZoneName(zone.id), search: Localization.timeZoneName(zone.id) + " " + zone.id}))
   property var selectedLanguages: []
   property var languageNames: []
   property string timezone: ""
-  property string timezoneLabel: ""
-  property string error: ""
+  readonly property string timezoneLabel: timezone ? Localization.timeZoneName(timezone) : ""
+  property string errorCode: ""
+  property var errorParameters: []
+  readonly property string error: errorCode ? errorParameters.reduce((text, parameter) => text.includes("%1") ? text.arg(parameter) : text, qsTrId(errorCode)) : ""
   property var mouse: ({speed: 0.5, scroll: 1, acceleration: true})
   readonly property bool busy: action.running
   readonly property bool active: Settings.State.opened && ["system", "mouse", "keyboard", "timezone"].indexOf(Settings.State.page) >= 0
-  onActiveChanged: if (active) { error = ""; query.running = true; }
+  onActiveChanged: if (active) { errorCode = ""; query.running = true; }
   Process {
     id: query
     command: ["python3", root.helper, "load"]
@@ -35,21 +39,20 @@ Singleton {
   function accept(text) {
     try {
       const result = JSON.parse(text);
-      if (result.error) { error = result.error; return; }
+      if (result.error) { errorCode = result.error; errorParameters = result.errorParameters || []; return; }
       if (result.languages) languages = result.languages;
-      if (result.timezones) timezones = result.timezones;
+      if (result.timezones) rawTimezones = result.timezones;
       if (timezone && timezone !== result.timezone) Date.timeZoneUpdated();
       selectedLanguages = result.selectedLanguages;
       languageNames = result.languageNames;
       timezone = result.timezone;
-      timezoneLabel = result.timezoneLabel;
       if (!mouseCommit.running) mouse = result.mouse;
-      error = "";
-    } catch (e) { error = "Could not read system settings"; }
+      errorCode = "";
+    } catch (e) { errorCode = "pond.could_not_read_system_settings"; }
   }
   function apply(args) {
     if (busy) return;
-    error = "";
+    errorCode = "";
     action.command = ["python3", root.helper].concat(args);
     action.running = true;
   }

@@ -11,7 +11,7 @@ Bluetooth.Row {
   readonly property bool failed: service.failed(device.path || "")
   readonly property bool showBattery: !!device.connected && Number(device.battery) >= 0
   signal infoClicked
-  label: String(device.name || device.address || "Bluetooth device")
+  label: String(device.name || device.address || qsTrId("pond.bluetooth_device"))
   labelRight: showBattery ? (hovered ? 171 : 203) : hovered ? 232 : 264
   leading: Component { Image {
     source: Qt.resolvedUrl("../assets/bluetooth/" + (root.device.icon || "bluetooth") + ".svg")

@@ -1,9 +1,12 @@
+import Pond.Localization
 import QtQuick
 import Quickshell
 
 // Device drawer header, scrolling rows, empty state, and footer.
 Item {
   id: root
+  LayoutMirroring.enabled: Localization.locale.textDirection === Qt.RightToLeft
+  LayoutMirroring.childrenInherit: true
   property var stackController
   property bool interactive: true
   property string title: ""
