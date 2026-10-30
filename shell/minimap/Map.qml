@@ -573,6 +573,8 @@ Shell.Card {
               - (windowItems.length > 0 ? Shell.Theme.workspaceCollapsedControlGap : 0)
               + 13
 
+         Component.onCompleted: console.log("initial:", JSON.stringify(windowItems))
+          
           visible: matchesOutput
           width: Shell.Theme.sidebarCardCollapsedWidth
           property real targetHeight: !matchesOutput ? 0
@@ -686,7 +688,7 @@ Shell.Card {
                 readonly property string dotState: collapsedWorkspace.windowItems[index].dotState || ""
                 color: dotState === "working" ? "#CBA6F7" : dotState === "unread" ? "#FF9F67"
                     : dotState === "read" ? "#CBE25B" : iconColor.colors[0] ?? "white"
-
+		
                 // ColorQuantizer needs a file; theme icons use an image-provider URL.
                 Image {
                   id: colorSource

@@ -6,6 +6,7 @@ import ".." as Shell
 // One live window marker. The same primitive scales between the 40px
 // expanded rail and the 32px collapsed stack while retaining app activation
 // across both layouts.
+// Follow compositor focus, not the last active window remembered by each workspace.
 Item {
   id: root
 
@@ -14,9 +15,9 @@ Item {
   property bool interactive: true
   property bool lifted: false
   signal activated(var windowId)
-
+ 
   readonly property bool hovered: pointer.containsMouse
-
+  readonly property bool isFocused: Shell.NiriMsg._windows[root.windowData.winId]?.isFocused ?? false
   implicitWidth: controlSize
   implicitHeight: controlSize
 
@@ -32,9 +33,9 @@ Item {
     radius: width / 2
     antialiasing: true
     // Fade alpha without interpolating the fill through transparent black.
-    color: root.lifted ? Shell.Theme.workspaceDragBackground : root.hovered ? Shell.Theme.workspaceControlHover
+    color: root.lifted ? Shell.Theme.workspaceDragBackground : (root.hovered || root.isFocused) ? Shell.Theme.workspaceControlHover
         : Qt.rgba(Shell.Theme.workspaceControlHover.r, Shell.Theme.workspaceControlHover.g,
-                  Shell.Theme.workspaceControlHover.b, 0)
+         Shell.Theme.workspaceControlHover.b, 0)
     border.color: root.lifted ? "#CBA6F7" : Shell.Theme.workspaceIconOutline
     border.width: root.hovered ? 0 : Shell.Theme.sidebarStrokeWidth
     layer.enabled: root.lifted && !Shell.Theme.daylight
