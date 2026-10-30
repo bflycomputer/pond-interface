@@ -572,8 +572,6 @@ Shell.Card {
               + windowItems.length * Shell.Theme.workspaceCollapsedControlPitch
               - (windowItems.length > 0 ? Shell.Theme.workspaceCollapsedControlGap : 0)
               + 13
-
-         Component.onCompleted: console.log("initial:", JSON.stringify(windowItems))
           
           visible: matchesOutput
           width: Shell.Theme.sidebarCardCollapsedWidth
