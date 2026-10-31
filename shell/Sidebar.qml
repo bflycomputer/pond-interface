@@ -10,11 +10,13 @@ import "media" as Media
 import "minimap" as Minimap
 import "notifications" as Notifications
 import "installs" as Installs
+import Pond.Wallpaper as Wallpaper
 import Pond.Screenshot as Screenshot
 
 PanelWindow {
   id: root
   required property bool expanded
+  required property Wallpaper.Window wallpaper
   property string popup: ""
   property real collapseProgress: expanded ? 0 : 1
   signal toggleRequested
@@ -136,6 +138,15 @@ PanelWindow {
   exclusiveZone: Theme.sidebarOuterMargin + (expanded
       ? Theme.sidebarCardExpandedWidth : Theme.sidebarCardCollapsedWidth)
   Behavior on collapseProgress { Motion {} }
+
+  // Show the desktop behind the cards so windows scrolled underneath stay out of view.
+  // End at the gutter without a fade, so the cards keep an even margin on both sides.
+  Wallpaper.Reveal {
+    width: Theme.sidebarOuterMargin * 2 + root.cardWidth
+    height: root.height
+    wallpaper: root.wallpaper
+    fadeWidth: 1
+  }
 
   Column {
     id: mainStack
