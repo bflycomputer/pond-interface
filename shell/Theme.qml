@@ -60,19 +60,22 @@ Singleton {
   readonly property int workspaceCollapsedControlSize: 32
   readonly property int workspaceControlGap: 8
   readonly property int workspaceControlPitch: workspaceControlSize + workspaceControlGap
+  readonly property int workspaceRowGap: 10
+  readonly property int workspaceRowPitch: workspaceControlSize + workspaceRowGap
   readonly property int workspaceCollapsedControlPitch:
       workspaceCollapsedControlSize + workspaceCollapsedControlGap
   readonly property int workspaceCollapsedControlGap: 8
   readonly property int workspaceContentPadding: (sidebarCardExpandedWidth
       - workspaceGridColumns * workspaceControlSize
       - (workspaceGridColumns - 1) * workspaceControlGap) / 2
-  readonly property int workspaceActiveIndicatorInset: 4
+  readonly property int workspaceActiveIndicatorInset: 5
+  readonly property int workspaceActiveIndicatorRadius: 10
   readonly property int workspaceIconSize: 16
   readonly property int workspaceGridColumns: 3
   readonly property int workspaceGridMinimumRows: 3
   readonly property int workspaceGridMinimumHeight: workspaceContentPadding * 2
       + workspaceGridMinimumRows * workspaceControlSize
-      + (workspaceGridMinimumRows - 1) * workspaceControlGap
+      + (workspaceGridMinimumRows - 1) * workspaceRowGap
   readonly property int workspacePlaceholderDotSize: 4
   readonly property int workspaceCollapsedHeaderHeight: 37
   readonly property int sidebarHoverDuration: 120

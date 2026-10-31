@@ -24,8 +24,8 @@ Shell.Card {
   readonly property real collapsedOpacity:
       collapseProgress >= 0.56 ? 1 : 0
   readonly property int expandedVisibleRowCount: expandedColumn.height > 0
-      ? Math.round((expandedColumn.height + Shell.Theme.workspaceControlGap)
-                   / Shell.Theme.workspaceControlPitch)
+      ? Math.round((expandedColumn.height + Shell.Theme.workspaceRowGap)
+                   / Shell.Theme.workspaceRowPitch)
       : 0
   readonly property int expandedRenderedRowCount: Math.max(
       Shell.Theme.workspaceGridMinimumRows, expandedVisibleRowCount)
@@ -34,7 +34,7 @@ Shell.Card {
       ? Shell.Theme.workspaceGridMinimumHeight
       : Shell.Theme.workspaceContentPadding * 2
         + expandedVisibleRowCount * Shell.Theme.workspaceControlSize
-        + (expandedVisibleRowCount - 1) * Shell.Theme.workspaceControlGap
+        + (expandedVisibleRowCount - 1) * Shell.Theme.workspaceRowGap
   readonly property real collapsedNaturalHeight: collapsedColumn.children.reduce(
       (height, row) => height + (row.targetHeight ?? 0), 3)
   readonly property real naturalHeight: Shell.Theme.lerp(
@@ -69,8 +69,8 @@ Shell.Card {
     if (source.workspaceId === workspaceId)
       return dragSession.rowOffset;
     const target = dragSession.destination?.number ?? source.number;
-    if (number > source.number && number <= target) return -Shell.Theme.workspaceControlPitch;
-    if (number < source.number && number >= target) return Shell.Theme.workspaceControlPitch;
+    if (number > source.number && number <= target) return -Shell.Theme.workspaceRowPitch;
+    if (number < source.number && number >= target) return Shell.Theme.workspaceRowPitch;
     return 0;
   }
 
@@ -119,7 +119,7 @@ Shell.Card {
       x: 0
       y: Shell.Theme.workspaceContentPadding
       width: expandedLayer.width
-      spacing: Shell.Theme.workspaceControlGap
+      spacing: Shell.Theme.workspaceRowGap
 
       Repeater {
         model: Shell.NiriMsg.workspaceRows
@@ -189,10 +189,10 @@ Shell.Card {
           }
           Rectangle {
             x: Shell.Theme.workspaceActiveIndicatorInset - expandedLayer.x
-            y: -Shell.Theme.workspaceControlGap / 2
+            y: -Shell.Theme.workspaceRowGap / 2
             width: root.width - Shell.Theme.workspaceActiveIndicatorInset * 2
-            height: parent.height + Shell.Theme.workspaceControlGap
-            radius: 12
+            height: Shell.Theme.workspaceRowPitch
+            radius: Shell.Theme.workspaceActiveIndicatorRadius
             color: expandedWorkspace.model.isActive || expandedWorkspace.dragTarget
                 ? Shell.Theme.workspaceActiveIndicatorColor
                 : Qt.rgba(Shell.Theme.workspaceActiveIndicatorColor.r,
@@ -209,8 +209,9 @@ Shell.Card {
 
           MouseArea {
             x: -expandedLayer.x
+            y: -Shell.Theme.workspaceRowGap / 2
             width: Shell.Theme.sidebarCardExpandedWidth
-            height: parent.height
+            height: Shell.Theme.workspaceRowPitch
             acceptedButtons: Qt.LeftButton
             cursorShape: Qt.PointingHandCursor
             onClicked: root.focusRequested(
@@ -350,9 +351,9 @@ Shell.Card {
                     viewportX < 12 && expandedWorkspace.windowStart > 0 ? -1
                     : viewportX > windowViewport.width - 12 && expandedWorkspace.windowStart < lastStart ? 1 : 0
                 x: 0
-                y: expandedColumn.y + expandedWorkspace.y + 4
+                y: expandedColumn.y + expandedWorkspace.y - Shell.Theme.workspaceRowGap / 2
                 width: expandedWorkspace.width
-                height: 56
+                height: Shell.Theme.workspaceRowPitch
                 keys: ["pond-window"]
                 enabled: expandedLayer.enabled && expandedWorkspace.matchesOutput
                 onEntered: { updateSlot(); dragSession.destination = windowDrop; }
@@ -411,7 +412,7 @@ Shell.Card {
             anchors.verticalCenter: parent.verticalCenter
             z: 30
             width: 20
-            height: Shell.Theme.workspaceControlPitch
+            height: Shell.Theme.workspaceRowPitch
             visible: root.workspaceNumbersRevealed && expandedWorkspace.workspaceNumber > 0
             Rectangle {
               x: 3
@@ -477,9 +478,9 @@ Shell.Card {
             readonly property int workspaceId: Number(expandedWorkspace.model.workspaceId)
             readonly property int number: expandedWorkspace.workspaceNumber
             x: 0
-            y: expandedColumn.y + expandedWorkspace.y - Shell.Theme.workspaceControlGap / 2
+            y: expandedColumn.y + expandedWorkspace.y - Shell.Theme.workspaceRowGap / 2
             width: 20
-            height: Shell.Theme.workspaceControlPitch
+            height: Shell.Theme.workspaceRowPitch
             keys: ["pond-workspace"]
             enabled: expandedLayer.enabled && number > 0 && expandedWorkspace.matchesOutput
             onEntered: dragSession.destination = workspaceDrop
@@ -497,8 +498,8 @@ Shell.Card {
       visible: root.collapseProgress === 0
       x: Shell.Theme.workspaceContentPadding - expandedLayer.x
       y: Shell.Theme.workspaceContentPadding
-          + root.expandedVisibleRowCount * Shell.Theme.workspaceControlPitch
-      spacing: Shell.Theme.workspaceControlGap
+          + root.expandedVisibleRowCount * Shell.Theme.workspaceRowPitch
+      spacing: Shell.Theme.workspaceRowGap
 
       Repeater {
         model: Math.max(0, root.expandedRenderedRowCount
@@ -577,7 +578,7 @@ Shell.Card {
           width: Shell.Theme.sidebarCardCollapsedWidth
           property real targetHeight: !matchesOutput ? 0
               : (active ? Math.max(42, activeHeight) : 41)
-          height: matchesOutput ? Shell.Theme.lerp(Shell.Theme.workspaceControlPitch,
+          height: matchesOutput ? Shell.Theme.lerp(Shell.Theme.workspaceRowPitch,
               targetHeight, root.heightProgress) : 0
 
           Behavior on targetHeight {

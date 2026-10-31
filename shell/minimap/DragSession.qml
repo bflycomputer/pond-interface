@@ -29,9 +29,9 @@ Item {
       : Shell.NiriMsg.workspaces.some(w => w.id === source.workspaceId))
   onSourcePresentChanged: if (!sourcePresent) cancel()
   readonly property real rowOffset: !source || windowDrag ? 0
-      : held ? Math.max((1 - source.number) * Shell.Theme.workspaceControlPitch,
-          Math.min((source.count - source.number) * Shell.Theme.workspaceControlPitch, pointer.y - press.y))
-      : ((destination?.number ?? source.number) - source.number) * Shell.Theme.workspaceControlPitch
+      : held ? Math.max((1 - source.number) * Shell.Theme.workspaceRowPitch,
+          Math.min((source.count - source.number) * Shell.Theme.workspaceRowPitch, pointer.y - press.y))
+      : ((destination?.number ?? source.number) - source.number) * Shell.Theme.workspaceRowPitch
 
   z: 100
   width: Shell.Theme.workspaceControlSize
