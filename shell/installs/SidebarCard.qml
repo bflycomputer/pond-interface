@@ -7,12 +7,14 @@ Shell.Card {
   id: root
   property real collapseProgress: 0
   readonly property real widthProgress: Shell.Theme.collapseWidth(collapseProgress)
-  readonly property real heightProgress: Shell.Theme.collapseHeight(collapseProgress)
+  readonly property int contentPadding: 4
+  readonly property int rowHeight: Shell.Theme.sidebarCardCollapsedWidth - 2 * contentPadding
+  readonly property int rowGap: 8
   readonly property int count: Installs.State.jobs.count
   implicitWidth: Shell.Theme.lerp(Shell.Theme.sidebarCardExpandedWidth,
       Shell.Theme.sidebarCardCollapsedWidth, widthProgress)
-  implicitHeight: count === 0 ? 0 : Shell.Theme.lerp(48 + (count - 1) * 32,
-      count === 1 ? 48 : 16 + count * 28, heightProgress)
+  implicitHeight: count === 0 ? 0
+      : 2 * contentPadding + count * rowHeight + (count - 1) * rowGap
   visible: count > 0
   radius: Shell.Theme.lerp(12, Shell.Theme.sidebarCardRadius, widthProgress)
 
@@ -32,20 +34,18 @@ Shell.Card {
       readonly property string summary: status === "installed" ? "Installed"
           : status === "failed" ? "Failed" : progress < 0 ? "Installing"
           : "Installing " + Math.round(progress * 100) + "%"
-      y: Shell.Theme.lerp(8 + index * 32,
-          (root.count === 1 ? 8 : 6) + index * 28, root.heightProgress)
+      y: root.contentPadding + index * (root.rowHeight + root.rowGap)
       width: root.width
-      height: 32
+      height: root.rowHeight
       Accessible.role: Accessible.ListItem
       Accessible.name: jobId === "system-update" ? name : name + ": " + summary
       Accessible.onPressAction: Installs.State.dismiss(jobId)
 
       HoverHandler { id: rowHover }
       Item {
-        x: 4
-        y: -4
-        width: Math.max(0, parent.width - 48)
-        height: 40
+        x: root.contentPadding
+        width: Math.max(0, parent.width - root.rowHeight - 2 * root.contentPadding)
+        height: parent.height
         opacity: 1 - Shell.Theme.ramp(root.collapseProgress, 0, 0.3)
         HoverFill {
           anchors.fill: parent
@@ -87,8 +87,8 @@ Shell.Card {
       Installs.Indicator {
         id: indicator
         visible: (row.jobId !== "system-update" || row.status !== "installing") && !row.showDismiss
-        x: parent.width - 32
-        y: 8
+        x: dismiss.x + (dismiss.width - width) / 2
+        y: (parent.height - height) / 2
         progress: row.progress
         status: row.status
       }
@@ -102,17 +102,15 @@ Shell.Card {
         id: dismiss
         visible: row.status !== "installing"
         opacity: row.showDismiss ? 1 : 0
-        x: parent.width - 44
-        width: 40
+        x: parent.width - width - root.contentPadding
+        width: root.rowHeight
         height: parent.height
         iconSource: Qt.resolvedUrl("../assets/installs/cross.svg")
         iconWidth: 16
         iconHeight: 16
         onClicked: Installs.State.dismiss(row.jobId)
         HoverFill {
-          y: -4
-          width: parent.width
-          height: 40
+          anchors.fill: parent
           z: -1
           active: dismiss.hovered
         }
@@ -122,7 +120,7 @@ Shell.Card {
 
   component HoverFill: Rectangle {
     property bool active
-    radius: 8
+    radius: root.radius - root.contentPadding
     color: Shell.Theme.daylight ? Shell.Theme.sidebarHoverFill : "#262626"
     opacity: active ? 1 : 0
     Behavior on opacity { Shell.HoverAnimation {} }
