@@ -103,7 +103,8 @@ PanelWindow {
       notificationCard.blurRegion, installsCard.blurRegion, controls.blurRegion]
   }
   // Keep compositor resizes out of the card animation; only the input area shrinks.
-  implicitWidth: Math.ceil(Math.max(Theme.sidebarOuterMargin + Theme.sidebarCardExpandedWidth + Theme.sidebarFadeWidth,
+  // Stay within the exclusive zone so the surface never covers the edge of a window.
+  implicitWidth: Math.ceil(Math.max(Theme.sidebarOuterMargin + Theme.sidebarCardExpandedWidth,
       wifiPanel.visible ? panelX + wifiPanel.width + 67 : 0,
       audioPanel.visible ? panelX + audioPanel.width + 67 : 0,
       bluetoothPanel.visible ? panelX + bluetoothPanel.width + 67 : 0))
