@@ -47,4 +47,15 @@ QtObject {
   readonly property int audioRowHeight: 40
   readonly property int hoverExitDuration: 60
   readonly property int hoverCollapseDelay: 76
+  // Volume and brightness keys move in coarse steps; with Alt they move finely.
+  readonly property real levelStep: 0.05
+  readonly property real fineLevelStep: 0.01
+
+  // Steps snap to the grid, so 37% goes up to 40% and down to 35%.
+  function stepLevel(value, direction, fine) {
+    const step = fine ? fineLevelStep : levelStep;
+    const units = value / step;
+    const next = direction > 0 ? Math.floor(units + 1e-4) + 1 : Math.ceil(units - 1e-4) - 1;
+    return Math.max(0, Math.min(1, Math.round(next * step * 1000) / 1000));
+  }
 }

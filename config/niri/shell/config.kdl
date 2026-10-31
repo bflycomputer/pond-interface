@@ -13,6 +13,8 @@ binds {
     // ─── Media Controls ───
     XF86AudioRaiseVolume                 allow-when-locked=true { spawn "qs" "-c" "pond-shell" "ipc" "call" "volume" "increase"; }
     XF86AudioLowerVolume                 allow-when-locked=true { spawn "qs" "-c" "pond-shell" "ipc" "call" "volume" "decrease"; }
+    Alt+XF86AudioRaiseVolume             allow-when-locked=true { spawn "qs" "-c" "pond-shell" "ipc" "call" "volume" "increaseFine"; }
+    Alt+XF86AudioLowerVolume             allow-when-locked=true { spawn "qs" "-c" "pond-shell" "ipc" "call" "volume" "decreaseFine"; }
     XF86AudioMute                        allow-when-locked=true repeat=false { spawn "qs" "-c" "pond-shell" "ipc" "call" "volume" "muteOutput"; }
     XF86AudioMicMute                     allow-when-locked=true repeat=false { spawn "qs" "-c" "pond-shell" "ipc" "call" "volume" "muteInput"; }
     XF86AudioNext                        allow-when-locked=true repeat=false { spawn "qs" "-c" "pond-shell" "ipc" "call" "media" "next"; }
@@ -23,6 +25,8 @@ binds {
     // ─── Brightness Controls ───
     XF86MonBrightnessUp                  allow-when-locked=true { spawn "qs" "-c" "pond-shell" "ipc" "call" "brightness" "increase"; }
     XF86MonBrightnessDown                allow-when-locked=true { spawn "qs" "-c" "pond-shell" "ipc" "call" "brightness" "decrease"; }
+    Alt+XF86MonBrightnessUp              allow-when-locked=true { spawn "qs" "-c" "pond-shell" "ipc" "call" "brightness" "increaseFine"; }
+    Alt+XF86MonBrightnessDown            allow-when-locked=true { spawn "qs" "-c" "pond-shell" "ipc" "call" "brightness" "decreaseFine"; }
 }
 
 cursor {
@@ -44,7 +48,7 @@ layer-rule {
 }
 
 layer-rule {
-    match namespace="^pond-((sidebar|volume|brightness|keyboard)$|calendar-)"
+    match namespace="^pond-((sidebar|level|keyboard)$|calendar-)"
     match namespace="^vicinae$"
     background-effect {
         xray false

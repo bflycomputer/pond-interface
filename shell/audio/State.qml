@@ -3,6 +3,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Services.Pipewire
+import ".." as Shell
 
 // Shared PipeWire authority for the sidebar sound controls. The UI consumes
 // real device nodes directly, so device names, selection and volume stay in
@@ -29,7 +30,9 @@ Singleton {
   property int observedSinkId: -1
   property double suppressExternalUntil: 0
 
-  signal keyboardOutputVolumeChanged(real value)
+  // direction is 0 for changes that did not come from a step.
+  signal keyboardOutputVolumeChanged(real value, int direction, bool fine)
+  signal outputDeviceSwitched(string name)
 
   function clampVolume(value) {
     const numeric = Number(value);
@@ -65,16 +68,16 @@ Singleton {
     source.audio.volume = clampVolume(value);
   }
 
-  function adjustOutputVolume(delta) {
+  function stepOutputVolume(direction, fine) {
     if (!hasOutput) return;
-    setOutputVolume(outputVolume + delta);
-    keyboardOutputVolumeChanged(outputVolume);
+    setOutputVolume(Shell.PanelStyle.stepLevel(outputVolume, direction, fine));
+    keyboardOutputVolumeChanged(outputVolume, direction, fine);
   }
 
   function toggleOutputMute() {
     if (!hasOutput) return;
     sink.audio.muted = !sink.audio.muted;
-    keyboardOutputVolumeChanged(outputVolume);
+    keyboardOutputVolumeChanged(outputVolume, 0, false);
   }
 
   function toggleInputMute() {
@@ -101,14 +104,17 @@ Singleton {
       return;
     }
     if (Date.now() >= suppressExternalUntil)
-      keyboardOutputVolumeChanged(outputVolume);
+      keyboardOutputVolumeChanged(outputVolume, 0, false);
   }
 
   Connections {
     target: Pipewire
     function onDefaultAudioSinkChanged() {
       root.suppressExternalChanges(500);
+      // The first default sink arrives at startup and is not a switch.
+      const switched = root.observedSinkId !== -1 && root.sink;
       root.observedSinkId = root.sink ? Number(root.sink.id) : -1;
+      if (switched) root.outputDeviceSwitched(root.displayName(root.sink));
     }
   }
 

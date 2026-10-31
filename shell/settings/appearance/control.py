@@ -94,10 +94,9 @@ def set_brightness(output, value, cached=""):
     return {"brightness": value}
 
 
-def step_brightness(output, delta):
-    device = brightness_device(output)
-    value = device["current"] / device["max"] + float(delta)
-    return set_brightness(output, value, json.dumps(device))
+def read_brightness(output, cached=""):
+    device = brightness_device(output, cached)
+    return {"brightness": device["current"] / device["max"], "brightnessDevice": device}
 
 
 def wallpaper(mode, path=""):
@@ -138,7 +137,7 @@ def theme(name):
 def main():
     try:
         action, *args = sys.argv[1:]
-        commands = {"status": status, "brightness": set_brightness, "brightness-step": step_brightness,
+        commands = {"status": status, "brightness": set_brightness, "brightness-read": read_brightness,
                     "wallpaper": wallpaper, "pick-wallpaper": pick_wallpaper, "theme": theme}
         print(json.dumps(commands[action](*args)))
     except Exception as error:

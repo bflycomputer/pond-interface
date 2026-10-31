@@ -86,7 +86,9 @@ Settings.Modal {
         objectName: "brightnessSlider"
         x: 0; y: 5; width: parent.width
         externalValue: Appearance.State.brightness
-        showInlineValue: false
+        lowIcon: Qt.resolvedUrl("../../assets/brightness.svg")
+        highIcon: Qt.resolvedUrl("../../assets/brightness.svg")
+        ticks: 11
         interactive: Appearance.State.brightnessAvailable
         opacity: interactive ? 1 : 0.3
         onMoved: Appearance.State.setBrightness(brightnessSlider.value)

@@ -1,6 +1,5 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import QtQuick.Templates as T
 import "." as System
 import ".." as Settings
 import "../.." as Shell
@@ -32,37 +31,17 @@ Settings.Modal {
           text: Math.round(slider.value * 100) + "%"; color: "#b3b3b3"
           font.family: Shell.Theme.fontFamily; font.pixelSize: 15
         }
-        Repeater {
-          model: 11
-          delegate: Rectangle {
-            required property int index
-            x: 20 + index * 47.6; y: 83; width: 4; height: 4; radius: 2
-            color: "#d9d9d9"; opacity: 0.2
-          }
-        }
-        T.Slider {
+        Shell.Slider {
           id: slider
           objectName: "mouse" + field.modelData.key
-          x: 20; y: 55; width: 480; height: 24
-          leftPadding: 2; rightPadding: 2
-          to: field.modelData.to; value: System.State.mouse[field.modelData.key]
+          x: 20; y: 55; width: field.width - 40
+          to: field.modelData.to
+          externalValue: System.State.mouse[field.modelData.key]
+          valueText: Math.round(value * 100)
+          ticks: 11
+          focusPolicy: Qt.StrongFocus
           Accessible.name: field.modelData.title
           onMoved: System.State.setMouse(field.modelData.key, value)
-          background: Rectangle {
-            y: 4; width: slider.width; height: 16; radius: 8
-            color: "#3d3d3d"
-            Rectangle {
-              x: 1; y: 1; width: slider.leftPadding + slider.visualPosition * slider.availableWidth - 1
-              height: 14; radius: 7
-              color: "#d9d9d9"
-            }
-          }
-          handle: Rectangle {
-            x: slider.leftPadding + slider.visualPosition * slider.availableWidth - width / 2
-            width: 24; height: 24; radius: 12
-            color: "#e7e7e7"; border.width: 2; border.color: field.color
-          }
-          HoverHandler { cursorShape: Qt.PointingHandCursor }
         }
       }
     }

@@ -1,146 +1,165 @@
 import QtQuick
-import QtQuick.Effects
 import QtQuick.Templates as T
 
+// The one slider used across the shell: a thin rounded track with an optional
+// knob, end icons, trailing value and tick marks underneath.
 T.Slider {
   id: root
 
   property real externalValue: 0
-  property bool showInlineValue: true
   property bool muted: false
   property bool interactive: true
+  // Indicators (keyboard feedback) hide the knob and draw the fill edge to edge.
+  property bool showHandle: true
+  property bool showValueBubble: true
+  property int ticks: 0
+  property real tickOpacity: 0.25
+  property url lowIcon: ""
+  property url highIcon: ""
+  property real lowIconSize: 12
+  property real highIconSize: 16
+  property string trailingText: ""
+  property color trailingColor: "white"
+  property string valueText: Math.round(visualPosition * 100)
   property color trackColor: PanelStyle.border
   signal dragStarted
   signal dragFinished
   onPressedChanged: pressed ? dragStarted() : dragFinished()
 
   from: 0; to: 1
-  leftPadding: 1; rightPadding: 1
   enabled: interactive
   hoverEnabled: true
   focusPolicy: Qt.NoFocus
   handle: Item { width: 0; height: 0 }
   // Device updates resume driving the handle after the drag ends.
   Binding on value { value: root.externalValue; when: !root.pressed; restoreMode: Binding.RestoreNone }
-  readonly property real visualValue: position
-  readonly property real handleCenterX: leftPadding + visualPosition * availableWidth
-  readonly property bool handleHovered: hovered
-      && Math.abs(pointer.point.position.x - handleCenterX) <= 13
-      && pointer.point.position.y >= 3 && pointer.point.position.y <= 31
-  readonly property real handleSize: pressed ? 20 : 26
-  readonly property real handleTop: pressed ? 8 : 5
 
+  readonly property bool active: hovered || pressed || visualFocus
+  readonly property real leadingWidth: lowIcon.toString() || muted ? 16 + 8 : 0
+  readonly property real trailingWidth: trailingText ? 8 + 26 : highIcon.toString() ? 8 + 16 : 0
+  readonly property real knobSize: !showHandle ? 0 : pressed ? 14 : active ? 18 : 16
+  // The knob stays inside the track, so its resting radius pads both ends.
+  readonly property real handleInset: showHandle ? 8 : 0
+  leftPadding: leadingWidth + handleInset
+  rightPadding: trailingWidth + handleInset
+  readonly property real trackX: leadingWidth
+  readonly property real trackWidth: width - leadingWidth - trailingWidth
+  readonly property real trackCenterY: ticks > 1 ? 12 : height / 2
+  readonly property real trackHeight: active && interactive ? 8 : 6
+  readonly property real handleCenterX: leftPadding + visualPosition * availableWidth
+
+  implicitWidth: 200
   implicitHeight: 32
   clip: false
 
-  Item {
-    anchors.fill: parent
-    layer.enabled: root.muted
-    layer.effect: MultiEffect {
-      maskEnabled: true
-      maskInverted: true
-      maskSource: handleMask
-    }
-
-    Rectangle {
-      x: 0
-      y: 12
-      width: parent.width
-      height: 12
-      radius: 6
-      color: root.muted ? "transparent" : root.trackColor
-      border.width: root.muted ? 1 : 0
-      border.color: Qt.rgba(1, 1, 1, 0.2)
-    }
-
-    Rectangle {
-      x: root.muted ? 5 : 1
-      y: root.muted ? 17 : 13
-      width: Math.max(0, root.handleCenterX - x)
-      height: root.muted ? 2 : 10
-      radius: height / 2
-      color: root.muted ? Qt.rgba(1, 1, 1, 0.2) : PanelStyle.sliderFill
-    }
-  }
-
-  Item {
-    id: handleMask
-    anchors.fill: parent
-    visible: false
-    layer.enabled: root.muted
-
-    Rectangle {
-      x: handle.x
-      y: handle.y
-      width: handle.width
-      height: handle.height
-      radius: width / 2
-    }
+  Image {
+    id: lowGlyph
+    x: (16 - width) / 2
+    y: root.trackCenterY - height / 2
+    visible: root.leadingWidth > 0
+    width: root.muted ? 16 : root.lowIconSize
+    height: width
+    source: root.muted ? Qt.resolvedUrl("assets/volume-mute.svg") : root.lowIcon
+    sourceSize: Qt.size(32, 32)
+    fillMode: Image.PreserveAspectFit
+    opacity: root.muted ? 0.9 : 0.6
   }
 
   Rectangle {
-    id: handle
+    id: track
+    x: root.trackX
+    y: root.trackCenterY - height / 2
+    width: root.trackWidth
+    height: root.trackHeight
+    radius: height / 2
+    color: root.trackColor
+    Behavior on height {
+      NumberAnimation { duration: PanelStyle.controlDuration; easing.type: Easing.OutCubic }
+    }
+
+    Rectangle {
+      width: Math.max(root.showHandle ? 0 : parent.height, root.handleCenterX - root.trackX)
+      height: parent.height
+      radius: parent.radius
+      visible: root.showHandle || root.visualPosition > 0
+      color: PanelStyle.sliderFill
+      opacity: root.muted ? 0.25 : 1
+    }
+  }
+
+  Repeater {
+    model: root.ticks > 1 ? root.ticks : 0
+    Rectangle {
+      required property int index
+      x: root.leftPadding + index / (root.ticks - 1) * root.availableWidth - 1
+      y: root.trackCenterY + 8
+      width: 2; height: 2; radius: 1
+      color: "white"
+      opacity: root.tickOpacity
+      Behavior on opacity { NumberAnimation { duration: PanelStyle.controlDuration } }
+    }
+  }
+
+  Image {
+    x: root.width - 16 + (16 - width) / 2
+    y: root.trackCenterY - height / 2
+    visible: !root.trailingText && root.highIcon.toString() !== ""
+    width: root.highIconSize
+    height: width
+    source: root.highIcon
+    sourceSize: Qt.size(32, 32)
+    fillMode: Image.PreserveAspectFit
+    opacity: 0.6
+  }
+
+  Text {
+    x: root.width - width
+    width: 26
+    y: root.trackCenterY - height / 2
+    visible: root.trailingText !== ""
+    text: root.trailingText
+    color: root.trailingColor
+    opacity: 0.8
+    Behavior on color { ColorAnimation { duration: PanelStyle.controlDuration } }
+    horizontalAlignment: Text.AlignRight
+    font.family: Theme.fontFamily
+    font.weight: Font.Medium
+    font.pixelSize: 13
+    font.features: { "tnum": 1 }
+  }
+
+  Rectangle {
+    id: knob
+    visible: root.showHandle
     x: root.handleCenterX - width / 2
-    y: root.handleTop
-    width: root.handleSize
-    height: root.handleSize
+    y: root.trackCenterY - height / 2
+    width: root.knobSize
+    height: width
     radius: width / 2
     color: root.pressed ? PanelStyle.accent
-        : root.muted ? Qt.rgba(1, 1, 1, 0.1) : PanelStyle.sliderFill
-    border.width: 1
-    border.color: root.handleHovered && !root.pressed ? PanelStyle.accent
+        : root.muted ? PanelStyle.surface : PanelStyle.sliderFill
+    border.width: root.visualFocus ? 2 : 1
+    border.color: root.visualFocus || root.hovered && !root.pressed ? PanelStyle.accent
         : root.muted ? Qt.rgba(1, 1, 1, 0.5) : PanelStyle.border
     antialiasing: true
-
     Behavior on width {
-      NumberAnimation {
-        duration: PanelStyle.controlDuration
-        easing.type: Easing.OutCubic
-      }
+      NumberAnimation { duration: PanelStyle.controlDuration; easing.type: Easing.OutCubic }
     }
-    Behavior on height {
-      NumberAnimation {
-        duration: PanelStyle.controlDuration
-        easing.type: Easing.OutCubic
-      }
-    }
-
-    Text {
-      anchors.centerIn: parent
-      anchors.verticalCenterOffset: 1
-      visible: root.showInlineValue && !root.muted && !root.handleHovered && !root.pressed
-      text: Math.round(root.visualValue * 100)
-      color: PanelStyle.surface
-      font.family: Theme.fontFamily
-      font.weight: Font.Medium
-      font.pixelSize: 13
-    }
-
-    Image {
-      anchors.centerIn: parent
-      visible: root.muted
-      width: 16
-      height: 16
-      source: Qt.resolvedUrl("assets/volume-mute.svg")
-      sourceSize: Qt.size(width * 2, height * 2)
-    }
+    Behavior on color { ColorAnimation { duration: PanelStyle.controlDuration } }
   }
 
   Item {
     id: valueBubble
     z: 3
-    x: root.handleCenterX - 13
-    y: -19
-    width: 26
+    width: Math.max(26, bubbleText.implicitWidth + 10)
     height: 22
+    x: root.handleCenterX - width / 2
+    y: root.trackCenterY - 13 - height
     visible: opacity > 0.001
-    opacity: root.handleHovered || root.pressed ? 1 : 0
+    opacity: root.showValueBubble && root.showHandle && root.interactive && root.active ? 1 : 0
 
     Behavior on opacity {
-      NumberAnimation {
-        duration: PanelStyle.controlDuration
-        easing.type: Easing.OutCubic
-      }
+      NumberAnimation { duration: PanelStyle.controlDuration; easing.type: Easing.OutCubic }
     }
 
     Shadow {
@@ -155,22 +174,38 @@ T.Slider {
       color: PanelStyle.sliderBubble
 
       Text {
+        id: bubbleText
         anchors.centerIn: parent
-        text: Math.round(root.visualValue * 100)
+        text: root.valueText
         color: "black"
         font.family: Theme.fontFamily
         font.weight: Font.Medium
         font.pixelSize: 13
-        horizontalAlignment: Text.AlignHCenter
-        verticalAlignment: Text.AlignVCenter
+        font.features: { "tnum": 1 }
+      }
+    }
+  }
+
+  // Each wheel notch is one key press; Alt makes it a fine step.
+  WheelHandler {
+    property real pending: 0
+    enabled: root.interactive
+    acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+    onWheel: event => {
+      // Qt reports Alt+wheel as a horizontal scroll.
+      pending += event.angleDelta.y !== 0 ? event.angleDelta.y : event.angleDelta.x;
+      const fine = (event.modifiers & Qt.AltModifier) !== 0;
+      while (Math.abs(pending) >= 120) {
+        const direction = pending > 0 ? 1 : -1;
+        pending -= direction * 120;
+        root.value = root.from + PanelStyle.stepLevel(root.position, direction, fine) * (root.to - root.from);
+        root.moved();
       }
     }
   }
 
   HoverHandler {
-    id: pointer
     enabled: root.hoverEnabled
-    cursorShape: root.pressed ? Qt.ClosedHandCursor
-        : root.handleHovered ? Qt.OpenHandCursor : Qt.PointingHandCursor
+    cursorShape: root.pressed ? Qt.ClosedHandCursor : Qt.PointingHandCursor
   }
 }
