@@ -65,6 +65,14 @@ Singleton {
   readonly property int workspaceCollapsedControlPitch:
       workspaceCollapsedControlSize + workspaceCollapsedControlGap
   readonly property int workspaceCollapsedControlGap: 8
+  readonly property int workspaceCollapsedInset: 4
+  readonly property int workspaceCollapsedRowHeight: 41
+  readonly property int workspaceCollapsedRowGap: 8
+  readonly property int workspaceCollapsedHighlightRadius: 12
+  readonly property color workspaceCollapsedHighlightColor: daylight
+      ? Qt.rgba(1, 1, 1, 0.08) : workspaceActiveIndicatorColor
+  readonly property color workspaceCollapsedDividerColor: daylight
+      ? sidebarCardOutline : Qt.alpha(sidebarV3Divider, 0.8)
   readonly property int workspaceContentPadding: (sidebarCardExpandedWidth
       - workspaceGridColumns * workspaceControlSize
       - (workspaceGridColumns - 1) * workspaceControlGap) / 2
