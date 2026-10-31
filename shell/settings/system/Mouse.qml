@@ -10,6 +10,7 @@ Settings.Modal {
   objectName: "mousePanel"
   title: "Mouse sensitivity"; closeLabel: "Back to System"; bodyTop: 92
   contentHeight: fields.height + 30
+  property string naturalKey: "naturalTouchpad"
   onBackRequested: Settings.State.back()
   Keys.onEscapePressed: Settings.State.back()
   Column {
@@ -71,6 +72,36 @@ Settings.Modal {
       width: parent.width; toggle: true
       title: "Pointer acceleration"; checked: System.State.mouse.acceleration
       onToggled: checked => System.State.setMouse("acceleration", checked)
+    }
+    Rectangle {
+      width: parent.width; height: 108; radius: 12
+      color: "#262626"
+      Text {
+        x: 20; y: (51 - height) / 2
+        text: "Natural scrolling"; color: "#b3b3b3"
+        font.family: Shell.Theme.fontFamily; font.pixelSize: 15
+      }
+      Settings.Switcher {
+        objectName: "mouseNatural"
+        x: 20; y: 47; radius: 8
+        border.color: "#303030"
+        model: [{key: "naturalTouchpad", label: "Trackpad", width: 80}, {key: "naturalMouse", label: "Mouse", width: 84}]
+        current: root.naturalKey
+        onSelected: key => root.naturalKey = key
+      }
+      Shell.Toggle {
+        objectName: "mouseNaturalToggle"
+        x: parent.width - width - 20; y: 54
+        color: activeFocus ? "#303030" : hovered ? Shell.PanelStyle.hover : "transparent"
+        activeFocusOnTab: true
+        Accessible.role: Accessible.CheckBox
+        Accessible.name: "Natural scrolling"
+        Accessible.checked: checked
+        Keys.onReturnPressed: toggled(!checked)
+        Keys.onSpacePressed: toggled(!checked)
+        checked: System.State.mouse[root.naturalKey]
+        onToggled: checked => System.State.setMouse(root.naturalKey, checked)
+      }
     }
     Text {
       width: parent.width; visible: !!System.State.error

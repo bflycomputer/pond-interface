@@ -76,6 +76,15 @@ def insert_child(text, brace, body):
     return text[:line] + textwrap.indent(body, indent + '    ') + text[line:]
 
 
+def node_text(key, value):
+    return key if value is True else f'{key} {json.dumps(value)}'
+
+
+def remove_node(text, ts, first, last):
+    if ts[first - 1][0] == ts[last][0] == '\n': return text[:ts[first - 1][1]] + text[ts[last][1]:]
+    return text[:ts[first][1]] + text[ts[last][2] if ts[last][0] == ';' else ts[last - 1][2]:]
+
+
 def get_properties(text, path):
     ts, opening, closing = tokens(text), -1, None
     for name in path:
@@ -83,7 +92,8 @@ def get_properties(text, path):
         if block is None: return {}
         _, _, opening, closing = block
     result = {}
-    for first, _, _, _ in nodes(ts, opening + 1, closing):
+    for first, last, _, _ in nodes(ts, opening + 1, closing):
+        if last == first + 1: result[ts[first][0]] = True; continue
         try: result[ts[first][0]] = json.loads(ts[first + 1][0])
         except (IndexError, ValueError): pass
     return result
@@ -91,18 +101,20 @@ def get_properties(text, path):
 
 def set_properties(text, path, properties):
     ts, opening, closing = tokens(text), -1, None
+    added = {key: value for key, value in properties.items() if value is not False}
     for depth, name in enumerate(path):
         block = next((n for n in nodes(ts, opening + 1, closing) if ts[n[0]][0] == name and n[2] is not None), None)
         if block is None:
-            body = ''.join(f'{key} {json.dumps(value)}\n' for key, value in properties.items())
+            body = ''.join(node_text(key, value) + '\n' for key, value in added.items())
             for parent in reversed(path[depth:]): body = f'{parent} {{\n{textwrap.indent(body, "    ")}}}\n'
             return insert_child(text, None if closing is None else ts[closing][1], body)
         _, _, opening, closing = block
     children = [(first, last) for first, last, _, _ in nodes(ts, opening + 1, closing) if ts[first][0] in properties]
     found = {ts[first][0] for first, _ in children}
-    body = ''.join(f'{key} {json.dumps(value)}\n' for key, value in properties.items() if key not in found)
+    body = ''.join(node_text(key, value) + '\n' for key, value in added.items() if key not in found)
     if body: text = insert_child(text, ts[closing][1], body)
     for first, last in reversed(children):
         key = ts[first][0]
-        text = text[:ts[first][1]] + f'{key} {json.dumps(properties[key])}' + text[ts[last - 1][2]:]
+        if properties[key] is False: text = remove_node(text, ts, first, last)
+        else: text = text[:ts[first][1]] + node_text(key, properties[key]) + text[ts[last - 1][2]:]
     return text

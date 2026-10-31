@@ -69,9 +69,12 @@ def timezones(current):
 
 
 def mouse():
-    values = get_properties(INPUT.read_text(), ('input', 'mouse'))
+    text = INPUT.read_text()
+    values = get_properties(text, ('input', 'mouse'))
     return {'speed': (values.get('accel-speed', 0) + 1) / 2, 'scroll': values.get('scroll-factor', 1),
-            'acceleration': values.get('accel-profile') != 'flat'}
+            'acceleration': values.get('accel-profile') != 'flat',
+            'naturalTouchpad': 'natural-scroll' in get_properties(text, ('input', 'touchpad')),
+            'naturalMouse': 'natural-scroll' in values}
 
 
 def status():
@@ -127,12 +130,13 @@ def set_timezone(identifier):
     return status()
 
 
-def set_mouse(speed, scroll, acceleration):
+def set_mouse(speed, scroll, acceleration, natural_touchpad, natural_mouse):
     text = INPUT.read_text()
-    for device in ('mouse', 'touchpad'):
+    for device, natural in (('mouse', natural_mouse), ('touchpad', natural_touchpad)):
         text = set_properties(text, ('input', device), {
             'accel-speed': round(float(speed) * 2 - 1, 2), 'scroll-factor': round(max(float(scroll), .1), 2),
-            'accel-profile': 'adaptive' if acceleration == 'true' else 'flat'})
+            'accel-profile': 'adaptive' if acceleration == 'true' else 'flat',
+            'natural-scroll': natural == 'true'})
     atomic_write(INPUT, text)
     run('niri', 'msg', 'action', 'load-config-file')
     return status()

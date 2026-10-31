@@ -14,7 +14,7 @@ Singleton {
   property string timezone: ""
   property string timezoneLabel: ""
   property string error: ""
-  property var mouse: ({speed: 0.5, scroll: 1, acceleration: true})
+  property var mouse: ({speed: 0.5, scroll: 1, acceleration: true, naturalTouchpad: true, naturalMouse: false})
   readonly property bool busy: action.running
   readonly property bool active: Settings.State.opened && ["system", "mouse", "keyboard", "timezone"].indexOf(Settings.State.page) >= 0
   onActiveChanged: if (active) { error = ""; query.running = true; }
@@ -30,7 +30,7 @@ Singleton {
   Timer {
     id: mouseCommit
     interval: 300
-    onTriggered: if (root.busy) restart(); else root.apply(["mouse", root.mouse.speed, root.mouse.scroll, root.mouse.acceleration].map(String))
+    onTriggered: if (root.busy) restart(); else root.apply(["mouse", root.mouse.speed, root.mouse.scroll, root.mouse.acceleration, root.mouse.naturalTouchpad, root.mouse.naturalMouse].map(String))
   }
   function accept(text) {
     try {

@@ -47,46 +47,15 @@ Settings.Modal {
     }
   }
   overlay: [
-    Rectangle {
+    Settings.Switcher {
       objectName: "lockPower"
       visible: Battery.State.present
-      x: root.width - width - 30; y: 20; width: 168; height: 41; radius: 12
-      color: "transparent"; border.width: 1; border.color: "#262626"
+      x: root.width - width - 30; y: 20
       opacity: root.dropdownField ? 0.3 : 1
       enabled: !root.dropdownField
-      Row {
-        x: 2; y: 2
-        Repeater {
-          model: [{key: "pluggedIn", label: "Plugged in", width: 80}, {key: "battery", label: "On Battery", width: 84}]
-          delegate: Rectangle {
-            id: segment
-            required property var modelData
-            required property int index
-            readonly property bool chosen: root.power === modelData.key
-            objectName: "lockPower" + modelData.key
-            width: modelData.width; height: 37
-            radius: 2
-            topLeftRadius: index === 0 ? 10 : 2; bottomLeftRadius: topLeftRadius
-            topRightRadius: index === 1 ? 10 : 2; bottomRightRadius: topRightRadius
-            color: chosen ? "#303030" : hover.hovered || activeFocus ? "#262626" : "transparent"
-            activeFocusOnTab: true
-            Accessible.role: Accessible.RadioButton
-            Accessible.name: modelData.label
-            Accessible.checked: chosen
-            Accessible.onPressAction: root.power = modelData.key
-            Keys.onReturnPressed: root.power = modelData.key
-            Keys.onSpacePressed: root.power = modelData.key
-            Text {
-              anchors.centerIn: parent
-              text: segment.modelData.label; color: "white"
-              opacity: hover.hovered ? 1 : 0.7
-              font.family: Shell.Theme.fontFamily; font.pixelSize: 13
-            }
-            HoverHandler { id: hover; cursorShape: Qt.PointingHandCursor }
-            TapHandler { onTapped: root.power = segment.modelData.key }
-          }
-        }
-      }
+      model: [{key: "pluggedIn", label: "Plugged in", width: 80}, {key: "battery", label: "On Battery", width: 84}]
+      current: root.power
+      onSelected: key => root.power = key
     },
     MouseArea {
       anchors.fill: parent; visible: !!root.dropdownField
