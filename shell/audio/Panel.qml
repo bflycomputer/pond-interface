@@ -1,4 +1,5 @@
 import QtQuick
+import "." as Audio
 import ".."
 
 Item {
@@ -69,6 +70,7 @@ Item {
   function open() {
     closeCleanup.stop();
     opened = true;
+    Audio.State.refreshPorts();
   }
 
   function closeAll() {
