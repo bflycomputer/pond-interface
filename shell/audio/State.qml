@@ -2,6 +2,7 @@ pragma Singleton
 
 import QtQuick
 import Quickshell
+import Quickshell.Io
 import Quickshell.Services.Pipewire
 
 // Shared PipeWire authority for the sidebar sound controls. The UI consumes
@@ -15,8 +16,10 @@ Singleton {
   readonly property var source: Pipewire.ready ? Pipewire.defaultAudioSource : null
   readonly property var deviceNodes: Pipewire.ready ? Pipewire.nodes.values.filter(node =>
       !node.isStream && node.name !== "quickshell" && node.properties["media.name"] !== "quickshell") : []
-  readonly property var outputDevices: deviceNodes.filter(node => node.isSink)
-  readonly property var inputDevices: deviceNodes.filter(node => !node.isSink && node.audio)
+  readonly property var outputDevices: deviceNodes.filter(node =>
+      node.isSink && !unpluggedDevices[node.name])
+  readonly property var inputDevices: deviceNodes.filter(node =>
+      !node.isSink && node.audio && !unpluggedDevices[node.name])
 
   readonly property real outputVolume: clampVolume(
       sink && sink.audio ? sink.audio.volume : 0)
@@ -26,6 +29,7 @@ Singleton {
   readonly property bool hasInput: !!(source && source.audio)
   readonly property bool outputMuted: hasOutput && sink.audio.muted
 
+  property var unpluggedDevices: ({})
   property int observedSinkId: -1
   property double suppressExternalUntil: 0
 
@@ -94,6 +98,21 @@ Singleton {
     Pipewire.preferredDefaultAudioSource = node;
   }
 
+  function refreshPorts() {
+    portQuery.running = true;
+  }
+
+  function receivePorts(text) {
+    const server = JSON.parse(text);
+    const unplugged = {};
+    for (const device of server.sinks.concat(server.sources)) {
+      if (device.ports.length > 0 && device.ports.every(
+          port => port.availability === "not available"))
+        unplugged[device.name] = true;
+    }
+    unpluggedDevices = unplugged;
+  }
+
   onOutputVolumeChanged: {
     const currentSinkId = sink ? Number(sink.id) : -1;
     if (currentSinkId !== observedSinkId) {
@@ -113,4 +132,12 @@ Singleton {
   }
 
   PwObjectTracker { objects: [root.sink, root.source].filter(node => node !== null) }
+
+  Process {
+    id: portQuery
+    command: ["pactl", "-f", "json", "list"]
+    environment: ({ "LC_ALL": "C" })
+    running: true
+    stdout: StdioCollector { onStreamFinished: root.receivePorts(text) }
+  }
 }
