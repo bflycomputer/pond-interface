@@ -9,12 +9,11 @@ Shell.Card {
   readonly property real widthProgress: Shell.Theme.collapseWidth(collapseProgress)
   readonly property int contentPadding: 4
   readonly property int rowHeight: Shell.Theme.sidebarCardCollapsedWidth - 2 * contentPadding
-  readonly property int rowGap: 8
   readonly property int count: Installs.State.jobs.count
   implicitWidth: Shell.Theme.lerp(Shell.Theme.sidebarCardExpandedWidth,
       Shell.Theme.sidebarCardCollapsedWidth, widthProgress)
   implicitHeight: count === 0 ? 0
-      : 2 * contentPadding + count * rowHeight + (count - 1) * rowGap
+      : 2 * contentPadding + count * rowHeight
   visible: count > 0
   radius: Shell.Theme.lerp(12, Shell.Theme.sidebarCardRadius, widthProgress)
 
@@ -34,7 +33,7 @@ Shell.Card {
       readonly property string summary: status === "installed" ? "Installed"
           : status === "failed" ? "Failed" : progress < 0 ? "Installing"
           : "Installing " + Math.round(progress * 100) + "%"
-      y: root.contentPadding + index * (root.rowHeight + root.rowGap)
+      y: root.contentPadding + index * root.rowHeight
       width: root.width
       height: root.rowHeight
       Accessible.role: Accessible.ListItem
