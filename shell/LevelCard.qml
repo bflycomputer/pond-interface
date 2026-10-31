@@ -1,7 +1,7 @@
 import QtQuick
 
-// A level such as volume or brightness. Interactive while hovered from the
-// sound button; read-only as keyboard feedback.
+// A level such as volume or brightness. Interactive under the pointer, also
+// when it first appeared as keyboard feedback; read-only while floating.
 FeedbackCard {
   id: root
   property real value: 0
@@ -12,6 +12,7 @@ FeedbackCard {
   property bool fine: false
   readonly property bool pressed: slider.pressed
   signal moved(real value)
+  signal held(bool pressed)
   Accessible.role: interactive ? Accessible.Slider : Accessible.ProgressBar
   Accessible.name: title + " " + Math.round(value * 100) + "%"
 
@@ -38,7 +39,9 @@ FeedbackCard {
     showValueBubble: false
     interactive: root.interactive
     hoverEnabled: root.interactive
+    wheelSteps: true
     onMoved: root.moved(value)
+    onPressedChanged: root.held(pressed)
   }
 
   SequentialAnimation {

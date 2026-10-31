@@ -74,6 +74,7 @@ Item {
       lowIconSize: 14
       highIcon: root.selectedTab === "output" ? Qt.resolvedUrl("../assets/sound-max.svg") : ""
       ticks: 11
+      wheelSteps: true
       interactive: root.interactive && root.selectedAudioAvailable
       onMoved: {
         if (root.selectedTab === "output")

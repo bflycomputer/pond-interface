@@ -22,6 +22,10 @@ T.Slider {
   property color trailingColor: "white"
   property string valueText: Math.round(visualPosition * 100)
   property color trackColor: PanelStyle.border
+  // Scrolling steps the value. Off by default: a slider inside a scrolling
+  // page must not catch the wheel, and the scrolling-sensitivity slider would
+  // change the very speed it is being scrolled with.
+  property bool wheelSteps: false
   signal dragStarted
   signal dragFinished
   onPressedChanged: pressed ? dragStarted() : dragFinished()
@@ -186,22 +190,24 @@ T.Slider {
     }
   }
 
-  // Each wheel notch is one key press; Alt makes it a fine step.
-  WheelHandler {
-    property real pending: 0
-    enabled: root.interactive
-    acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
-    onWheel: event => {
-      // Qt reports Alt+wheel as a horizontal scroll.
-      pending += event.angleDelta.y !== 0 ? event.angleDelta.y : event.angleDelta.x;
-      const fine = (event.modifiers & Qt.AltModifier) !== 0;
-      while (Math.abs(pending) >= 120) {
-        const direction = pending > 0 ? 1 : -1;
-        pending -= direction * 120;
-        root.value = root.from + PanelStyle.stepLevel(root.position, direction, fine) * (root.to - root.from);
-        root.moved();
-      }
-    }
+  // Wheel notches and arrow keys move in the same steps as the volume and
+  // brightness keys, snapping to the grid; Alt makes them fine.
+  function stepBy(direction, fine) {
+    const next = root.from + PanelStyle.stepLevel(root.position, direction, fine) * (root.to - root.from);
+    if (next === root.value) return;
+    root.value = next;
+    root.moved();
+  }
+  LevelWheel {
+    enabled: root.interactive && root.wheelSteps
+    onStepped: (direction, fine) => root.stepBy(direction, fine)
+  }
+  Keys.onPressed: event => {
+    const direction = event.key === Qt.Key_Right || event.key === Qt.Key_Up ? 1
+        : event.key === Qt.Key_Left || event.key === Qt.Key_Down ? -1 : 0;
+    if (direction === 0 || !root.interactive) return;
+    root.stepBy(direction, (event.modifiers & Qt.AltModifier) !== 0);
+    event.accepted = true;
   }
 
   HoverHandler {

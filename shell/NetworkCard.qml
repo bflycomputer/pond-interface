@@ -1,9 +1,12 @@
 import QtQuick
 import "wifi" as Wifi
 
-// The connection name with live upload and download rates.
+// The connection name with live upload and download rates. Clicking it
+// opens the Wi-Fi panel (see ControlFeedback).
 FeedbackCard {
   id: root
+  Accessible.role: Accessible.Button
+  Accessible.name: title
   readonly property bool connected: Wifi.State.wifiConnected || Wifi.State.wiredConnected
   readonly property bool noInternet: Wifi.State.internetUnavailable && connected
   title: Wifi.State.wiredConnected ? Wifi.State.wiredNetworks[0].name
@@ -15,7 +18,7 @@ FeedbackCard {
   Text {
     anchors.verticalCenter: parent.verticalCenter
     visible: root.noInternet || !root.connected
-    text: root.noInternet ? "No internet" : "Click to connect"
+    text: root.noInternet ? "No internet" : Wifi.State.enabled ? "Click to connect" : "Click to turn on"
     color: "white"
     opacity: 0.6
     font.family: Theme.fontFamily

@@ -14,13 +14,8 @@ Singleton {
   property string wallpaperUrl: ""
   property var display: ({})
   property real brightness: 1
-  property real pendingBrightness: -1
-  property string pendingBrightnessOutput: ""
   property bool draggingBrightness: false
   property string error: ""
-  signal keyboardBrightnessChanged(string outputName, real value, int direction, bool fine)
-  // A keyboard brightness change is still waiting to reach the display.
-  property bool keyboardBrightnessBusy: false
   readonly property bool pickingWallpaper: picker.running
   readonly property bool busy: action.running
   readonly property bool active: Settings.State.opened && Settings.State.page === "appearance"
@@ -37,6 +32,21 @@ Singleton {
   Connections {
     target: Settings.State
     function onOutputNameChanged() { root.display = ({}); if (root.active) root.refresh(); }
+  }
+  // Writes go through Shell.Brightness, so keys, the sidebar card and this
+  // page share one level and one writer.
+  onDraggingBrightnessChanged: Shell.Brightness.hold(Settings.State.outputName, draggingBrightness)
+  Connections {
+    target: Shell.Brightness
+    function onLevelChanged(output, value) {
+      if (output === root.display.output) root.brightness = value;
+    }
+    function onFailed(output, error) {
+      if (output !== root.display.output) return;
+      root.error = "Could not change brightness";
+      root.display = Object.assign({}, root.display, {brightnessDevice: null});
+      if (!root.draggingBrightness) root.refresh();
+    }
   }
   FileView {
     id: wallpaperFile
@@ -64,8 +74,10 @@ Singleton {
           if (query.outputName !== Settings.State.outputName) return;
           if (result.error) { root.error = result.error; return; }
           root.display = result;
-          if (!root.draggingBrightness && root.pendingBrightness < 0 && !brightnessWriter.running && result.brightness !== null)
-            root.brightness = result.brightness;
+          if (!root.draggingBrightness && result.brightness !== null) {
+            Shell.Brightness.seed(result.output, result.brightness, result.brightnessDevice);
+            root.brightness = Shell.Brightness.value(result.output);
+          }
         } catch(e) { root.error = "Could not read display settings"; }
       }
     }
@@ -90,20 +102,6 @@ Singleton {
       onStreamFinished: root.receive(text, "Could not open the image picker")
     }
   }
-  Process {
-    id: brightnessWriter
-    property string outputName
-    stdout: StdioCollector {
-      onStreamFinished: root.receive(text, "Could not change brightness")
-    }
-    onExited: (exitCode, exitStatus) => {
-      if (exitCode !== 0 && outputName === root.display.output)
-        root.display = Object.assign({}, root.display, {brightnessDevice: null});
-      if (root.pendingBrightness >= 0) brightnessDelay.restart();
-      else if (!root.draggingBrightness && exitCode !== 0) root.refresh();
-    }
-  }
-  Timer { id: brightnessDelay; interval: 90; onTriggered: root.flushBrightness() }
 
   function receive(text, failure) {
     try {
@@ -114,7 +112,7 @@ Singleton {
     } catch (exception) { error = failure; }
   }
   function refresh() {
-    if (query.running || brightnessWriter.running || draggingBrightness || !Settings.State.outputName) return;
+    if (query.running || Shell.Brightness.busy || draggingBrightness || !Settings.State.outputName) return;
     query.outputName = Settings.State.outputName;
     query.command = ["python3", Quickshell.shellDir + "/settings/appearance/control.py", "status", query.outputName,
         cachedDevice(query.outputName)];
@@ -122,11 +120,6 @@ Singleton {
   }
   function cachedDevice(output) {
     return display.output === output && display.brightnessDevice ? JSON.stringify(display.brightnessDevice) : "";
-  }
-  function receiveBrightness(output, value, direction, fine) {
-    if (output === display.output && !draggingBrightness && pendingBrightness < 0 && !brightnessWriter.running)
-      brightness = value;
-    keyboardBrightnessChanged(output, value, direction, fine);
   }
   function toggleSection(section) { expandedSection = expandedSection === section ? "" : section; }
   function apply(args) {
@@ -141,19 +134,7 @@ Singleton {
   function selectDynamic() { apply(["wallpaper", "dynamic"]); }
   function pickWallpaper() { if (!picker.running) { error = ""; picker.running = true; } }
   function setBrightness(value) {
-    brightness = Math.max(0.01, Math.min(1, value));
-    pendingBrightness = brightness;
-    pendingBrightnessOutput = Settings.State.outputName;
-    brightnessDelay.restart();
-  }
-  function flushBrightness() {
-    // Each write can stall the display, so a drag only writes where it ends.
-    if (brightnessWriter.running || pendingBrightness < 0 || draggingBrightness) return;
     error = "";
-    brightnessWriter.outputName = pendingBrightnessOutput;
-    brightnessWriter.command = ["python3", Quickshell.shellDir + "/settings/appearance/control.py", "brightness",
-        pendingBrightnessOutput, String(pendingBrightness), cachedDevice(pendingBrightnessOutput)];
-    pendingBrightness = -1;
-    brightnessWriter.running = true;
+    Shell.Brightness.set(Settings.State.outputName, value, display.brightnessDevice);
   }
 }

@@ -31,7 +31,6 @@ Item {
     PanelWindow {
       screen: root.screen
       color: "transparent"
-      BackgroundEffect.blurRegion: Theme.daylight ? card.blurRegion : null
       implicitWidth: Theme.sidebarCardExpandedWidth + (root.collapsed ? 134 : 0)
       implicitHeight: root.cardHeight + (root.collapsed ? 107 : 0)
       anchors { left: true; top: !root.collapsed; bottom: root.collapsed }
@@ -57,8 +56,10 @@ Item {
         x: root.collapsed ? 67 : 0
         y: root.collapsed ? 67 : 0
         width: Theme.sidebarCardExpandedWidth; height: root.cardHeight
-        radius: PanelStyle.rowRadius
-        classicColor: PanelStyle.surface
+        radius: PanelStyle.radius
+        // Opaque in every theme, like the volume and brightness card, so it
+        // reads over any window.
+        color: PanelStyle.surface
         Column {
           x: 16; y: 16; width: parent.width - 32; spacing: 12
           Repeater {

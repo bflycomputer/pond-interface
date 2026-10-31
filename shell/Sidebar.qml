@@ -244,6 +244,7 @@ PanelWindow {
       wifiOpen: wifiPanel.opened
       soundButtonHovered: controls.soundButtonHovered
       wifiButtonHovered: controls.wifiButtonHovered
+      onNetworkClicked: root.togglePanel("wifi")
     }
     BottomControls {
       id: controls

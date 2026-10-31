@@ -93,12 +93,10 @@ Settings.Modal {
         opacity: interactive ? 1 : 0.3
         onMoved: Appearance.State.setBrightness(brightnessSlider.value)
         onDragStarted: Appearance.State.draggingBrightness = true
-        onDragFinished: { Appearance.State.draggingBrightness = false; Appearance.State.flushBrightness(); }
+        onDragFinished: Appearance.State.draggingBrightness = false
         activeFocusOnTab: interactive
         Accessible.role: Accessible.Slider
         Accessible.name: "Screen brightness"
-        Keys.onLeftPressed: Appearance.State.setBrightness(value - 0.05)
-        Keys.onRightPressed: Appearance.State.setBrightness(value + 0.05)
       }
       Text {
         visible: !Appearance.State.brightnessAvailable

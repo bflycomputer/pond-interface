@@ -74,19 +74,9 @@ Card {
       Accessible.onPressAction: action.clicked()
 
       // Scroll over the sound button to change the volume, like the slider.
-      WheelHandler {
-        property real pending: 0
+      LevelWheel {
         enabled: action.slot === 1
-        acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
-        onWheel: event => {
-          pending += event.angleDelta.y !== 0 ? event.angleDelta.y : event.angleDelta.x;
-          const fine = (event.modifiers & Qt.AltModifier) !== 0;
-          while (Math.abs(pending) >= 120) {
-            const direction = pending > 0 ? 1 : -1;
-            pending -= direction * 120;
-            Audio.State.stepOutputVolume(direction, fine);
-          }
-        }
+        onStepped: (direction, fine) => Audio.State.stepOutputVolume(direction, fine)
       }
 
       Rectangle {
