@@ -16,8 +16,8 @@ Rectangle {
   clip: true
   activeFocusOnTab: true
   Accessible.role: Accessible.Button
-  Accessible.name: title + ", " + summary + (navigation ? "" : expanded ? ", expanded" : ", collapsed")
-  Accessible.onPressAction: toggled()
+  Accessible.name: title + ", " + summary + (navigation || !enabled ? "" : expanded ? ", expanded" : ", collapsed")
+  Accessible.onPressAction: if (enabled) toggled()
   Keys.onReturnPressed: toggled()
   Keys.onSpacePressed: toggled()
   Behavior on implicitHeight {
@@ -33,7 +33,7 @@ Rectangle {
     verticalAlignment: Text.AlignVCenter
   }
   Text {
-    x: parent.width * 0.48; y: 0; width: parent.width - x - 40; height: 50
+    x: parent.width * 0.48; y: 0; width: parent.width - x - (root.enabled ? 40 : 20); height: 50
     text: root.summary; color: "#b3b3b3"
     font.family: Shell.Theme.fontFamily; font.pixelSize: 15
     verticalAlignment: Text.AlignVCenter; horizontalAlignment: Text.AlignRight
@@ -43,6 +43,7 @@ Rectangle {
     x: parent.width - 36; y: 17; width: 16; height: 16
     source: Qt.resolvedUrl("../../assets/appearance/chevron.svg")
     objectName: "settingsRowChevron"
+    visible: root.enabled
     rotation: root.navigation ? -90 : root.expanded ? 180 : 0
     Behavior on rotation { NumberAnimation { duration: 220; easing.type: Easing.InOutCubic } }
   }
@@ -56,8 +57,6 @@ Rectangle {
     id: body
     x: 20; y: 50; width: parent.width - 40; height: root.expandedHeight - 50
     enabled: root.expanded
-    opacity: root.expanded ? 1 : 0
-    visible: opacity > 0
-    Behavior on opacity { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
+    visible: root.height > 50
   }
 }

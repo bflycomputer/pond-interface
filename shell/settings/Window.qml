@@ -257,7 +257,10 @@ PanelWindow {
     enabled: root.modalOpen
     opacity: root.modalOpen ? 1 : 0
     scale: root.modalOpen ? 1 : 0.96
-    Behavior on opacity { NumberAnimation { duration: Settings.Style.closeDuration; easing.type: Easing.OutCubic } }
+    Behavior on opacity {
+      enabled: root.displayedPage !== "appearance"
+      NumberAnimation { duration: Settings.Style.closeDuration; easing.type: Easing.OutCubic }
+    }
     Behavior on scale { NumberAnimation { duration: Settings.Style.closeDuration; easing.type: Easing.OutCubic } }
     onLoaded: item.forceActiveFocus()
   }

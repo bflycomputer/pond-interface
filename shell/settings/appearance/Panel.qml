@@ -78,7 +78,8 @@ Settings.Modal {
       objectName: "brightnessSection"
       width: parent.width; title: "Screen brightness"
       summary: Appearance.State.brightnessAvailable ? Math.round(Appearance.State.brightness * 100) + "%" : "Unavailable"
-      expanded: Appearance.State.expandedSection === "brightness"
+      enabled: Appearance.State.brightnessAvailable
+      expanded: enabled && Appearance.State.expandedSection === "brightness"
       expandedHeight: 109
       onToggled: Appearance.State.toggleSection("brightness")
       Shell.Slider {
@@ -87,22 +88,14 @@ Settings.Modal {
         x: 0; y: 5; width: parent.width
         externalValue: Appearance.State.brightness
         showInlineValue: false
-        interactive: Appearance.State.brightnessAvailable
-        opacity: interactive ? 1 : 0.3
         onMoved: Appearance.State.setBrightness(brightnessSlider.value)
         onDragStarted: Appearance.State.draggingBrightness = true
         onDragFinished: { Appearance.State.draggingBrightness = false; Appearance.State.flushBrightness(); }
-        activeFocusOnTab: interactive
+        activeFocusOnTab: true
         Accessible.role: Accessible.Slider
         Accessible.name: "Screen brightness"
         Keys.onLeftPressed: Appearance.State.setBrightness(value - 0.05)
         Keys.onRightPressed: Appearance.State.setBrightness(value + 0.05)
-      }
-      Text {
-        visible: !Appearance.State.brightnessAvailable
-        y: 36; width: parent.width
-        text: "This display does not expose brightness control."
-        color: "#b3b3b3"; font.family: Shell.Theme.fontFamily; font.pixelSize: 11
       }
     }
     Accordion {
