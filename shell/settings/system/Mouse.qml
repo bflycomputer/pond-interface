@@ -92,7 +92,6 @@ Settings.Modal {
       Shell.Toggle {
         objectName: "mouseNaturalToggle"
         x: parent.width - width - 20; y: 54
-        color: activeFocus ? "#303030" : hovered ? Shell.PanelStyle.hover : "transparent"
         activeFocusOnTab: true
         Accessible.role: Accessible.CheckBox
         Accessible.name: "Natural scrolling"
