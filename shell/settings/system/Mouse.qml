@@ -22,15 +22,15 @@ Settings.Modal {
         id: field
         required property var modelData
         width: fields.width; height: 107; radius: 12
-        color: slider.visualFocus ? "#303030" : "#262626"
+        color: slider.visualFocus ? Shell.PanelStyle.controlHover : Shell.PanelStyle.controlFill
         Text {
           x: 20; y: (51 - height) / 2
-          text: field.modelData.title; color: "#b3b3b3"
+          text: field.modelData.title; color: Qt.rgba(1, 1, 1, 0.7)
           font.family: Shell.Theme.fontFamily; font.pixelSize: 15
         }
         Text {
           anchors.right: parent.right; anchors.rightMargin: 20; y: (51 - height) / 2
-          text: Math.round(slider.value * 100) + "%"; color: "#b3b3b3"
+          text: Math.round(slider.value * 100) + "%"; color: Qt.rgba(1, 1, 1, 0.7)
           font.family: Shell.Theme.fontFamily; font.pixelSize: 15
         }
         Repeater {
@@ -51,7 +51,7 @@ Settings.Modal {
           onMoved: System.State.setMouse(field.modelData.key, value)
           background: Rectangle {
             y: 4; width: slider.width; height: 16; radius: 8
-            color: "#3d3d3d"
+            color: Shell.PanelStyle.sliderTrack
             Rectangle {
               x: 1; y: 1; width: slider.leftPadding + slider.visualPosition * slider.availableWidth - 1
               height: 14; radius: 7
@@ -61,7 +61,7 @@ Settings.Modal {
           handle: Rectangle {
             x: slider.leftPadding + slider.visualPosition * slider.availableWidth - width / 2
             width: 24; height: 24; radius: 12
-            color: "#e7e7e7"; border.width: 2; border.color: field.color
+            color: "#e7e7e7"; border.width: 2; border.color: Qt.tint(root.color, field.color)
           }
           HoverHandler { cursorShape: Qt.PointingHandCursor }
         }
@@ -75,16 +75,15 @@ Settings.Modal {
     }
     Rectangle {
       width: parent.width; height: 108; radius: 12
-      color: "#262626"
+      color: Shell.PanelStyle.controlFill
       Text {
         x: 20; y: (51 - height) / 2
-        text: "Natural scrolling"; color: "#b3b3b3"
+        text: "Natural scrolling"; color: Qt.rgba(1, 1, 1, 0.7)
         font.family: Shell.Theme.fontFamily; font.pixelSize: 15
       }
       Settings.Switcher {
         objectName: "mouseNatural"
         x: 20; y: 47; radius: 8
-        border.color: "#303030"
         model: [{key: "naturalTouchpad", label: "Trackpad", width: 80}, {key: "naturalMouse", label: "Mouse", width: 84}]
         current: root.naturalKey
         onSelected: key => root.naturalKey = key

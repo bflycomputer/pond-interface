@@ -121,7 +121,7 @@ Card {
     height: 32
     externalValue: Audio.State.outputVolume
     muted: Audio.State.outputMuted
-    trackColor: Theme.daylight ? Theme.sidebarInnerOutline : PanelStyle.border
+    trackColor: Theme.daylight ? Theme.sidebarInnerOutline : PanelStyle.sliderTrack
     interactive: root.soundSliderRequested
     hoverEnabled: root.soundSliderContentVisible
     visible: opacity > 0.001
@@ -171,7 +171,7 @@ Card {
           height: 32
           externalValue: Audio.State.outputVolume
           muted: Audio.State.outputMuted
-          trackColor: Theme.daylight ? Theme.sidebarInnerOutline : PanelStyle.border
+          trackColor: Theme.daylight ? Theme.sidebarInnerOutline : PanelStyle.sliderTrack
           interactive: false
           hoverEnabled: false
         }

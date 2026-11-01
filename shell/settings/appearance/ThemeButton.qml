@@ -62,8 +62,8 @@ Item {
   Rectangle {
     x: 2; y: 2; width: 90; height: 90; radius: 45
     visible: !root.available
-    color: root.hovered ? "#171717" : "transparent"
-    border.width: 1; border.color: "#262626"
+    color: root.hovered ? Qt.rgba(1, 1, 1, 0.05) : Qt.rgba(1, 1, 1, 0)
+    border.width: 1; border.color: Qt.rgba(1, 1, 1, 0.10)
     Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.InOutCubic } }
     Image {
       anchors.centerIn: parent; width: 32.156; height: 42.002; rotation: 90

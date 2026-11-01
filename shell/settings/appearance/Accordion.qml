@@ -11,8 +11,8 @@ Rectangle {
   property real expandedHeight: 100
   signal toggled
   implicitHeight: expanded ? expandedHeight : 50
-  radius: 16
-  color: header.containsMouse || activeFocus ? "#303030" : "#262626"
+  radius: expanded ? 16 : 12
+  color: header.containsMouse || activeFocus ? Shell.PanelStyle.controlHover : Shell.PanelStyle.controlFill
   clip: true
   activeFocusOnTab: true
   Accessible.role: Accessible.Button
@@ -28,13 +28,13 @@ Rectangle {
   }
   Text {
     x: 20; y: 0; height: 50
-    text: root.title; color: "#b3b3b3"
+    text: root.title; color: "white"; opacity: 0.7
     font.family: Shell.Theme.fontFamily; font.pixelSize: 15
     verticalAlignment: Text.AlignVCenter
   }
   Text {
     x: parent.width * 0.48; y: 0; width: parent.width - x - (root.enabled ? 40 : 20); height: 50
-    text: root.summary; color: "#b3b3b3"
+    text: root.summary; color: "white"; opacity: 0.7
     font.family: Shell.Theme.fontFamily; font.pixelSize: 15
     verticalAlignment: Text.AlignVCenter; horizontalAlignment: Text.AlignRight
     elide: Text.ElideRight

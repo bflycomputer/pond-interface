@@ -21,12 +21,12 @@ Bluetooth.Row {
     Rectangle {
       x: 264; y: 14; width: 1; height: 16
       visible: root.showBattery || root.hovered
-      color: Shell.PanelStyle.border
+      color: Shell.PanelStyle.outline
     }
     Rectangle {
       x: 203; y: 14; width: 1; height: 16
       visible: root.showBattery && root.hovered
-      color: Shell.PanelStyle.border
+      color: Shell.PanelStyle.outline
     }
     Battery.Indicator { x: 211; y: 14; visible: root.showBattery; percentage: root.device.battery || 0 }
     Text {

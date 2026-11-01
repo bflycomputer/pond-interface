@@ -16,8 +16,7 @@ Controls.Button {
 
   background: Rectangle {
     radius: PanelStyle.rowRadius
-    color: root.hovered || root.activeFocus ? PanelStyle.pressed : PanelStyle.hover
-    Behavior on color { ColorAnimation { duration: PanelStyle.controlDuration } }
+    color: PanelStyle.controlHover
   }
   contentItem: Text {
     text: root.text

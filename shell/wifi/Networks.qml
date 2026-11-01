@@ -40,8 +40,8 @@ DeviceList {
     Rectangle {
       anchors.fill: parent
       radius: PanelStyle.rowRadius
-      color: addNetworkPointer.containsMouse ? PanelStyle.hover
-          : Qt.rgba(38 / 255, 38 / 255, 38 / 255, 0)
+      color: addNetworkPointer.containsMouse ? PanelStyle.rowHover
+          : Qt.alpha(PanelStyle.rowHover, 0)
 
       Behavior on color {
         ColorAnimation { duration: PanelStyle.controlDuration }

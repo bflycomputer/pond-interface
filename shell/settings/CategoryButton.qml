@@ -42,7 +42,7 @@ Item {
   Rectangle {
     anchors.fill: parent
     radius: Settings.Style.radius
-    color: root.hovered ? Settings.Style.hover
+    color: root.hovered ? Qt.tint(Settings.Style.card, Shell.PanelStyle.rowHover)
                         : Settings.Style.card
     clip: true
 

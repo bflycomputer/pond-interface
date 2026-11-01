@@ -56,8 +56,8 @@ Item {
           Theme.lerp(PanelStyle.surface.b, PanelStyle.backSurface.b,
                      root.backingAmount),
           1)
-      border.color: PanelStyle.border
-      border.width: 0.5
+      border.color: PanelStyle.panelBorder
+      border.width: 1
       antialiasing: true
     }
 
@@ -85,7 +85,7 @@ Item {
       height: 1
       z: 2
       visible: root.hasHeaderDivider
-      color: PanelStyle.border
+      color: PanelStyle.outline
       antialiasing: false
     }
   }

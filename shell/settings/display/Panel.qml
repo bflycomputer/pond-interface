@@ -43,7 +43,7 @@ Settings.Modal {
     id: preview
     objectName: "displayPreview"
     x: 30; width: root.width - 60; height: 281; radius: 16
-    color: "transparent"; border.width: 1; border.color: "#303030"
+    color: "transparent"; border.width: 1; border.color: Shell.PanelStyle.outline
     opacity: root.dropdownField ? 0.3 : 1
     enabled: !root.dropdownField && !Display.State.busy
     Item {
@@ -77,20 +77,20 @@ Settings.Modal {
       Text {
         anchors.centerIn: parent; visible: !Display.State.monitors.length
         text: Display.State.loaded ? "No connected displays" : "Loading displays…"
-        font.family: Shell.Theme.fontFamily; font.pixelSize: 15; color: "#b3b3b3"
+        font.family: Shell.Theme.fontFamily; font.pixelSize: 15; color: Qt.rgba(1, 1, 1, 0.7)
       }
     }
     Rectangle {
       objectName: "arrangeDisplays"
       x: 8; y: 233; width: 97; height: 40; radius: 12
       visible: Display.State.monitors.length > 1
-      color: arrangeHover.hovered || activeFocus ? "#262626" : "transparent"
+      color: arrangeHover.hovered || activeFocus ? Shell.PanelStyle.rowHover : "transparent"
       activeFocusOnTab: visible && enabled
       Accessible.role: Accessible.Button; Accessible.name: "Arrange displays"
       Accessible.onPressAction: Settings.State.openPage("arrange")
       Keys.onReturnPressed: Settings.State.openPage("arrange")
       Keys.onSpacePressed: Settings.State.openPage("arrange")
-      Text { anchors.centerIn: parent; text: "Arrange"; color: "#b3b3b3"; font.family: Shell.Theme.fontFamily; font.pixelSize: 15 }
+      Text { anchors.centerIn: parent; text: "Arrange"; color: "white"; opacity: 0.7; font.family: Shell.Theme.fontFamily; font.pixelSize: 15 }
       HoverHandler { id: arrangeHover; cursorShape: Qt.PointingHandCursor }
       TapHandler { onTapped: Settings.State.openPage("arrange") }
     }
@@ -124,7 +124,7 @@ Settings.Modal {
           }
           Rectangle {
             anchors.fill: parent; z: -1; radius: 12
-            color: rotationButton.highlighted ? "#262626" : "transparent"
+            color: rotationButton.highlighted ? Shell.PanelStyle.rowHover : "transparent"
           }
         }
       }

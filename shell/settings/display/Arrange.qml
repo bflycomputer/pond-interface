@@ -33,12 +33,12 @@ Settings.Modal {
     id: canvas
     objectName: "arrangeCanvas"
     x: 30; width: root.width-60; height: 470; radius: 16
-    color: "transparent"; border.width: 1; border.color: "#303030"
+    color: "transparent"; border.width: 1; border.color: Shell.PanelStyle.outline
     clip: true
     Canvas {
       anchors.fill: parent
       onPaint: {
-        const c=getContext("2d"); c.clearRect(0,0,width,height); c.strokeStyle="#303030"; c.lineWidth=1;
+        const c=getContext("2d"); c.clearRect(0,0,width,height); c.strokeStyle="rgba(255,255,255,0.1)"; c.lineWidth=1;
         c.beginPath();
         for(let x=width/10;x<width;x+=width/10) {c.moveTo(x,0);c.lineTo(x,height);}
         for(let y=height/10;y<height;y+=height/10) {c.moveTo(0,y);c.lineTo(width,y);}

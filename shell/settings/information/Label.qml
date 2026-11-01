@@ -9,6 +9,6 @@ Text {
   font.family: Shell.Theme.fontFamily
   font.pixelSize: 11
   font.letterSpacing: 0.11
-  color: "#777777"
+  color: Qt.rgba(1, 1, 1, 0.5)
   FontMetrics { id: metrics; font: root.font }
 }

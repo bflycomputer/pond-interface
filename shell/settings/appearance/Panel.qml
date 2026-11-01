@@ -17,7 +17,7 @@ Settings.Modal {
     Text {
       x: 103; y: 83; height: 25
       text: "Theme:"; font.family: Shell.Theme.fontFamily; font.pixelSize: 15
-      color: "#b3b3b3"; verticalAlignment: Text.AlignVCenter
+      color: "white"; opacity: 0.7; verticalAlignment: Text.AlignVCenter
     }
     Text {
       x: 418; y: 83; height: 25
@@ -30,7 +30,7 @@ Settings.Modal {
       text: upcoming.hovered ? "Coming soon" : daylight.hovered && !daylight.selected ? "Daylight"
           : unthemed.hovered && !unthemed.selected ? "Unthemed" : ""
       font.family: Shell.Theme.fontFamily; font.pixelSize: 15
-      color: "#b3b3b3"; verticalAlignment: Text.AlignVCenter
+      color: Qt.rgba(1, 1, 1, 0.7); verticalAlignment: Text.AlignVCenter
       opacity: text ? 1 : 0
       Behavior on opacity { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
     }

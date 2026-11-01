@@ -16,8 +16,8 @@ Item {
   Rectangle {
     anchors.fill: parent
     radius: PanelStyle.rowRadius
-    color: pointer.containsMouse ? PanelStyle.hover
-        : Qt.rgba(38 / 255, 38 / 255, 38 / 255, 0)
+    color: pointer.containsMouse ? PanelStyle.rowHover
+        : Qt.alpha(PanelStyle.rowHover, 0)
 
     Behavior on color {
       ColorAnimation {

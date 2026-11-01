@@ -43,7 +43,7 @@ Settings.Modal {
       readonly property bool chosen: root.selected.indexOf(modelData.id) >= 0
       readonly property bool highlighted: hover.hovered || (!!root.query && index === 0)
       width: list.width; height: 50; radius: 12
-      color: highlighted ? "#262626" : "transparent"
+      color: highlighted ? Shell.PanelStyle.rowHover : "transparent"
       Accessible.role: root.multiple ? Accessible.CheckBox : Accessible.RadioButton
       Accessible.name: modelData.label
       Accessible.checked: chosen
@@ -67,7 +67,7 @@ Settings.Modal {
         visible: root.multiple
         x: parent.width - 44; anchors.verticalCenter: parent.verticalCenter
         width: 24; height: 24; radius: 6
-        color: row.highlighted ? "#303030" : "#262626"
+        color: row.highlighted ? Shell.PanelStyle.controlHover : Shell.PanelStyle.controlFill
       }
       Image {
         visible: row.chosen
@@ -84,7 +84,7 @@ Settings.Modal {
     Rectangle {
       objectName: "systemSearch"
       x: 30; y: 82; width: root.width - 60; height: 51; radius: 12
-      color: search.activeFocus && !clearHover.hovered ? "#303030" : "#262626"
+      color: search.activeFocus && !clearHover.hovered ? Shell.PanelStyle.controlHover : Shell.PanelStyle.controlFill
       HoverHandler { cursorShape: Qt.IBeamCursor }
       TapHandler { onTapped: search.forceActiveFocus() }
       Text {
@@ -124,7 +124,7 @@ Settings.Modal {
         x: parent.width - 46; anchors.verticalCenter: parent.verticalCenter
         width: 40; height: 40; radius: 4
         visible: !!search.text
-        color: clearHover.hovered ? "#303030" : "transparent"
+        color: clearHover.hovered ? Shell.PanelStyle.rowHover : "transparent"
         Accessible.role: Accessible.Button
         Accessible.name: "Clear search"
         Accessible.onPressAction: search.clear()
@@ -141,8 +141,8 @@ Settings.Modal {
       objectName: "keyboardShortcut"
       visible: root.multiple
       x: root.width - 106; y: 21; width: 76; height: 40; radius: 8
-      color: shortcutHover.hovered ? "#262626" : "transparent"
-      border.width: shortcutHover.hovered ? 0 : 1; border.color: "#303030"
+      color: shortcutHover.hovered ? Shell.PanelStyle.rowHover : "transparent"
+      border.width: shortcutHover.hovered ? 0 : 1; border.color: Shell.PanelStyle.outline
       Accessible.role: Accessible.StaticText
       Accessible.name: "Shortcut: Super+K switches between languages"
       Text {
@@ -184,10 +184,10 @@ Settings.Modal {
               id: key
               required property string modelData
               width: 40; height: 40; radius: 4
-              color: "transparent"; border.color: "#4a4a4a"
+              color: "transparent"; border.color: Qt.rgba(1, 1, 1, 0.15)
               Rectangle {
                 anchors.centerIn: parent; width: 32; height: 32; radius: 16
-                color: "transparent"; border.color: "#4a4a4a"
+                color: "transparent"; border.color: Qt.rgba(1, 1, 1, 0.15)
               }
               Text {
                 anchors.centerIn: parent

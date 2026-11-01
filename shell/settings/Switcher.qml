@@ -9,7 +9,7 @@ Rectangle {
   property string current
   signal selected(string key)
   width: 168; height: 41; radius: 12
-  color: "transparent"; border.width: 1; border.color: "#262626"
+  color: "transparent"; border.width: 1; border.color: Shell.PanelStyle.outline
   Row {
     x: 2; y: 2
     Repeater {
@@ -24,7 +24,7 @@ Rectangle {
         radius: 2
         topLeftRadius: index === 0 ? root.radius - 2 : 2; bottomLeftRadius: topLeftRadius
         topRightRadius: index === 1 ? root.radius - 2 : 2; bottomRightRadius: topRightRadius
-        color: chosen ? "#303030" : hover.hovered || activeFocus ? "#262626" : "transparent"
+        color: chosen ? Shell.PanelStyle.controlHover : hover.hovered || activeFocus ? Shell.PanelStyle.rowHover : "transparent"
         activeFocusOnTab: true
         Accessible.role: Accessible.RadioButton
         Accessible.name: modelData.label

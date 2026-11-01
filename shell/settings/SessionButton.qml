@@ -82,7 +82,7 @@ Item {
       anchors.centerIn: parent
       radius: width / 2
       color: root.hovered ? root.hoverControlColor
-                          : Settings.Style.sessionControl
+                          : Qt.tint(Settings.Style.card, Settings.Style.sessionControl)
 
       Behavior on color {
         ColorAnimation {

@@ -10,8 +10,8 @@ Item {
     anchors.fill: parent
     radius: 12
     color: closeHover.hovered ? PanelStyle.pressed : PanelStyle.hover
-    border.color: PanelStyle.border
-    border.width: 0.5
+    border.color: Qt.alpha(PanelStyle.border, 0.5)
+    border.width: 1
     antialiasing: true
 
     Image {

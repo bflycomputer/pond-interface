@@ -30,7 +30,7 @@ Settings.Modal {
       x:30; y:modelData.y-82; width:520; height:24
       Rectangle {
         width:24; height:24; radius:12
-        color:"transparent"; border.width:1; border.color:"#343434"
+        color:"transparent"; border.width:1; border.color:Qt.rgba(1, 1, 1, 0.15)
         Information.Label {
           x:0; width:24; capY:8; text:row.index+1
           font.family:"IBM Plex Mono"; font.weight:Font.DemiBold; font.letterSpacing:-0.22
@@ -56,7 +56,7 @@ Settings.Modal {
       Rectangle {
         visible:row.modelData.line>0
         y:row.modelData.line-row.modelData.y-1; width:520; height:1
-        color:"#343434"
+        color:Shell.PanelStyle.outline
       }
     }
   }
@@ -64,9 +64,8 @@ Settings.Modal {
     id:manual
     objectName:"informationManual"
     x:30; y:376; width:520; height:64; radius:12
-    // Stay opaque while easing so transparent black cannot darken the midpoint.
-    color:manualHover.hovered || activeFocus ? Settings.Style.hover : root.color
-    border.width:1; border.color:"#343434"
+    color:manualHover.hovered || activeFocus ? Shell.PanelStyle.rowHover : Qt.alpha(Shell.PanelStyle.rowHover, 0)
+    border.width:1; border.color:Shell.PanelStyle.outline
     activeFocusOnTab:true
     Accessible.role:Accessible.Button
     Accessible.name:"Manual"

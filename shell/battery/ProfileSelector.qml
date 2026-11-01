@@ -50,7 +50,7 @@ Item {
             z: -1
             radius: width / 2
             color: button.selected ? Qt.alpha(button.accent, 0.1)
-                : button.highlighted ? Settings.Style.hover : "transparent"
+                : button.highlighted ? Shell.PanelStyle.rowHover : "transparent"
           }
 
           Text {

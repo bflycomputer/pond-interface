@@ -30,7 +30,7 @@ Item {
     height: root.height
     radius: 16
     color: root.inlinePreview && Shell.Theme.daylight
-        ? Qt.tint(Shell.Theme.sidebarHoverFill,
+        ? Qt.tint(Qt.rgba(1, 1, 1, 0.10),
                   root.hovered ? Shell.Theme.sidebarHoverFill : Shell.Theme.sidebarClearFill)
         : root.inlinePreview ? (root.hovered ? "#313131" : "#242424") : Shell.Theme.sidebarV3Background
     antialiasing: true

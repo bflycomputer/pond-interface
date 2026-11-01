@@ -17,7 +17,7 @@ Item {
 
   Rectangle {
     anchors.fill: parent; radius: Shell.PanelStyle.rowRadius
-    color: root.hovered ? Shell.PanelStyle.hover : "transparent"
+    color: root.hovered ? Shell.PanelStyle.rowHover : "transparent"
   }
   MouseArea {
     anchors.fill: parent; enabled: root.interactive

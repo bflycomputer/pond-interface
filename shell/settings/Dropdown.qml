@@ -48,7 +48,7 @@ FocusScope {
         required property int index
         objectName: "displayOption" + modelData.value
         width: list.width; height: modelData.separator ? 9 : 40; radius: 12
-        color: !modelData.disabled && (hover.hovered || (list.activeFocus && list.currentIndex === index) || String(modelData.value) === root.currentValue) ? "#262626" : "transparent"
+        color: !modelData.disabled && (hover.hovered || (list.activeFocus && list.currentIndex === index) || String(modelData.value) === root.currentValue) ? Shell.PanelStyle.rowHover : "transparent"
         Accessible.role: modelData.separator ? Accessible.Separator : Accessible.MenuItem; Accessible.name: modelData.label
         Accessible.checked: !!modelData.checked
         Accessible.onPressAction: root.pick(modelData)

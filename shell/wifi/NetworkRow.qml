@@ -15,7 +15,7 @@ Item {
   Rectangle {
     anchors.fill: parent
     radius: PanelStyle.rowRadius
-    color: hover.hovered ? PanelStyle.hover : "transparent"
+    color: hover.hovered ? PanelStyle.rowHover : "transparent"
   }
   MouseArea {
     anchors.fill: parent
@@ -69,7 +69,7 @@ Item {
     width: 90
     height: 40
     radius: 10
-    color: disconnectHover.hovered ? PanelStyle.pressed : "transparent"
+    color: disconnectHover.hovered ? PanelStyle.controlHover : "transparent"
 
     Text {
       anchors.centerIn: parent

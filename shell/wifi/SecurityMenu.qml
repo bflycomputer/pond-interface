@@ -103,7 +103,7 @@ Item {
         radius: 12
         color: modelData.mode === root.currentMode || rowHover.hovered
             || (optionList.activeFocus && index === optionList.currentIndex)
-            ? PanelStyle.hover : "transparent"
+            ? PanelStyle.rowHover : "transparent"
 
         Text {
           x: 12

@@ -5,6 +5,7 @@ import Quickshell
 import Quickshell.Services.SystemTray
 import Quickshell.Widgets
 import "." as Settings
+import ".." as Shell
 
 // Status notifier items along the top of the overlay.
 Item {
@@ -110,7 +111,7 @@ Item {
           width: 36
           height: 36
           radius: 6
-          color: highlighted ? Settings.Style.hover : Qt.alpha(Settings.Style.hover, 0)
+          color: highlighted ? Shell.PanelStyle.rowHover : Qt.alpha(Shell.PanelStyle.rowHover, 0)
           activeFocusOnTab: true
           Accessible.role: Accessible.Button
           Accessible.name: modelData.tooltipTitle || modelData.title || modelData.id

@@ -13,7 +13,7 @@ QtObject {
   readonly property int summaryIconSize: 14
   readonly property int closeSize: 24
   readonly property int closeIconSize: 16
-  readonly property color hover: "#262626"
+  readonly property color hover: Qt.rgba(1, 1, 1, 0.06)
   readonly property color closeHover: "#3D3D3D"
   readonly property color foreground: "#F8F9F9"
   readonly property color divider: Qt.rgba(1, 1, 1, 0.1)

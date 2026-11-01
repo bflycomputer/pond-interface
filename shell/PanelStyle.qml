@@ -5,8 +5,14 @@ QtObject {
   readonly property color surface: "#1D1D1D"
   readonly property color backSurface: "#131313"
   readonly property color border: "#3D3D3D"
+  readonly property color panelBorder: Qt.alpha(border, 0.8)
   readonly property color hover: "#262626"
   readonly property color pressed: "#303030"
+  readonly property color controlFill: Qt.rgba(1, 1, 1, 0.05)
+  readonly property color rowHover: Qt.rgba(1, 1, 1, 0.06)
+  readonly property color sliderTrack: Qt.rgba(1, 1, 1, 0.07)
+  readonly property color controlHover: Qt.rgba(1, 1, 1, 0.10)
+  readonly property color outline: Qt.rgba(1, 1, 1, 0.10)
   readonly property color accent: "#CBA6F7"
   readonly property color accentText: "#4F3D64"
   readonly property color enabledSurface: "#0C3723"
