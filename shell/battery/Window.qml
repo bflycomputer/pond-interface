@@ -12,6 +12,7 @@ PanelWindow {
   screen: bar.screen
   visible: bar.popup === "battery"
   color: "transparent"
+  BackgroundEffect.blurRegion: Shell.Theme.translucent ? card.blurRegion : null
   anchors { left: true; right: true; top: true; bottom: true }
   WlrLayershell.layer: WlrLayer.Overlay
   WlrLayershell.namespace: "pond-battery-" + (screen ? screen.name : "unknown")

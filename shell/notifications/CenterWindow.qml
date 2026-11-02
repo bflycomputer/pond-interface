@@ -41,6 +41,12 @@ PanelWindow {
   screen: bar.screen
   visible: requested || reveal > 0.001
   color: "transparent"
+  BackgroundEffect.blurRegion: Shell.Theme.translucent ? panelBlur : null
+  Region {
+    id: panelBlur
+    item: root.requested && root.reveal > Shell.PanelStyle.blurRevealOpacity ? panelBackground : null
+    radius: panelBackground.radius
+  }
 
   anchors {
     left: true
@@ -85,11 +91,12 @@ PanelWindow {
     width: Notifications.Style.panelWidth
     height: root.panelHeight
     radius: Notifications.Style.radius
-    color: Shell.Theme.sidebarBackground
+    color: Shell.PanelStyle.panelSurface
     opacity: root.reveal
     antialiasing: true
     z: 2
     visible: root.listMode
+    Shell.PanelBorder { radius: panelBackground.radius }
   }
 
   Text {
@@ -183,6 +190,7 @@ PanelWindow {
         height: implicitHeight
         notification: modelData
         showDivider: root.listMode && index < root.itemCount - 1
+        panelRow: root.listMode
         closeEnabled: false
         extraHovered: closeOverlay.hoveredCard === row && floatingClose.hovered
         onHoveredChanged: {

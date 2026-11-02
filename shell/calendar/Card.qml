@@ -16,6 +16,7 @@ Shell.PanelBackground {
   readonly property int weekRow: isCurrentMonth
       ? Dates.currentWeekRow(days, today) : -1
   readonly property real cellWidth: (width - 20 - 12) / 7
+  readonly property color todayFill: Shell.Theme.colors.todayFill
   readonly property real cellHeight: 36
   readonly property real rowPitch: cellHeight + 2
   readonly property string monthTitle: Qt.locale("en_US").standaloneMonthName(
@@ -117,7 +118,7 @@ Shell.PanelBackground {
       width: root.cellWidth
       height: root.cellHeight
       radius: 8
-      color: isToday && root.isCurrentMonth ? "#D1C9FF" : "transparent"
+      color: isToday && root.isCurrentMonth ? root.todayFill : "transparent"
       Accessible.role: Accessible.StaticText
       Accessible.name: Qt.formatDate(modelData, "dddd, MMMM d, yyyy")
           + (isToday ? ", today" : "")

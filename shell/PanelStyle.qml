@@ -3,6 +3,7 @@ import QtQuick
 
 QtObject {
   readonly property color surface: Theme.colors.surface
+  readonly property color panelSurface: Theme.colors.panelSurface
   readonly property color backSurface: Theme.colors.backSurface
   readonly property color border: Theme.colors.border
   readonly property color panelBorder: Theme.colors.panelBorder
@@ -13,6 +14,24 @@ QtObject {
   readonly property color sliderTrack: Theme.colors.sliderTrack
   readonly property color controlHover: Theme.colors.controlHover
   readonly property color outline: Theme.colors.outline
+  readonly property color drawerFill: Theme.colors.drawerFill
+  readonly property color drawerHover: Theme.colors.drawerHover
+  readonly property color drawerRowHover: Theme.colors.drawerRowHover
+  readonly property color drawerSliderTrack: Theme.colors.drawerSliderTrack
+  readonly property color drawerSliderBorder: Theme.colors.drawerSliderBorder
+  readonly property color fieldFocus: Theme.colors.fieldFocus
+  readonly property color selectFill: Theme.colors.selectFill
+  readonly property color checkFill: Theme.colors.checkFill
+  readonly property color checkHover: Theme.colors.checkHover
+  readonly property color checkMark: Theme.colors.checkMark
+  readonly property color menuSurface: Theme.colors.menuSurface
+  readonly property color menuBorder: Theme.colors.menuBorder
+  readonly property color menuRowHover: Theme.colors.menuRowHover
+  readonly property color closeFill: Theme.colors.closeFill
+  readonly property color closeHover: Theme.colors.closeHover
+  readonly property color closeBorder: Theme.colors.closeBorder
+  readonly property color closeHoverBorder: Theme.colors.closeHoverBorder
+  readonly property real drawerToggleAlpha: Theme.colors.drawerToggleAlpha
   readonly property color accent: Theme.colors.accent
   readonly property color accentText: "#4F3D64"
   readonly property color enabledSurface: "#0C3723"
@@ -27,6 +46,7 @@ QtObject {
   readonly property int pageDuration: 350
   readonly property int openDuration: 220
   readonly property int controlDuration: 120
+  readonly property real blurRevealOpacity: 0.25
   readonly property var frontShadows: [
     { x: 0, y: -21, blur: 33.5, alpha: 0.06 },
     { x: 0, y: 23, blur: 27.5, alpha: 0.08 },

@@ -24,6 +24,13 @@ PanelWindow {
   screen: bar.screen
   visible: requested || reveal > 0.001
   color: "transparent"
+  BackgroundEffect.blurRegion: Shell.Theme.translucent ? toastBlur : null
+  onRevealChanged: toastBlur.changed()
+  Region {
+    id: toastBlur
+    item: root.requested && root.reveal > Shell.PanelStyle.blurRevealOpacity ? toastCard.surface : null
+    radius: toastCard.surface.radius
+  }
   implicitWidth: Notifications.Style.interactiveWidth
   implicitHeight: toastCard.implicitHeight
 

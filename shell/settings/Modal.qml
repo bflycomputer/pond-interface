@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Effects
+import Quickshell
 import "." as Settings
 import ".." as Shell
 
@@ -16,12 +17,19 @@ Rectangle {
   property real contentHeight: 0
   property real availableHeight: 900
   property bool roundedContent: false
+  property bool showOutline: true
   property real closeButtonY: -13
   signal backRequested
   implicitWidth: 580
   implicitHeight: Math.min(contentHeight + bodyTop, availableHeight)
   radius: 32
-  color: Settings.Style.card
+  color: Shell.Theme.colors.modalSurface
+  readonly property Region blurRegion: Region {
+    item: root.enabled && root.parent?.opacity > Shell.PanelStyle.blurRevealOpacity
+        && root.color.a < 1 ? root : null
+    radius: root.radius
+  }
+  onScaleChanged: blurRegion.changed()
 
   // Accordion heights already animate. Follow them directly so the shell and
   // hit targets stay in step instead of starting another animation each frame.
@@ -63,6 +71,11 @@ Rectangle {
         }
       }
     }
+  }
+  Shell.PanelBorder {
+    radius: root.radius
+    visible: Shell.Theme.translucent && root.showOutline
+    z: 4
   }
   Item { id: overlays; anchors.fill: parent; z: 6 }
   Shell.PanelCloseButton {

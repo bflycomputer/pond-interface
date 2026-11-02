@@ -70,7 +70,8 @@ Item {
       height: 32
       externalValue: root.selectedVolume
       muted: root.selectedTab === "output" && Audio.State.outputMuted
-      trackColor: PanelStyle.sliderTrack
+      trackColor: PanelStyle.drawerSliderTrack
+      handleBorderColor: PanelStyle.drawerSliderBorder
       interactive: root.interactive && root.selectedAudioAvailable
       onMoved: {
         if (root.selectedTab === "output")

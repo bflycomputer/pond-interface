@@ -6,6 +6,8 @@ import "../.." as Shell
 Settings.Modal {
   id: root
   objectName: "manualPanel"
+  color: Settings.Style.card
+  showOutline: false
   title: ""
   implicitWidth: 500
   implicitHeight: Math.min(672, availableHeight)

@@ -1,4 +1,5 @@
 import QtQuick
+import Quickshell
 import "." as Audio
 import ".."
 
@@ -7,6 +8,13 @@ Item {
 
   property bool opened: false
   readonly property int closeAllDuration: 200
+  readonly property Region blurRegion: Region {
+    item: root.opened && root.opacity > PanelStyle.blurRevealOpacity ? soundCard : null
+    radius: PanelStyle.radius
+  }
+  onXChanged: blurRegion.changed()
+  onYChanged: blurRegion.changed()
+  onScaleChanged: blurRegion.changed()
 
   width: 336
   height: soundCard.implicitHeight + 22

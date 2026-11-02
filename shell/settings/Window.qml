@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import "." as Settings
+import ".." as Shell
 import "appearance" as Appearance
 import "display" as Display
 import "information" as Information
@@ -87,6 +88,14 @@ PanelWindow {
   screen: menuScreen
   visible: presented && !Appearance.State.pickingWallpaper
   color: "transparent"
+  BackgroundEffect.blurRegion: Shell.Theme.translucent ? cardBlur : null
+  onWidthChanged: cardBlur.changed()
+  onHeightChanged: cardBlur.changed()
+  Region {
+    id: cardBlur
+    regions: Array.from(composition.children).concat(profileSelector, tray, modal.item)
+        .filter(Boolean).map(item => item.blurRegion).filter(Boolean)
+  }
 
   anchors {
     left: true
@@ -220,6 +229,7 @@ PanelWindow {
   }
 
   Battery.ProfileSelector {
+    id: profileSelector
     z: 2
     anchors.right: parent.right
     anchors.rightMargin: 10
@@ -234,6 +244,7 @@ PanelWindow {
   }
 
   Tray {
+    id: tray
     z: 3
     anchors.fill: parent
     enabled: root.cardsOpen
@@ -263,6 +274,9 @@ PanelWindow {
     }
     Behavior on scale { NumberAnimation { duration: Settings.Style.closeDuration; easing.type: Easing.OutCubic } }
     onLoaded: item.forceActiveFocus()
+    onXChanged: cardBlur.changed()
+    onYChanged: cardBlur.changed()
+    onScaleChanged: cardBlur.changed()
   }
   Component {
     id: displayPage

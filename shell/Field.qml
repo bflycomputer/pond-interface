@@ -21,8 +21,8 @@ Rectangle {
   implicitWidth: PanelStyle.fieldWidth
   implicitHeight: PanelStyle.fieldHeight
   radius: PanelStyle.rowRadius
-  color: focused || hovered || highlighted
-      ? PanelStyle.controlHover : PanelStyle.controlFill
+  color: hovered || highlighted ? PanelStyle.drawerHover
+      : focused ? PanelStyle.fieldFocus : PanelStyle.drawerFill
   border.width: 0
   antialiasing: true
 

@@ -10,6 +10,7 @@ T.Slider {
   property bool muted: false
   property bool interactive: true
   property color trackColor: PanelStyle.sliderTrack
+  property color handleBorderColor: PanelStyle.border
   signal dragStarted
   signal dragFinished
   onPressedChanged: pressed ? dragStarted() : dragFinished()
@@ -89,7 +90,7 @@ T.Slider {
         : root.muted ? Qt.rgba(1, 1, 1, 0.1) : PanelStyle.sliderFill
     border.width: 1
     border.color: root.handleHovered && !root.pressed ? PanelStyle.accent
-        : root.muted ? Qt.rgba(1, 1, 1, 0.5) : PanelStyle.border
+        : root.muted ? Qt.rgba(1, 1, 1, 0.5) : root.handleBorderColor
     antialiasing: true
 
     Behavior on width {

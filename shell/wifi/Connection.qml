@@ -12,6 +12,7 @@ Item {
 
   PanelBackground {
     anchors.fill: parent
+    stacked: true
     Text {
       anchors.centerIn: parent
       width: parent.width - 40

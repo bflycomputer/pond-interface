@@ -100,7 +100,8 @@ PanelWindow {
   Region {
     id: cardBlur
     regions: [timeCard.blurRegion, workspacesCard.blurRegion, mediaCard.blurRegion,
-      notificationCard.blurRegion, installsCard.blurRegion, controls.blurRegion]
+      notificationCard.blurRegion, installsCard.blurRegion, controls.blurRegion,
+      wifiPanel.blurRegion, audioPanel.blurRegion, bluetoothPanel.blurRegion]
   }
   // Keep compositor resizes out of the card animation; only the input area shrinks.
   implicitWidth: Math.ceil(Math.max(Theme.sidebarOuterMargin + Theme.sidebarCardExpandedWidth + Theme.sidebarFadeWidth,

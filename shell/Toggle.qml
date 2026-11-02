@@ -12,7 +12,8 @@ Rectangle {
   implicitWidth: 54
   implicitHeight: 28
   radius: height / 2
-  color: Qt.rgba(1, 1, 1, root.hovered ? 0.12 : 0.06)
+  property real trackAlpha: 0.06
+  color: Qt.rgba(1, 1, 1, trackAlpha + (root.hovered ? 0.06 : 0))
 
   Behavior on position {
     NumberAnimation {

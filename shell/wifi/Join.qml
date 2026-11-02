@@ -31,7 +31,7 @@ Item {
     }
   }
 
-  PanelBackground { anchors.fill: parent }
+  PanelBackground { anchors.fill: parent; stacked: true }
   Item {
     anchors.fill: parent
     enabled: root.interactive && !root.dropdownOpen

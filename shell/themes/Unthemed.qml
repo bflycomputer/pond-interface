@@ -13,6 +13,7 @@ QtObject {
   property color surface: "#1D1D1D"
   property color backSurface: "#131313"
   property color border: "#3D3D3D"
+  property color panelSurface: surface
   property color panelBorder: Qt.alpha(border, 0.8)
   property color hover: "#262626"
   property color pressed: "#303030"
@@ -28,14 +29,44 @@ QtObject {
   property color sliderTrack: Qt.rgba(1, 1, 1, 0.07)
   property color sliderFill: "#E7E7E7"
   property color sliderBubble: "#D1D1D1"
+  property color todayFill: "#D1C9FF"
+
+  property color drawerFill: controlFill
+  property color drawerHover: controlHover
+  property color drawerRowHover: rowHover
+  property color drawerSliderTrack: sliderTrack
+  property color drawerSliderBorder: border
+  property real drawerToggleAlpha: 0.06
+  property color fieldFocus: controlHover
+  property color selectFill: controlHover
+  property color checkFill: hover
+  property color checkHover: pressed
+  property color checkMark: accent
+  property color menuSurface: surface
+  property color menuBorder: border
+  property color menuRowHover: rowHover
+  property color closeFill: hover
+  property color closeHover: pressed
+  property color closeBorder: Qt.alpha(border, 0.5)
+  property color closeHoverBorder: closeBorder
+  property color closeHoverGlyph: "#38224D"
 
   property real overlayOpacity: 0.7
   property color card: "#1D1D1D"
+  property color modalSurface: card
   property color sessionControl: Qt.rgba(1, 1, 1, 0.07)
+  property color menuCard: card
+  property color menuControl: card
+  property color menuCardHover: Qt.tint(card, rowHover)
+  property color trayHover: rowHover
 
   property color notificationHover: Qt.rgba(1, 1, 1, 0.06)
   property color notificationText: "#F8F9F9"
   property color notificationTitle: notificationText
+  property color notificationCloseFill: sidebarControl
+  property color notificationCloseHover: "#3D3D3D"
+  property color dismissGlyph: "#38224D"
+  property color dismissHoverGlyph: "black"
   property color inlineFill: "#242424"
   property color inlineHoverFill: "#313131"
 

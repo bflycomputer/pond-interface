@@ -1,4 +1,5 @@
 import QtQuick
+import Quickshell
 import "." as Settings
 import ".." as Shell
 
@@ -15,6 +16,10 @@ Item {
   signal clicked
 
   readonly property bool hovered: pointer.containsMouse
+  readonly property Region blurRegion: Region {
+    item: root.revealed && root.opacity > Shell.PanelStyle.blurRevealOpacity ? root : null
+    radius: Settings.Style.radius
+  }
 
   implicitWidth: 264
   implicitHeight: 264
@@ -22,6 +27,7 @@ Item {
   opacity: revealed ? 1 : 0
   scale: revealed ? 1 : 0.86
   transformOrigin: Item.Center
+  onScaleChanged: blurRegion.changed()
 
   Behavior on opacity {
     NumberAnimation {
@@ -42,8 +48,7 @@ Item {
   Rectangle {
     anchors.fill: parent
     radius: Settings.Style.radius
-    color: root.hovered ? Qt.tint(Settings.Style.card, Shell.PanelStyle.rowHover)
-                        : Settings.Style.card
+    color: root.hovered ? Settings.Style.menuCardHover : Settings.Style.menuCard
     clip: true
 
     Behavior on color {

@@ -23,6 +23,7 @@ Item {
 
   PanelBackground {
     anchors.fill: parent
+    stacked: true
     Text {
       x: 19.5; y: 19.5; width: root.titleIcon ? 245 : 276
       elide: Text.ElideRight

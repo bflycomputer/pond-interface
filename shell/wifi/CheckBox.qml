@@ -12,7 +12,7 @@ Item {
   Rectangle {
     anchors.fill: parent
     radius: 6
-    color: checkHover.hovered ? PanelStyle.pressed : PanelStyle.hover
+    color: checkHover.hovered ? PanelStyle.checkHover : PanelStyle.checkFill
   }
 
   Shape {
@@ -21,7 +21,7 @@ Item {
     height: 20
     visible: root.checked
     ShapePath {
-      strokeColor: PanelStyle.accent
+      strokeColor: PanelStyle.checkMark
       strokeWidth: 2
       capStyle: ShapePath.RoundCap
       joinStyle: ShapePath.RoundJoin

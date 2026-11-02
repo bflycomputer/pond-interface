@@ -15,6 +15,7 @@ Item {
   implicitHeight: 276
   Shell.PanelBackground {
     anchors.fill: parent
+    stacked: true
     Text {
       x: 20; y: 20; text: "Pair device"; color: Shell.Theme.colors.text
       font.family: Shell.Theme.titleFontFamily; font.pixelSize: 20

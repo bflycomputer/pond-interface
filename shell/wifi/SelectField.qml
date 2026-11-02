@@ -16,7 +16,7 @@ Controls.Button {
 
   background: Rectangle {
     radius: PanelStyle.rowRadius
-    color: PanelStyle.controlHover
+    color: PanelStyle.selectFill
   }
   contentItem: Text {
     text: root.text

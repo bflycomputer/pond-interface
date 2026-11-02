@@ -6,6 +6,10 @@ QtObject {
   readonly property color overlay: "#101010"
   readonly property real overlayOpacity: Shell.Theme.colors.overlayOpacity
   readonly property color card: Shell.Theme.colors.card
+  readonly property color menuCard: Shell.Theme.colors.menuCard
+  readonly property color menuControl: Shell.Theme.colors.menuControl
+  readonly property color menuCardHover: Shell.Theme.colors.menuCardHover
+  readonly property color trayHover: Shell.Theme.colors.trayHover
   readonly property color sessionControl: Shell.Theme.colors.sessionControl
   readonly property int sessionSize: 127
   readonly property int radius: 12

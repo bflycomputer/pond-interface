@@ -14,6 +14,7 @@ PanelWindow {
   screen: bar.screen
   visible: bar.popup === "calendar"
   color: "transparent"
+  BackgroundEffect.blurRegion: Shell.Theme.translucent ? calendar.blurRegion : null
   anchors { left: true; right: true; top: true; bottom: true }
   WlrLayershell.layer: WlrLayer.Overlay
   WlrLayershell.namespace: "pond-calendar-" + (screen ? screen.name : "unknown")

@@ -48,7 +48,7 @@ Item {
       anchors.fill: parent
       radius: Theme.lerp(PanelStyle.radius, 14.38,
                          root.backingAmount)
-      color: Qt.rgba(
+      color: Theme.translucent ? PanelStyle.panelSurface : Qt.rgba(
           Theme.lerp(PanelStyle.surface.r, PanelStyle.backSurface.r,
                      root.backingAmount),
           Theme.lerp(PanelStyle.surface.g, PanelStyle.backSurface.g,
@@ -57,8 +57,9 @@ Item {
                      root.backingAmount),
           1)
       border.color: PanelStyle.panelBorder
-      border.width: 1
+      border.width: Theme.translucent ? 0 : 1
       antialiasing: true
+      PanelBorder { radius: parent.radius }
     }
 
     Loader {

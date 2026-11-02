@@ -29,7 +29,7 @@ Item {
     }
   }
 
-  PanelBackground { anchors.fill: parent }
+  PanelBackground { anchors.fill: parent; stacked: true }
 
   Item {
     id: cardContent

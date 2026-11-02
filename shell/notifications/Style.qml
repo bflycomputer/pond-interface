@@ -15,7 +15,8 @@ QtObject {
   readonly property int closeSize: 24
   readonly property int closeIconSize: 16
   readonly property color hover: Shell.Theme.colors.notificationHover
-  readonly property color closeHover: "#3D3D3D"
+  readonly property color closeFill: Shell.Theme.colors.notificationCloseFill
+  readonly property color closeHover: Shell.Theme.colors.notificationCloseHover
   readonly property color foreground: Shell.Theme.colors.notificationText
   readonly property color divider: Qt.rgba(1, 1, 1, 0.1)
   readonly property real secondaryIconOpacity: 0.4

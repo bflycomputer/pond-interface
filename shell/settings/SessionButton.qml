@@ -1,4 +1,5 @@
 import QtQuick
+import Quickshell
 import "." as Settings
 import ".." as Shell
 
@@ -22,6 +23,10 @@ Item {
   signal clicked
 
   readonly property bool hovered: pointer.containsMouse || highlighted
+  readonly property Region blurRegion: Region {
+    item: root.revealed && root.opacity > Shell.PanelStyle.blurRevealOpacity ? root : null
+    radius: Settings.Style.radius
+  }
 
   implicitWidth: Settings.Style.sessionSize
   implicitHeight: Settings.Style.sessionSize
@@ -29,6 +34,7 @@ Item {
   opacity: revealed ? 1 : 0
   scale: revealed ? 1 : 0.86
   transformOrigin: Item.Center
+  onScaleChanged: blurRegion.changed()
 
   onRevealedChanged: {
     if (!revealed) {
@@ -66,7 +72,7 @@ Item {
     id: card
     anchors.fill: parent
     radius: Settings.Style.radius
-    color: root.hovered ? root.hoverColor : Settings.Style.card
+    color: root.hovered ? root.hoverColor : Settings.Style.menuCard
     clip: true
 
     Behavior on color {
@@ -82,7 +88,8 @@ Item {
       anchors.centerIn: parent
       radius: width / 2
       color: root.hovered ? root.hoverControlColor
-                          : Qt.tint(Settings.Style.card, Settings.Style.sessionControl)
+          : Shell.Theme.translucent ? Settings.Style.sessionControl
+          : Qt.tint(Settings.Style.card, Settings.Style.sessionControl)
 
       Behavior on color {
         ColorAnimation {

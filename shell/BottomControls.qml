@@ -297,7 +297,8 @@ Card {
         else if (slot === 1) root.soundButtonHovered = hovered;
       }
       readonly property bool selected: slot === 0 ? root.wifiOpen : slot === 1 ? root.soundOpen : slot === 2 && root.settingsOpen
-      restingOpacity: selected || (slot === 1 && root.keyboardVolumeVisible) ? 1 : 0.6
+      restingOpacity: selected || (slot === 1 && root.keyboardVolumeVisible)
+          || (Theme.translucent && !root.soundSliderContentVisible) ? 1 : 0.6
       iconSource: modelData.icon ? Qt.resolvedUrl("assets/" + modelData.icon) : ""
       iconWidth: modelData.width
       iconHeight: modelData.height

@@ -43,7 +43,7 @@ Item {
           width: Notifications.Style.summaryIconSize
           height: Notifications.Style.summaryIconSize
           source: Qt.resolvedUrl("../assets/bell.svg")
-          opacity: root.empty ? 0.88 : 1
+          opacity: root.empty && !Shell.Theme.translucent ? 0.88 : 1
           sourceSize: Qt.size(Notifications.Style.summaryIconSize * 2,
                               Notifications.Style.summaryIconSize * 2)
           fillMode: Image.PreserveAspectFit
@@ -59,7 +59,7 @@ Item {
           height: Notifications.Style.summaryIconSize
           text: root.empty ? "Notifications" : String(Notifications.State.notificationCount)
           visible: !root.empty || root.collapseProgress < 0.31
-          opacity: root.empty ? 0.6 : 1
+          opacity: root.empty && !Shell.Theme.translucent ? 0.6 : 1
           color: root.empty ? Notifications.Style.foreground : "#B7B7B7"
           font.family: Shell.Theme.fontFamily
           font.weight: Font.Medium

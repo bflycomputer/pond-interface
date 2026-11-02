@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import Quickshell
 
 // Keep page instances alive while they move behind the front card, preserving
 // entered text and selections when the user goes back.
@@ -11,6 +12,19 @@ Item {
   signal panelOpened
   signal panelClosed
   signal pagePopping(string page)
+  readonly property Region blurRegion: Region {
+    Region {
+      item: root.opened && root.opacity > PanelStyle.blurRevealOpacity ? frontBounds : null
+      radius: PanelStyle.radius
+    }
+    Region {
+      item: root.opened && root.depth > 1 ? backBounds : null
+      radius: backBounds.radius
+    }
+  }
+  onXChanged: blurRegion.changed()
+  onYChanged: blurRegion.changed()
+  onScaleChanged: blurRegion.changed()
 
   property bool opened: false
   property bool transitionRunning: false
@@ -171,6 +185,21 @@ Item {
       if (!root.opened)
         stackModel.clear();
     }
+  }
+
+  Item {
+    id: frontBounds
+    y: root.frontInset
+    width: PanelStyle.width
+    height: root.height - y
+  }
+  Item {
+    id: backBounds
+    readonly property real radius: 14.38
+    x: 16
+    y: root.depth === 2 && layerRepeater.itemAt(0) ? layerRepeater.itemAt(0).y : 16
+    width: 284
+    height: 90
   }
 
   Repeater {

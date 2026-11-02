@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import Quickshell
 import "." as Battery
 import ".." as Shell
 import "../settings" as Settings
@@ -11,21 +12,27 @@ Item {
   implicitWidth: 56
   implicitHeight: 143
 
+  readonly property Region blurRegion: Region {
+    item: root.enabled && root.opacity > Shell.PanelStyle.blurRevealOpacity ? body : null
+    radius: body.radius
+  }
+
   Rectangle {
     anchors.horizontalCenter: parent.horizontalCenter
     width: 16
     height: 5
     topLeftRadius: 2
     topRightRadius: 2
-    color: Settings.Style.card
+    color: Settings.Style.menuControl
   }
 
   Rectangle {
+    id: body
     y: 7
     width: root.width
     height: 136
     radius: Settings.Style.radius
-    color: Settings.Style.card
+    color: Settings.Style.menuControl
 
     MouseArea { anchors.fill: parent }
 
