@@ -1,0 +1,22 @@
+#!/bin/sh
+# The one way the Pond boot menu is regenerated: kernel updates, theme updates
+# and the first boot all run this.
+set -e
+mkdir -p /boot/grub
+grub-mkconfig -o /boot/grub/grub.cfg
+# GRUB titles entries "<distributor> Linux, with Linux <kernel>"; Pond's are shorter.
+sed -i -e "s/^menuentry 'Pond Linux, with Linux linux-pond-lts\([^']*\)'/menuentry 'Pond Linux LTS\1'/" \
+       -e "s/^menuentry 'Pond Linux, with Linux linux-pond\([^']*\)'/menuentry 'Pond\1'/" /boot/grub/grub.cfg
+# The theme fits three entries; nest the rest under "More options". An entry
+# inside a top-level if block moves with the whole block.
+awk '
+  !blocks && $1 ~ /^(menuentry|submenu)$/ && ++entries == 4 { held = "submenu '\''More options'\'' {\n" held }
+  !blocks && $1 == "if" && $NF != "fi" { ifs++ }
+  !blocks && $1 == "fi" { ifs-- }
+  $1 ~ /^(menuentry|submenu|function)$/ && /\{[ \t]*$/ { blocks++ }
+  $1 == "}" && blocks { blocks-- }
+  { held = held $0 "\n" }
+  !blocks && !ifs { printf "%s", held; held = "" }
+  END { printf "%s", held; if (entries > 3) print "}" }
+' /boot/grub/grub.cfg > /boot/grub/grub.cfg.new
+mv /boot/grub/grub.cfg.new /boot/grub/grub.cfg
