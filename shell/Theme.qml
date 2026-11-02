@@ -8,11 +8,17 @@ import "themes" as Themes
 Singleton {
   id: root
   property string name: "daylight"
-  readonly property var schemes: ({ unthemed: unthemedScheme, daylight: daylightScheme })
+  readonly property var schemes: ({
+    unthemed: unthemedScheme, daylight: daylightScheme,
+    hazel: hazelScheme, wisteria: wisteriaScheme, north: northScheme
+  })
   readonly property Themes.Unthemed colors: schemes[name]
   readonly property bool translucent: colors.translucent
   readonly property Themes.Unthemed unthemedScheme: Themes.Unthemed {}
   readonly property Themes.Daylight daylightScheme: Themes.Daylight {}
+  readonly property Themes.Hazel hazelScheme: Themes.Hazel {}
+  readonly property Themes.Wisteria wisteriaScheme: Themes.Wisteria {}
+  readonly property Themes.North northScheme: Themes.North {}
   readonly property color sidebarCardOutline: colors.sidebarCardOutline
   readonly property color sidebarCardFill: colors.sidebarCardFill
   readonly property color sidebarCardHoverFill: colors.sidebarCardHoverFill
