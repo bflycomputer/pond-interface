@@ -40,7 +40,7 @@ Settings.Modal {
       Information.Label {
         x:54; capY:7; text:row.modelData.label
         font.pixelSize:15; font.weight:Font.Medium; font.letterSpacing:0
-        color:"#99ffffff"
+        color:Qt.alpha(Shell.Theme.colors.text, 0.6)
       }
       Information.Label {
         id:valueText

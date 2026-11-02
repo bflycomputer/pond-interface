@@ -13,6 +13,9 @@ Daylight {
   modalBorder: Qt.alpha("#FFEFB7", 0.25)
   todayFill: "#D1C9FF"
   sliderFill: "#FFF7E9"
+  drawerRowHover: Qt.alpha("#FFF0C5", 0.08)
+  closeGlyph: "#FFF3E0"
+  notificationTitle: text
 
   drawerFill: Qt.alpha("#FFF0C5", 0.08)
   drawerHover: Qt.alpha("#FFF0C5", 0.3)

@@ -16,6 +16,8 @@ Daylight {
   panelBorder: Qt.alpha("#99DAEE", 0.6)
   modalBorder: Qt.alpha("#99DAEE", 0.25)
   todayFill: "#D1C9FF"
+  drawerRowHover: Qt.alpha("#E0F1FB", 0.1)
+  closeGlyph: "#E0F1FB"
 
   drawerFill: Qt.alpha("#E0F1FB", 0.15)
   drawerHover: Qt.alpha("#E0F1FB", 0.3)

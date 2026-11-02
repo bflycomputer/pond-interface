@@ -59,6 +59,7 @@ QtObject {
   property Gradient modalGradient: null
   property color modalBorder: panelBorder
   property color sessionControl: Qt.rgba(1, 1, 1, 0.07)
+  property color closeGlyph: "white"
   property color menuCard: card
   property color menuControl: card
   property color menuCardHover: Qt.tint(card, rowHover)

@@ -26,8 +26,8 @@ Item {
       width: 20
       height: 20
       source: Qt.resolvedUrl("assets/wifi/close.svg")
-      layer.enabled: Theme.translucent && closeHover.hovered
-      layer.effect: MultiEffect { colorization: 1; colorizationColor: Theme.colors.closeHoverGlyph }
+      layer.enabled: Theme.translucent && (closeHover.hovered || !Qt.colorEqual(Theme.colors.closeGlyph, "white"))
+      layer.effect: MultiEffect { colorization: 1; colorizationColor: closeHover.hovered ? Theme.colors.closeHoverGlyph : Theme.colors.closeGlyph }
     }
   }
 
