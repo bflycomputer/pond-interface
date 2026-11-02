@@ -1,78 +1,68 @@
 import QtQuick
+import QtQuick.Effects
 
 Item {
   id: root
-  property string themeKey
-  property string label
+  required property var theme
   property bool selected: false
-  property bool available: true
   readonly property bool hovered: pointer.containsMouse || activeFocus
+  readonly property Gradient fill: theme.key === "daylight" ? daylightFill : null
   // Retarget from the current values when hover or selection interrupts motion.
-  property real emphasis: available && (hovered || selected) ? 1 : 0
+  property real emphasis: hovered || selected ? 1 : 0
   property real selection: selected ? 1 : 0
-  readonly property real idleRotation: themeKey === "daylight" ? 45 : 90
-  readonly property real idleScale: themeKey === "daylight" ? 40 / 56 : 40 / 78
+  property color glyph: selected ? theme.activeGlyph : hovered ? theme.hoverGlyph : "white"
   Behavior on emphasis { NumberAnimation { duration: 250; easing.type: Easing.InOutCubic } }
   Behavior on selection { NumberAnimation { duration: 250; easing.type: Easing.InOutCubic } }
+  Behavior on glyph { ColorAnimation { duration: 250; easing.type: Easing.InOutCubic } }
   signal clicked
-  implicitWidth: 94; implicitHeight: 94
+  implicitWidth: 90; implicitHeight: 90
   activeFocusOnTab: true
   Accessible.role: Accessible.Button
-  Accessible.name: available ? label : "Coming soon"
-  Accessible.checkable: available
+  Accessible.name: theme.label
+  Accessible.checkable: true
   Accessible.checked: selected
-  Accessible.onPressAction: if (available) clicked()
-  Keys.onReturnPressed: if (available) clicked()
-  Keys.onSpacePressed: if (available) clicked()
+  Accessible.onPressAction: clicked()
+  Keys.onReturnPressed: clicked()
+  Keys.onSpacePressed: clicked()
 
-  Image {
-    x: 2; y: 2; width: 90; height: 90
-    visible: root.available
-    source: root.available ? Qt.resolvedUrl("../../assets/appearance/" + root.themeKey + "-idle-background.svg") : ""
-    opacity: 1 - root.emphasis
-  }
-  Image {
-    x: 2; y: 2; width: 90; height: 90
-    source: root.available ? Qt.resolvedUrl("../../assets/appearance/" + root.themeKey + "-hover-background.svg") : ""
-    opacity: root.emphasis * (1 - root.selection)
-  }
-  Image {
-    anchors.fill: parent
-    source: root.available ? Qt.resolvedUrl("../../assets/appearance/" + root.themeKey + "-selected-background.svg") : ""
-    opacity: root.selection
-  }
-  Item {
-    objectName: "themeSymbol"
-    anchors.fill: parent
-    visible: root.available
-    // Only the symbol moves; the background disc and selection ring stay fixed.
-    rotation: root.idleRotation * (1 - root.emphasis)
-    scale: root.idleScale + (1 - root.idleScale) * root.emphasis
-    opacity: (0.1 + 0.2 * root.emphasis) * (1 - root.selection) + root.selection
-    Image {
-      anchors.fill: parent
-      source: root.available ? Qt.resolvedUrl("../../assets/appearance/" + root.themeKey + "-symbol-white.svg") : ""
-    }
-    Image {
-      anchors.fill: parent
-      source: root.available ? Qt.resolvedUrl("../../assets/appearance/" + root.themeKey + "-symbol-selected.svg") : ""
-      opacity: root.selection
-    }
+  Gradient {
+    id: daylightFill
+    GradientStop { position: 0; color: "#496070" }
+    GradientStop { position: 1; color: "#E7BDA7" }
   }
   Rectangle {
-    x: 2; y: 2; width: 90; height: 90; radius: 45
-    visible: !root.available
-    color: root.hovered ? Qt.rgba(1, 1, 1, 0.05) : Qt.rgba(1, 1, 1, 0)
-    border.width: 1; border.color: Qt.rgba(1, 1, 1, 0.10)
-    Behavior on color { ColorAnimation { duration: 220; easing.type: Easing.InOutCubic } }
-    Image {
-      anchors.centerIn: parent; width: 32.156; height: 42.002; rotation: 90
-      source: Qt.resolvedUrl("../../assets/appearance/coming-soon.svg")
-    }
+    anchors.fill: parent; radius: width / 2
+    color: Qt.rgba(1, 1, 1, 0.1)
+    opacity: 1 - root.emphasis
+  }
+  Rectangle {
+    anchors.fill: parent; radius: width / 2
+    color: root.theme.hoverFill
+    gradient: root.fill
+    opacity: root.emphasis * (1 - root.selection) * (root.fill ? 0.5 : 1)
+  }
+  Rectangle {
+    anchors.fill: parent; radius: width / 2
+    color: root.theme.activeFill
+    gradient: root.fill
+    opacity: root.selection
+  }
+  // Only the symbol moves; the background disc stays fixed.
+  Image {
+    objectName: "themeSymbol"
+    anchors.centerIn: parent
+    width: 52; height: 52
+    source: Qt.resolvedUrl("../../assets/appearance/" + root.theme.key + "-symbol.svg")
+    sourceSize: Qt.size(104, 104)
+    rotation: root.theme.turn * (1 - root.emphasis)
+    scale: (40 + 12 * root.emphasis) / 52
+    opacity: 0.6 + 0.4 * root.emphasis
+    layer.enabled: true
+    layer.effect: MultiEffect { colorization: 1; colorizationColor: root.glyph }
   }
   MouseArea {
     id: pointer; anchors.fill: parent; hoverEnabled: true
-    cursorShape: root.available ? Qt.PointingHandCursor : Qt.ArrowCursor
-    onClicked: if (root.available) root.clicked()
+    cursorShape: Qt.PointingHandCursor
+    onClicked: root.clicked()
   }
 }
