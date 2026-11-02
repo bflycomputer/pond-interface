@@ -63,6 +63,8 @@ QtObject {
   property color menuControl: card
   property color menuCardHover: Qt.tint(card, rowHover)
   property Gradient menuCardHoverGradient: null
+  property color menuCardBorder: "transparent"
+  property color menuCardHoverBorder: menuCardBorder
   property color trayHover: rowHover
 
   property color notificationHover: Qt.rgba(1, 1, 1, 0.06)

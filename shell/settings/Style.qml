@@ -10,6 +10,8 @@ QtObject {
   readonly property color menuControl: Shell.Theme.colors.menuControl
   readonly property color menuCardHover: Shell.Theme.colors.menuCardHover
   readonly property Gradient menuCardHoverGradient: Shell.Theme.colors.menuCardHoverGradient
+  readonly property color menuCardBorder: Shell.Theme.colors.menuCardBorder
+  readonly property color menuCardHoverBorder: Shell.Theme.colors.menuCardHoverBorder
   readonly property color trayHover: Shell.Theme.colors.trayHover
   readonly property color sessionControl: Shell.Theme.colors.sessionControl
   readonly property int sessionSize: 127

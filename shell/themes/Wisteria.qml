@@ -26,6 +26,8 @@ Daylight {
   closeHoverBorder: "#D8B9FD"
 
   menuCard: Qt.alpha("#56575E", 0.5)
+  menuCardBorder: Qt.rgba(1, 1, 1, 0.6)
+  menuCardHoverBorder: "#D8B9FD"
   menuCardHoverGradient: Gradient {
     GradientStop { position: 0; color: Qt.alpha("#515F70", 0.8) }
     GradientStop { position: 0.76; color: Qt.alpha("#7D7BA8", 0.8) }

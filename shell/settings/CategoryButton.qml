@@ -59,6 +59,11 @@ Item {
       }
     }
 
+    Shell.PanelBorder {
+      color: root.hovered ? Settings.Style.menuCardHoverBorder : Settings.Style.menuCardBorder
+      radius: parent.radius
+    }
+
     Item {
       width: root.iconBoxWidth
       height: root.iconBoxHeight

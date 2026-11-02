@@ -82,6 +82,11 @@ Item {
       }
     }
 
+    Shell.PanelBorder {
+      color: Settings.Style.menuCardBorder
+      radius: parent.radius
+    }
+
     Rectangle {
       width: 80
       height: width

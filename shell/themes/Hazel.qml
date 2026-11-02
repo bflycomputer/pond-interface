@@ -25,6 +25,8 @@ Daylight {
   closeHoverBorder: "#D8B9FD"
 
   menuCard: Qt.alpha("#615F4F", 0.5)
+  menuCardBorder: Qt.rgba(1, 1, 1, 0.4)
+  menuCardHoverBorder: Qt.alpha("#FFEFB7", 0.4)
   menuControl: Qt.alpha("#615F4F", 0.5)
   menuCardHover: Qt.alpha("#806B46", 0.9)
 
