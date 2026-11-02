@@ -18,12 +18,14 @@ Rectangle {
   property real availableHeight: 900
   property bool roundedContent: false
   property bool showOutline: true
+  property Gradient fill: Shell.PanelStyle.modalGradient
   property real closeButtonY: -13
   signal backRequested
   implicitWidth: 580
   implicitHeight: Math.min(contentHeight + bodyTop, availableHeight)
   radius: 32
   color: Shell.Theme.colors.modalSurface
+  gradient: fill
   readonly property Region blurRegion: Region {
     item: root.enabled && root.parent?.opacity > Shell.PanelStyle.blurRevealOpacity
         && root.color.a < 1 ? root : null
@@ -74,6 +76,7 @@ Rectangle {
   }
   Shell.PanelBorder {
     radius: root.radius
+    color: Shell.PanelStyle.modalBorder
     visible: Shell.Theme.translucent && root.showOutline
     z: 4
   }

@@ -49,6 +49,7 @@ Item {
     anchors.fill: parent
     radius: Settings.Style.radius
     color: root.hovered ? Settings.Style.menuCardHover : Settings.Style.menuCard
+    gradient: root.hovered ? Settings.Style.menuCardHoverGradient : null
     clip: true
 
     Behavior on color {

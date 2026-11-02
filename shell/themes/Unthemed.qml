@@ -15,6 +15,8 @@ QtObject {
   property color border: "#3D3D3D"
   property color panelSurface: surface
   property color panelBorder: Qt.alpha(border, 0.8)
+  property Gradient panelGradient: null
+  property Gradient calendarGradient: panelGradient
   property color hover: "#262626"
   property color pressed: "#303030"
   property color outline: Qt.rgba(1, 1, 1, 0.10)
@@ -54,10 +56,13 @@ QtObject {
   property real overlayOpacity: 0.7
   property color card: "#1D1D1D"
   property color modalSurface: card
+  property Gradient modalGradient: null
+  property color modalBorder: panelBorder
   property color sessionControl: Qt.rgba(1, 1, 1, 0.07)
   property color menuCard: card
   property color menuControl: card
   property color menuCardHover: Qt.tint(card, rowHover)
+  property Gradient menuCardHoverGradient: null
   property color trayHover: rowHover
 
   property color notificationHover: Qt.rgba(1, 1, 1, 0.06)

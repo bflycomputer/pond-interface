@@ -92,6 +92,7 @@ PanelWindow {
     height: root.panelHeight
     radius: Notifications.Style.radius
     color: Shell.PanelStyle.panelSurface
+    gradient: Shell.PanelStyle.panelGradient
     opacity: root.reveal
     antialiasing: true
     z: 2

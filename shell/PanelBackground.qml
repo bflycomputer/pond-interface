@@ -5,11 +5,13 @@ Rectangle {
   id: root
   // The stack paints one translucent surface; a second on top would darken it.
   property bool stacked: false
+  property Gradient fill: PanelStyle.panelGradient
   readonly property Region blurRegion: Region {
     item: root
     radius: root.radius
   }
   color: stacked && Theme.translucent ? "transparent" : PanelStyle.panelSurface
+  gradient: stacked && Theme.translucent ? null : fill
   radius: PanelStyle.radius
   border.color: PanelStyle.panelBorder
   border.width: Theme.translucent ? 0 : 1

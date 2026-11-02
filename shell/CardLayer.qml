@@ -56,6 +56,7 @@ Item {
           Theme.lerp(PanelStyle.surface.b, PanelStyle.backSurface.b,
                      root.backingAmount),
           1)
+      gradient: PanelStyle.panelGradient
       border.color: PanelStyle.panelBorder
       border.width: Theme.translucent ? 0 : 1
       antialiasing: true

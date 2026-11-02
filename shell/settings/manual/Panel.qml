@@ -7,6 +7,7 @@ Settings.Modal {
   id: root
   objectName: "manualPanel"
   color: Settings.Style.card
+  fill: null
   showOutline: false
   title: ""
   implicitWidth: 500

@@ -6,6 +6,7 @@ import ".." as Shell
 
 Shell.PanelBackground {
   id: root
+  fill: Shell.Theme.colors.calendarGradient
   property date today: clock.date
   property bool followToday: true
   property date browsedMonth: Dates.monthStart(today)

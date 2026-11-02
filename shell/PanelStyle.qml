@@ -7,6 +7,9 @@ QtObject {
   readonly property color backSurface: Theme.colors.backSurface
   readonly property color border: Theme.colors.border
   readonly property color panelBorder: Theme.colors.panelBorder
+  readonly property Gradient panelGradient: Theme.colors.panelGradient
+  readonly property Gradient modalGradient: Theme.colors.modalGradient
+  readonly property color modalBorder: Theme.colors.modalBorder
   readonly property color hover: Theme.colors.hover
   readonly property color pressed: Theme.colors.pressed
   readonly property color controlFill: Theme.colors.controlFill
