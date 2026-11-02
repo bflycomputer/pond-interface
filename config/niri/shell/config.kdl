@@ -48,5 +48,6 @@ layer-rule {
     match namespace="^vicinae$"
     background-effect {
         xray false
+        saturation 1.0
     }
 }
