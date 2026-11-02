@@ -85,7 +85,7 @@ PanelWindow {
     width: Notifications.Style.panelWidth
     height: root.panelHeight
     radius: Notifications.Style.radius
-    color: Shell.Theme.sidebarV3Background
+    color: Shell.Theme.sidebarBackground
     opacity: root.reveal
     antialiasing: true
     z: 2
@@ -97,7 +97,7 @@ PanelWindow {
     y: panelBackground.y + Notifications.Style.contentPadding
     height: 28
     text: root.itemCount + " Notifications"
-    color: Notifications.Style.foreground
+    color: Shell.Theme.colors.notificationTitle
     font.family: Shell.Theme.titleFontFamily
     font.weight: Font.Normal
     font.pixelSize: 20

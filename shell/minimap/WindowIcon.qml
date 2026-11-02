@@ -23,7 +23,7 @@ Item {
   Shell.Shadow {
     anchors.fill: chrome
     cornerRadius: chrome.radius
-    shadows: root.visible && root.lifted && Shell.Theme.daylight ? Shell.PanelStyle.controlShadows : []
+    shadows: root.visible && root.lifted && Shell.Theme.translucent ? Shell.PanelStyle.controlShadows : []
   }
 
   Rectangle {
@@ -37,7 +37,7 @@ Item {
                   Shell.Theme.workspaceControlHover.b, 0)
     border.color: root.lifted ? "#CBA6F7" : Shell.Theme.workspaceIconOutline
     border.width: root.hovered ? 0 : Shell.Theme.sidebarStrokeWidth
-    layer.enabled: root.lifted && !Shell.Theme.daylight
+    layer.enabled: root.lifted && !Shell.Theme.translucent
     layer.effect: MultiEffect {
       shadowEnabled: true
       shadowBlur: 0.5
@@ -63,7 +63,7 @@ Item {
     source: root.windowData.iconSource || ""
     asynchronous: true
     smooth: true
-    opacity: Shell.Theme.daylight || root.hovered || root.lifted ? 1.0 : 0.9
+    opacity: Shell.Theme.translucent || root.hovered || root.lifted ? 1.0 : 0.9
 
     Behavior on opacity { Shell.HoverAnimation {} }
   }

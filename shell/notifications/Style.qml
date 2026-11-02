@@ -1,5 +1,6 @@
 pragma Singleton
 import QtQuick
+import ".." as Shell
 
 QtObject {
   readonly property int panelWidth: 280
@@ -13,9 +14,9 @@ QtObject {
   readonly property int summaryIconSize: 14
   readonly property int closeSize: 24
   readonly property int closeIconSize: 16
-  readonly property color hover: Qt.rgba(1, 1, 1, 0.06)
+  readonly property color hover: Shell.Theme.colors.notificationHover
   readonly property color closeHover: "#3D3D3D"
-  readonly property color foreground: "#F8F9F9"
+  readonly property color foreground: Shell.Theme.colors.notificationText
   readonly property color divider: Qt.rgba(1, 1, 1, 0.1)
   readonly property real secondaryIconOpacity: 0.4
   readonly property int panelDuration: 180

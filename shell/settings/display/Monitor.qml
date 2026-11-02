@@ -8,7 +8,7 @@ Rectangle {
   property bool dragging: false
   property bool hovered: false
   radius: 12
-  color: selected ? Qt.alpha("#cba6f7", 0.07) : dragging ? "#3f3847" : hovered || activeFocus ? (arranging ? "#525252" : Shell.PanelStyle.controlHover) : arranging ? "#303030" : Shell.PanelStyle.controlFill
+  color: selected ? Qt.alpha("#cba6f7", 0.07) : dragging ? "#3f3847" : hovered || activeFocus ? (arranging ? "#525252" : Shell.PanelStyle.controlHover) : arranging ? "#303030" : Shell.Theme.colors.monitorFill
   border.width: selected || dragging ? 1 : 0
   border.color: "#cba6f7"
   Text {

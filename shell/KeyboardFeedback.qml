@@ -31,7 +31,7 @@ Item {
     PanelWindow {
       screen: root.screen
       color: "transparent"
-      BackgroundEffect.blurRegion: Theme.daylight ? card.blurRegion : null
+      BackgroundEffect.blurRegion: Theme.translucent ? card.blurRegion : null
       implicitWidth: Theme.sidebarCardExpandedWidth + (root.collapsed ? 134 : 0)
       implicitHeight: root.cardHeight + (root.collapsed ? 107 : 0)
       anchors { left: true; top: !root.collapsed; bottom: root.collapsed }
@@ -86,7 +86,7 @@ Item {
                 Rectangle {
                   anchors.centerIn: parent
                   width: 12; height: 12; radius: 6
-                  color: "white"
+                  color: Theme.colors.text
                   visible: row.index === NiriMsg.keyboardLayoutIndex
                 }
               }

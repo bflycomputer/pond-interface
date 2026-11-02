@@ -16,7 +16,7 @@ Item {
   Shell.PanelBackground {
     anchors.fill: parent
     Text {
-      x: 20; y: 20; text: "Pair device"; color: "white"
+      x: 20; y: 20; text: "Pair device"; color: Shell.Theme.colors.text
       font.family: Shell.Theme.titleFontFamily; font.pixelSize: 20
     }
     Text {
@@ -25,7 +25,7 @@ Item {
           : root.prompt.kind === "confirm" ? "Confirm that this code matches the one shown on your device."
           : root.needsInput ? "Enter the pairing code shown on your device."
           : "Allow this device to pair?"
-      color: "white"; font.family: Shell.Theme.fontFamily; font.pixelSize: 13
+      color: Shell.Theme.colors.text; font.family: Shell.Theme.fontFamily; font.pixelSize: 13
     }
     Text {
       x: 20; y: 148; width: 276; horizontalAlignment: Text.AlignHCenter

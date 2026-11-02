@@ -12,7 +12,7 @@ Rectangle {
   Text {
     anchors.centerIn: parent
     text: root.text
-    color: "white"
+    color: Theme.colors.text
     opacity: 0.8
     font.family: Theme.fontFamily
     font.weight: Font.Medium

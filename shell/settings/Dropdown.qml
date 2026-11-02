@@ -55,7 +55,7 @@ FocusScope {
         Text {
           x: 12; width: parent.width - (trailing.visible ? 52 : 24); anchors.verticalCenter: parent.verticalCenter
           text: option.modelData.label; elide: Text.ElideRight
-          color: "white"; opacity: option.modelData.disabled ? 0.3 : 1
+          color: Shell.Theme.colors.text; opacity: option.modelData.disabled ? 0.3 : 1
           font.family: Shell.Theme.fontFamily; font.pixelSize: 13; font.weight: Font.Medium
         }
         Image {
@@ -70,7 +70,7 @@ FocusScope {
           visible: !!option.modelData.separator
           anchors.centerIn: parent
           width: parent.width - 24; height: 1
-          color: Shell.Theme.sidebarV3Divider
+          color: Shell.Theme.sidebarDivider
         }
         HoverHandler { id: hover; cursorShape: option.modelData.disabled ? Qt.ArrowCursor : Qt.PointingHandCursor }
         TapHandler { onTapped: root.pick(option.modelData) }

@@ -9,7 +9,7 @@ Item {
   id: root
 
   property string text: ""
-  property color textColor: Shell.Theme.sidebarV3Foreground
+  property color textColor: Shell.Theme.sidebarForeground
   property string fontFamily: Shell.Theme.fontFamily
   property int fontWeight: Font.Normal
   property real fontPixelSize: 13
@@ -98,8 +98,8 @@ Item {
     gradient: Gradient {
       orientation: Gradient.Horizontal
       GradientStop { position: 0; color: Qt.rgba(1, 1, 1, 1 - root.leftFadeAmount) }
-      GradientStop { position: root.leftFadeWidth / Math.max(1, root.width); color: "white" }
-      GradientStop { position: 1 - Math.min(14 / Math.max(1, root.width), 1 / 3); color: "white" }
+      GradientStop { position: root.leftFadeWidth / Math.max(1, root.width); color: Shell.Theme.colors.text }
+      GradientStop { position: 1 - Math.min(14 / Math.max(1, root.width), 1 / 3); color: Shell.Theme.colors.text }
       GradientStop { position: 1; color: "transparent" }
     }
   }

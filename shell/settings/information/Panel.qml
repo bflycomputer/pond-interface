@@ -48,7 +48,7 @@ Settings.Modal {
         x:130; capY:6; width:390
         text:Information.State.value(row.modelData.key)
         font.family:Shell.Theme.titleFontFamily; font.styleName:"Book"; font.pixelSize:17
-        font.letterSpacing:0; color:"white"; elide:Text.ElideRight
+        font.letterSpacing:0; color:Shell.Theme.colors.text; elide:Text.ElideRight
         ToolTip.visible:valueHover.hovered && truncated
         ToolTip.text:text
         HoverHandler { id:valueHover }
@@ -78,7 +78,7 @@ Settings.Modal {
       source:Qt.resolvedUrl("../../assets/manual/book.svg")
     }
     Information.Label {
-      x:54; capY:26; text:"Manual"; color:"white"
+      x:54; capY:26; text:"Manual"; color:Shell.Theme.colors.text
       font.family:Shell.Theme.titleFontFamily; font.styleName:"Book"; font.pixelSize:17; font.letterSpacing:0
     }
     HoverHandler { id:manualHover; cursorShape:Qt.PointingHandCursor }

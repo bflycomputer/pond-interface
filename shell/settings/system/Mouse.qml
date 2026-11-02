@@ -22,15 +22,15 @@ Settings.Modal {
         id: field
         required property var modelData
         width: fields.width; height: 107; radius: 12
-        color: slider.visualFocus ? Shell.PanelStyle.controlHover : Shell.PanelStyle.controlFill
+        color: slider.visualFocus ? Shell.PanelStyle.controlHover : Shell.Theme.colors.settingsRow
         Text {
           x: 20; y: (51 - height) / 2
-          text: field.modelData.title; color: Qt.rgba(1, 1, 1, 0.7)
+          text: field.modelData.title; color: Qt.alpha(Shell.Theme.colors.text, 0.7)
           font.family: Shell.Theme.fontFamily; font.pixelSize: 15
         }
         Text {
           anchors.right: parent.right; anchors.rightMargin: 20; y: (51 - height) / 2
-          text: Math.round(slider.value * 100) + "%"; color: Qt.rgba(1, 1, 1, 0.7)
+          text: Math.round(slider.value * 100) + "%"; color: Qt.alpha(Shell.Theme.colors.text, 0.7)
           font.family: Shell.Theme.fontFamily; font.pixelSize: 15
         }
         Repeater {
@@ -75,10 +75,10 @@ Settings.Modal {
     }
     Rectangle {
       width: parent.width; height: 108; radius: 12
-      color: Shell.PanelStyle.controlFill
+      color: Shell.Theme.colors.settingsRow
       Text {
         x: 20; y: (51 - height) / 2
-        text: "Natural scrolling"; color: Qt.rgba(1, 1, 1, 0.7)
+        text: "Natural scrolling"; color: Qt.alpha(Shell.Theme.colors.text, 0.7)
         font.family: Shell.Theme.fontFamily; font.pixelSize: 15
       }
       Settings.Switcher {

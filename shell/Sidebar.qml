@@ -95,7 +95,7 @@ PanelWindow {
   }
 
   color: "transparent"
-  BackgroundEffect.blurRegion: Theme.daylight ? cardBlur : null
+  BackgroundEffect.blurRegion: Theme.translucent ? cardBlur : null
   onHeightChanged: cardBlur.changed()
   Region {
     id: cardBlur

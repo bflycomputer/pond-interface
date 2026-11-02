@@ -109,7 +109,7 @@ Item {
           x: 12
           anchors.verticalCenter: parent.verticalCenter
           text: optionRow.modelData.label
-          color: "white"
+          color: Theme.colors.text
           font.family: Theme.fontFamily
           font.weight: Font.Medium
           font.pixelSize: 13

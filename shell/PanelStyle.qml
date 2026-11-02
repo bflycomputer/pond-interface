@@ -2,18 +2,18 @@ pragma Singleton
 import QtQuick
 
 QtObject {
-  readonly property color surface: "#1D1D1D"
-  readonly property color backSurface: "#131313"
-  readonly property color border: "#3D3D3D"
-  readonly property color panelBorder: Qt.alpha(border, 0.8)
-  readonly property color hover: "#262626"
-  readonly property color pressed: "#303030"
-  readonly property color controlFill: Qt.rgba(1, 1, 1, 0.05)
-  readonly property color rowHover: Qt.rgba(1, 1, 1, 0.06)
-  readonly property color sliderTrack: Qt.rgba(1, 1, 1, 0.07)
-  readonly property color controlHover: Qt.rgba(1, 1, 1, 0.10)
-  readonly property color outline: Qt.rgba(1, 1, 1, 0.10)
-  readonly property color accent: "#CBA6F7"
+  readonly property color surface: Theme.colors.surface
+  readonly property color backSurface: Theme.colors.backSurface
+  readonly property color border: Theme.colors.border
+  readonly property color panelBorder: Theme.colors.panelBorder
+  readonly property color hover: Theme.colors.hover
+  readonly property color pressed: Theme.colors.pressed
+  readonly property color controlFill: Theme.colors.controlFill
+  readonly property color rowHover: Theme.colors.rowHover
+  readonly property color sliderTrack: Theme.colors.sliderTrack
+  readonly property color controlHover: Theme.colors.controlHover
+  readonly property color outline: Theme.colors.outline
+  readonly property color accent: Theme.colors.accent
   readonly property color accentText: "#4F3D64"
   readonly property color enabledSurface: "#0C3723"
   readonly property color enabledMark: "#B0FF4F"
@@ -48,8 +48,8 @@ QtObject {
     { x: 0, y: 11, blur: 23, alpha: 0.13 },
     { x: 0, y: 9, blur: 10, alpha: 0.15 }
   ]
-  readonly property color sliderFill: "#E7E7E7"
-  readonly property color sliderBubble: "#D1D1D1"
+  readonly property color sliderFill: Theme.colors.sliderFill
+  readonly property color sliderBubble: Theme.colors.sliderBubble
   readonly property int audioRowHeight: 40
   readonly property int hoverExitDuration: 60
   readonly property int hoverCollapseDelay: 76

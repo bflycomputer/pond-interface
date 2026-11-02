@@ -13,7 +13,7 @@ Rectangle {
   implicitHeight: implicitWidth
   radius: 4
   color: compact ? "#555555" : pointer.containsMouse
-      ? Notifications.Style.closeHover : Shell.Theme.sidebarV3Control
+      ? Notifications.Style.closeHover : Shell.Theme.sidebarControl
   antialiasing: true
 
   Behavior on color {

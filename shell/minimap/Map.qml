@@ -42,7 +42,7 @@ Shell.Card {
       Shell.Theme.collapseHeight(collapseProgress))
   readonly property bool workspaceNumbersRevealed: expandedLayer.enabled
       && (expandedComponentHover.hovered
-          || (dragSession.active && (!dragSession.windowDrag || Shell.Theme.daylight)))
+          || (dragSession.active && (!dragSession.windowDrag || Shell.Theme.translucent)))
 
   focus: dragSession.active
   Keys.onEscapePressed: dragSession.cancel()
@@ -86,10 +86,10 @@ Shell.Card {
   width: Shell.Theme.lerp(Shell.Theme.sidebarCardExpandedWidth,
       Shell.Theme.sidebarCardCollapsedWidth, widthProgress)
   height: Math.min(maximumHeight, naturalHeight)
-  radius: Shell.Theme.daylight
+  radius: Shell.Theme.translucent
       ? Shell.Theme.lerp(12, Shell.Theme.sidebarCardRadius, widthProgress)
       : Shell.Theme.sidebarCardRadius
-  color: Shell.Theme.daylight
+  color: Shell.Theme.translucent
       ? (cardHovered || (dragSession.active && dragSession.windowDrag)
           ? Shell.Theme.sidebarCardHoverFill : Shell.Theme.sidebarCardFill)
       : classicColor
@@ -265,7 +265,7 @@ Shell.Card {
                       && expandedWorkspace.model.isActive
                   readonly property int visualIndex: root.windowIndex(Number(expandedWorkspace.model.workspaceId),
                       expandedWorkspace.windowItems, index)
-                  readonly property bool daylightDropTarget: Shell.Theme.daylight && expandedWorkspace.dragTarget
+                  readonly property bool translucentDropTarget: Shell.Theme.translucent && expandedWorkspace.dragTarget
                       && visualIndex === dragSession.destination?.slot
 
                   visible: root.collapseProgress === 0 || (index >= expandedWorkspace.windowStart
@@ -281,10 +281,10 @@ Shell.Card {
 
                   Rectangle {
                     anchors.fill: parent
-                    visible: workspaceSlot.emptyWorkspaceActive && !workspaceSlot.daylightDropTarget
+                    visible: workspaceSlot.emptyWorkspaceActive && !workspaceSlot.translucentDropTarget
                     radius: width / 2
                     color: Shell.Theme.workspaceLauncherActive
-                    border.color: Shell.Theme.daylight ? Shell.Theme.workspaceIconOutline : Shell.Theme.sidebarV3Border
+                    border.color: Shell.Theme.colors.workspaceActiveRing
                     border.width: Shell.Theme.sidebarStrokeWidth
                     antialiasing: true
                   }
@@ -292,7 +292,7 @@ Shell.Card {
                   Rectangle {
                     anchors.centerIn: parent
                     visible: root.collapseProgress === 0 && !workspaceSlot.hasWindow && !workspaceSlot.emptyWorkspaceActive
-                        && (!dragSession.active || Shell.Theme.daylight) && !workspaceSlot.daylightDropTarget
+                        && (!dragSession.active || Shell.Theme.translucent) && !workspaceSlot.translucentDropTarget
                     width: Shell.Theme.workspacePlaceholderDotSize
                     height: Shell.Theme.workspacePlaceholderDotSize
                     radius: width / 2
@@ -398,12 +398,12 @@ Shell.Card {
                 antialiasing: true
                 Behavior on x { Shell.HoverAnimation { duration: Shell.Theme.workspaceDragSnapDuration } }
                 ShapePath {
-                  strokeColor: Shell.Theme.daylight ? Shell.Theme.workspaceDropFill : "#4F3D64"
+                  strokeColor: Shell.Theme.colors.workspaceDropStroke
                   strokeWidth: 1
-                  strokeStyle: Shell.Theme.daylight ? ShapePath.SolidLine : ShapePath.DashLine
+                  strokeStyle: Shell.Theme.translucent ? ShapePath.SolidLine : ShapePath.DashLine
                   dashPattern: [3, 3]
                   capStyle: ShapePath.RoundCap
-                  fillColor: Shell.Theme.daylight ? Shell.Theme.workspaceDropFill : "#191919"
+                  fillColor: Shell.Theme.workspaceDropFill
                   PathRectangle { x: 0.5; y: 0.5; width: 39; height: 39; radius: 20 }
                 }
               }
@@ -423,7 +423,7 @@ Shell.Card {
               height: 20
               radius: 10
               color: numberPointer.containsMouse || numberPointer.pressed
-                  || (Shell.Theme.daylight && dragSession.active && dragSession.windowDrag)
+                  || (Shell.Theme.translucent && dragSession.active && dragSession.windowDrag)
                   ? Shell.Theme.workspaceNumberDragBackground : Shell.Theme.workspaceNumberBackground
               antialiasing: true
               Behavior on color { ColorAnimation { duration: 120; easing.type: Easing.OutCubic } }
@@ -431,7 +431,7 @@ Shell.Card {
                 anchors.fill: parent
                 visible: !numberPointer.containsMouse && !workspaceDrag.active
                 text: expandedWorkspace.workspaceNumber
-                color: Shell.Theme.daylight ? "white" : Shell.Theme.sidebarV3Foreground
+                color: Shell.Theme.colors.workspaceNumberText
                 font.family: Shell.Theme.plexFontFamily
                 font.weight: Font.Medium
                 font.pixelSize: 11
@@ -596,7 +596,7 @@ Shell.Card {
             width: parent.width - 8
             height: Math.max(0, parent.height - Shell.Theme.workspaceCollapsedControlGap)
             radius: 12
-            color: Shell.Theme.daylight ? Qt.rgba(1, 1, 1, 0.08) : Shell.Theme.workspaceActiveIndicatorColor
+            color: Shell.Theme.colors.workspaceCollapsedActive
             opacity: collapsedWorkspace.active || collapsedRowPointer.containsMouse ? 1 : 0
 
             Behavior on opacity {
@@ -634,7 +634,7 @@ Shell.Card {
             text: collapsedWorkspace.displayNumber < 10
                 ? "0" + collapsedWorkspace.displayNumber
                 : String(collapsedWorkspace.displayNumber)
-            color: Shell.Theme.sidebarV3Foreground
+            color: Shell.Theme.sidebarForeground
             opacity: collapsedWorkspace.active
                 ? 1.0 : 0.5
             font.family: Shell.Theme.plexFontFamily
@@ -741,7 +741,7 @@ Shell.Card {
             y: parent.height - Shell.Theme.workspaceCollapsedControlGap / 2 - height / 2
             width: 16
             height: 1
-            color: Shell.Theme.daylight ? Shell.Theme.sidebarCardOutline : Qt.alpha(Shell.Theme.sidebarV3Divider, 0.8)
+            color: Shell.Theme.sidebarDivider
             visible: collapsedWorkspace.y + collapsedWorkspace.height < collapsedColumn.height - 0.5
           }
         }

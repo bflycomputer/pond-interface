@@ -76,7 +76,7 @@ Item {
       x: 30
       y: parent.height - 35 - baselineOffset
       text: root.accessibleName
-      color: "white"
+      color: Shell.Theme.colors.text
       font.family: Shell.Theme.titleFontFamily
       font.weight: Font.Normal
       font.pixelSize: 32

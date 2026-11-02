@@ -61,7 +61,7 @@ DeviceList {
       Text {
         anchors.verticalCenter: parent.verticalCenter
         text: "Add a network"
-        color: "white"
+        color: Theme.colors.text
         font.family: Theme.fontFamily
         font.weight: Font.Medium
         font.pixelSize: 15

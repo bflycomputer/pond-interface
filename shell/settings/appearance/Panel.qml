@@ -17,33 +17,33 @@ Settings.Modal {
     Text {
       x: 103; y: 83; height: 25
       text: "Theme:"; font.family: Shell.Theme.fontFamily; font.pixelSize: 15
-      color: "white"; opacity: 0.7; verticalAlignment: Text.AlignVCenter
+      color: Shell.Theme.colors.text; opacity: 0.7; verticalAlignment: Text.AlignVCenter
     }
     Text {
       x: 418; y: 83; height: 25
-      text: Shell.Theme.daylight ? "Daylight" : "Unthemed"
+      text: Shell.Theme.name === "daylight" ? "Daylight" : "Unthemed"
       font.family: Shell.Theme.fontFamily; font.pixelSize: 15
-      color: "#cba6f7"; opacity: 0.7; verticalAlignment: Text.AlignVCenter
+      color: Shell.Theme.colors.selection; opacity: 0.7; verticalAlignment: Text.AlignVCenter
     }
     Text {
       x: 418; y: 107; height: 25
       text: upcoming.hovered ? "Coming soon" : daylight.hovered && !daylight.selected ? "Daylight"
           : unthemed.hovered && !unthemed.selected ? "Unthemed" : ""
       font.family: Shell.Theme.fontFamily; font.pixelSize: 15
-      color: Qt.rgba(1, 1, 1, 0.7); verticalAlignment: Text.AlignVCenter
+      color: Qt.alpha(Shell.Theme.colors.text, 0.7); verticalAlignment: Text.AlignVCenter
       opacity: text ? 1 : 0
       Behavior on opacity { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
     }
     ThemeButton {
       id: daylight; objectName: "themeDaylight"
       x: 243; y: 12; themeKey: "daylight"; label: "Daylight"
-      selected: Shell.Theme.daylight
+      selected: Shell.Theme.name === "daylight"
       onClicked: Appearance.State.selectTheme("daylight")
     }
     ThemeButton {
       id: unthemed; objectName: "themeUnthemed"
       x: 194; y: 103; themeKey: "unthemed"; label: "Unthemed"
-      selected: !Shell.Theme.daylight
+      selected: Shell.Theme.name === "unthemed"
       onClicked: Appearance.State.selectTheme("unthemed")
     }
     ThemeButton {

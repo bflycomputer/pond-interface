@@ -15,7 +15,7 @@ Rectangle {
   bottomRightRadius: dynamic ? 0 : 12
   color: hover.hovered || activeFocus ? Shell.PanelStyle.controlHover : Shell.PanelStyle.controlFill
   border.width: 1
-  border.color: selected ? "#cba6f7" : Shell.PanelStyle.outline
+  border.color: selected ? Shell.Theme.colors.selection : Shell.PanelStyle.outline
   activeFocusOnTab: true
   Accessible.role: Accessible.Button
   Accessible.name: dynamic ? "Dynamic wallpaper" : "Choose a custom wallpaper"
@@ -28,7 +28,7 @@ Rectangle {
   Text {
     x: 20; y: 15
     text: root.dynamic ? "Dynamic" : "Custom"
-    color: "white"; font.family: Shell.Theme.fontFamily; font.pixelSize: 13
+    color: Shell.Theme.colors.text; font.family: Shell.Theme.fontFamily; font.pixelSize: 13
   }
   Text {
     x: 20; y: 32
@@ -57,7 +57,7 @@ Rectangle {
     x: parent.width - 190; y: 0; width: 124; height: 64
     text: Appearance.State.wallpaperName
     elide: Text.ElideRight; verticalAlignment: Text.AlignVCenter
-    font.family: Shell.Theme.fontFamily; font.pixelSize: 13; color: Qt.rgba(1, 1, 1, 0.7)
+    font.family: Shell.Theme.fontFamily; font.pixelSize: 13; color: Qt.alpha(Shell.Theme.colors.text, 0.7)
   }
   Image {
     visible: !root.dynamic && Appearance.State.wallpaperPath !== ""

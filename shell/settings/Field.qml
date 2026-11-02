@@ -12,7 +12,7 @@ Rectangle {
   signal clicked
   signal toggled(bool checked)
   width: 520; height: 51; radius: 12
-  color: highlighted || hover.hovered || activeFocus ? Shell.PanelStyle.controlHover : Shell.PanelStyle.controlFill
+  color: highlighted || hover.hovered || activeFocus ? Shell.PanelStyle.controlHover : Shell.Theme.colors.settingsRow
   activeFocusOnTab: enabled
   Accessible.role: toggle ? Accessible.CheckBox : navigation ? Accessible.Button : Accessible.ComboBox
   Accessible.name: title + ", " + value
@@ -25,10 +25,10 @@ Rectangle {
     x: 20; anchors.verticalCenter: parent.verticalCenter
     visible: root.step > 0
     width: 24; height: 24; radius: 12
-    color: "transparent"; border.color: "white"; opacity: 0.6
+    color: "transparent"; border.color: Shell.Theme.colors.text; opacity: 0.6
     Text {
       anchors.centerIn: parent
-      text: root.step; color: "white"
+      text: root.step; color: Shell.Theme.colors.text
       font.family: Shell.Theme.plexFontFamily; font.weight: Font.DemiBold
       font.pixelSize: 11; font.letterSpacing: -0.22
     }
@@ -36,7 +36,7 @@ Rectangle {
   Text {
     id: label
     x: root.step > 0 ? 54 : 20; anchors.verticalCenter: parent.verticalCenter
-    text: root.title; color: "white"; opacity: 0.7
+    text: root.title; color: Shell.Theme.colors.text; opacity: 0.7
     font.family: Shell.Theme.fontFamily; font.pixelSize: 15
   }
   Text {
@@ -45,7 +45,7 @@ Rectangle {
     horizontalAlignment: Text.AlignRight
     elide: Text.ElideRight
     visible: !root.toggle
-    text: root.value; color: "white"; opacity: 0.7
+    text: root.value; color: Shell.Theme.colors.text; opacity: 0.7
     font.family: Shell.Theme.fontFamily; font.pixelSize: 15
   }
   Image {

@@ -34,7 +34,7 @@ Rectangle {
         Keys.onSpacePressed: root.selected(modelData.key)
         Text {
           anchors.centerIn: parent
-          text: option.modelData.label; color: "white"
+          text: option.modelData.label; color: Shell.Theme.colors.text
           opacity: hover.hovered ? 1 : 0.7
           font.family: Shell.Theme.fontFamily; font.pixelSize: 13
         }

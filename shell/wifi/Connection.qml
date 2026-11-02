@@ -18,7 +18,7 @@ Item {
       horizontalAlignment: Text.AlignHCenter
       wrapMode: Text.Wrap
       text: Wifi.State.statusText
-      color: Wifi.State.phase === "failed" ? PanelStyle.accent : "white"
+      color: Wifi.State.phase === "failed" ? PanelStyle.accent : Theme.colors.text
       font.family: Theme.titleFontFamily
       font.weight: Font.Normal
       font.pixelSize: 20

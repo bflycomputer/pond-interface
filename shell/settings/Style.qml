@@ -1,12 +1,12 @@
 pragma Singleton
 import QtQuick
+import ".." as Shell
 
 QtObject {
   readonly property color overlay: "#101010"
-  readonly property real overlayOpacity: 0.7
-  readonly property color card: "#1D1D1D"
-  readonly property color hover: "#262626"
-  readonly property color sessionControl: Qt.rgba(1, 1, 1, 0.07)
+  readonly property real overlayOpacity: Shell.Theme.colors.overlayOpacity
+  readonly property color card: Shell.Theme.colors.card
+  readonly property color sessionControl: Shell.Theme.colors.sessionControl
   readonly property int sessionSize: 127
   readonly property int radius: 12
   readonly property int staggerInterval: 28

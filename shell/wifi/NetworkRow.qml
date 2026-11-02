@@ -47,7 +47,7 @@ Item {
     width: (root.canDisconnect ? 202 : 264) - x
     elide: Text.ElideRight
     text: String(root.network.wired ? root.network.name : root.network.ssid || "")
-    color: "white"
+    color: Theme.colors.text
     font.family: Theme.fontFamily
     font.weight: Font.Medium
     font.pixelSize: 13
@@ -74,7 +74,7 @@ Item {
     Text {
       anchors.centerIn: parent
       text: "Disconnect"
-      color: "white"
+      color: Theme.colors.text
       opacity: disconnectHover.hovered ? 1 : 0.8
       font.family: Theme.fontFamily
       font.weight: Font.Medium

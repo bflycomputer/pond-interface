@@ -53,7 +53,7 @@ Item {
   }
   Rectangle {
     x:98; y:31; width:40; height:18; radius:9
-    color:"transparent"; border.width:1; border.color:Qt.rgba(1, 1, 1, 0.5)
+    color:"transparent"; border.width:1; border.color:Qt.alpha(Shell.Theme.colors.text, 0.5)
     Label { x:9; capY:5; text:"V0.1" }
   }
   Label {

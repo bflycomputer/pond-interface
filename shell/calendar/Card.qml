@@ -46,7 +46,7 @@ Shell.PanelBackground {
     x: 18
     y: 20 + metrics.capitalHeight - baselineOffset
     text: root.monthTitle
-    color: "white"
+    color: Shell.Theme.colors.text
     font.family: Shell.Theme.fontFamily
     font.pixelSize: 13
     font.weight: Font.Medium
@@ -87,7 +87,7 @@ Shell.PanelBackground {
       width: root.cellWidth
       text: modelData
       horizontalAlignment: Text.AlignHCenter
-      color: "white"
+      color: Shell.Theme.colors.text
       opacity: 0.5
       font.family: Shell.Theme.fontFamily
       font.pixelSize: 13
@@ -100,7 +100,7 @@ Shell.PanelBackground {
     width: root.width - 20
     height: root.cellHeight
     radius: 8
-    color: Qt.rgba(1, 1, 1, 0.06)
+    color: Shell.Theme.colors.weekFill
     visible: root.weekRow >= 0
   }
 
@@ -158,7 +158,7 @@ Shell.PanelBackground {
         y: (cell.height - 10) / 2 + metrics.capitalHeight - baselineOffset
         text: cell.modelData.getDate()
         horizontalAlignment: Text.AlignHCenter
-        color: cell.isToday && root.isCurrentMonth ? "#643957" : "white"
+        color: cell.isToday && root.isCurrentMonth ? "#643957" : Shell.Theme.colors.text
         opacity: cell.inMonth ? 1 : 0.3
         font.family: Shell.Theme.fontFamily
         font.pixelSize: 13

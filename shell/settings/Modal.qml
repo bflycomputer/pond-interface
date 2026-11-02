@@ -31,7 +31,7 @@ Rectangle {
     x: 30; y: 20
     text: root.title
     opacity: root.titleOpacity
-    color: "white"
+    color: Shell.Theme.colors.text
     font.family: Shell.Theme.titleFontFamily
     font.pixelSize: 32
     font.letterSpacing: -0.64
@@ -58,7 +58,7 @@ Rectangle {
         sourceItem: Rectangle {
           width: body.width; height: body.height
           radius: root.radius
-          color: "white"
+          color: Shell.Theme.colors.text
           antialiasing: true
         }
       }

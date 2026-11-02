@@ -26,7 +26,7 @@ Item {
     Text {
       x: 19.5; y: 19.5; width: root.titleIcon ? 245 : 276
       elide: Text.ElideRight
-      text: root.title; color: "white"
+      text: root.title; color: Theme.colors.text
       font.family: Theme.titleFontFamily; font.weight: Font.Normal; font.pixelSize: 20
     }
     Loader { x: 275.5; y: 23.5; width: 20; height: 20; sourceComponent: root.titleIcon }
@@ -44,7 +44,7 @@ Item {
     Text {
       x: 20; y: parent.height - 88; width: 276; height: 36
       visible: root.message !== ""; text: root.message
-      wrapMode: Text.Wrap; color: PanelStyle.accent
+      wrapMode: Text.Wrap; color: Theme.colors.errorText
       font.family: Theme.fontFamily; font.pixelSize: 12
     }
     ActionButton {

@@ -77,7 +77,7 @@ Settings.Modal {
       Text {
         anchors.centerIn: parent; visible: !Display.State.monitors.length
         text: Display.State.loaded ? "No connected displays" : "Loading displays…"
-        font.family: Shell.Theme.fontFamily; font.pixelSize: 15; color: Qt.rgba(1, 1, 1, 0.7)
+        font.family: Shell.Theme.fontFamily; font.pixelSize: 15; color: Qt.alpha(Shell.Theme.colors.text, 0.7)
       }
     }
     Rectangle {
@@ -90,7 +90,7 @@ Settings.Modal {
       Accessible.onPressAction: Settings.State.openPage("arrange")
       Keys.onReturnPressed: Settings.State.openPage("arrange")
       Keys.onSpacePressed: Settings.State.openPage("arrange")
-      Text { anchors.centerIn: parent; text: "Arrange"; color: "white"; opacity: 0.7; font.family: Shell.Theme.fontFamily; font.pixelSize: 15 }
+      Text { anchors.centerIn: parent; text: "Arrange"; color: Shell.Theme.colors.text; opacity: 0.7; font.family: Shell.Theme.fontFamily; font.pixelSize: 15 }
       HoverHandler { id: arrangeHover; cursorShape: Qt.PointingHandCursor }
       TapHandler { onTapped: Settings.State.openPage("arrange") }
     }
