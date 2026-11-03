@@ -13,7 +13,7 @@ Daylight {
     GradientStop { position: 0.75; color: Qt.alpha("#4B4373", 0.8) }
     GradientStop { position: 1; color: Qt.alpha("#A3799E", 0.8) }
   }
-  panelBorder: "#D8B9FD"
+  panelBorder: "#453A55"
   todayFill: "#D1C9FF"
   drawerRowHover: Qt.alpha("#F0D7FF", 0.1)
 
@@ -22,8 +22,8 @@ Daylight {
   selectFill: drawerFill
   menuSurface: "#271D31"
   menuBorder: "#45372B"
-  closeFill: "#574F78"
-  closeBorder: "#D8B9FD"
+  closeFill: "#302D4B"
+  closeBorder: "#453A55"
   closeHoverBorder: "#D8B9FD"
 
   menuCard: Qt.alpha("#56575E", 0.5)
