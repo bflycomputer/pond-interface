@@ -2,6 +2,7 @@ import QtQuick
 Rectangle {
   id: root
   property string text: ""
+  property real textOpacity: 0.8
   property bool interactive: true
   signal clicked
   implicitWidth: 146
@@ -13,7 +14,7 @@ Rectangle {
     anchors.centerIn: parent
     text: root.text
     color: Theme.colors.text
-    opacity: 0.8
+    opacity: root.textOpacity
     font.family: Theme.fontFamily
     font.weight: Font.Medium
     font.pixelSize: 13
