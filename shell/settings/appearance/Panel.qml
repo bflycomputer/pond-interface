@@ -73,21 +73,8 @@ Settings.Modal {
       objectName: "wallpaperSection"
       width: parent.width; title: "Wallpaper"
       summary: Appearance.State.wallpaperMode === "dynamic" ? "Dynamic" : "Custom"
-      expanded: Appearance.State.expandedSection === "wallpaper"
-      expandedHeight: 202
-      onToggled: Appearance.State.toggleSection("wallpaper")
-      WallpaperOption {
-        objectName: "dynamicWallpaper"
-        y: 5; width: parent.width; dynamic: true
-        selected: Appearance.State.wallpaperMode === "dynamic"
-        onClicked: Appearance.State.selectDynamic()
-      }
-      WallpaperOption {
-        objectName: "customWallpaper"
-        y: 68; width: parent.width
-        selected: Appearance.State.wallpaperMode === "custom"
-        onClicked: Appearance.State.pickWallpaper()
-      }
+      navigation: true
+      onToggled: Settings.State.openPage("wallpaper")
     }
     Accordion {
       objectName: "brightnessSection"

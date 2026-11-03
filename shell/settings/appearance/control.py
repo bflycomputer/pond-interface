@@ -100,34 +100,6 @@ def step_brightness(output, delta):
     return set_brightness(output, value, json.dumps(device))
 
 
-def wallpaper(mode, path=""):
-    state = {"mode": mode, "path": "", "url": ""}
-    if mode == "custom":
-        import gi
-        gi.require_version("GdkPixbuf", "2.0")
-        from gi.repository import GdkPixbuf
-        image = Path(path).expanduser().resolve(strict=True)
-        if not image.is_file() or GdkPixbuf.Pixbuf.get_file_info(str(image))[0] is None:
-            raise ValueError("Choose a readable image file")
-        state.update(path=str(image), url=f"{image.as_uri()}?{image.stat().st_mtime_ns}")
-    elif mode != "dynamic":
-        raise ValueError("Unknown wallpaper mode")
-    atomic_write(CONFIG / "pond-interface/wallpaper.json", json.dumps(state) + "\n")
-    return state
-
-
-def pick_wallpaper():
-    result = subprocess.run(["zenity", "--file-selection", "--title=Choose a wallpaper",
-                             f"--filename={Path.home() / 'Pictures/Wallpapers'}/",
-                             "--file-filter=Images | *.png *.jpg *.jpeg *.webp *.avif *.bmp *.gif *.svg *.PNG *.JPG *.JPEG",
-                             "--file-filter=All files | *"], capture_output=True, text=True)
-    if result.returncode == 1:
-        return {"cancelled": True}
-    if result.returncode:
-        raise RuntimeError(result.stderr.strip() or "Could not open the image picker")
-    return wallpaper("custom", result.stdout.rstrip("\n"))
-
-
 def theme(name):
     if name not in ("daylight", "unthemed", "hazel", "wisteria", "north"):
         raise ValueError("Unknown theme")
@@ -139,7 +111,7 @@ def main():
     try:
         action, *args = sys.argv[1:]
         commands = {"status": status, "brightness": set_brightness, "brightness-step": step_brightness,
-                    "wallpaper": wallpaper, "pick-wallpaper": pick_wallpaper, "theme": theme}
+                    "theme": theme}
         print(json.dumps(commands[action](*args)))
     except Exception as error:
         print(json.dumps({"error": str(error)}))
