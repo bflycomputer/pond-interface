@@ -195,11 +195,12 @@ Item {
   }
   Item {
     id: backBounds
+    readonly property var card: root.depth > 1 ? layerRepeater.itemAt(root.depth - 2) : null
     readonly property real radius: 14.38
-    x: 16
-    y: root.depth === 2 && layerRepeater.itemAt(0) ? layerRepeater.itemAt(0).y : 16
-    width: 284
-    height: 90
+    x: card ? card.x : 16
+    y: card ? card.y : 16
+    width: card ? card.width : 284
+    height: card ? card.height : 0
   }
 
   Repeater {
@@ -231,11 +232,11 @@ Item {
       y: Theme.lerp(pushBack ? root.transitionFromInset
           : popBack ? root.transitionToInset : root.frontInset, 16, backingAmount)
       width: Theme.lerp(PanelStyle.width, 284, backingAmount)
-      height: Theme.lerp(naturalHeight, 90, backingAmount)
+      // Keep the rear surface flush with the front card's bottom; clip its contents to fit.
+      height: relativeIndex === 0 ? naturalHeight : root.height - y
       backingAmount: pushBack ? root.transitionProgress
           : popBack ? 1 - root.transitionProgress
           : relativeIndex === 0 ? 0 : 1
-      cardOpacity: popBack ? 1 : 1 - backingAmount
       opacity: pushFront ? root.transitionProgress
           : popFront ? 1
           : relativeIndex <= 1 ? 1 : 0

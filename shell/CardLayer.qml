@@ -1,8 +1,6 @@
 import QtQuick
 
-// One persistent card instance in the stack. The stack changes
-// only this wrapper's geometry and reveal values, so a card keeps its own form
-// state while moving between front, back, hidden, and front again.
+// Keep each page alive while scaling and clipping it behind the front card.
 Item {
   id: root
 
@@ -11,7 +9,6 @@ Item {
   property var stackController
   property bool interactive: false
   property real backingAmount: 0
-  property real cardOpacity: 1
 
   readonly property real naturalHeight: cardLoader.item
       ? cardLoader.item.implicitHeight : 0
@@ -68,7 +65,7 @@ Item {
       width: PanelStyle.width
       height: item ? item.implicitHeight : 0
       sourceComponent: root.cardComponent
-      opacity: root.cardOpacity
+      enabled: root.interactive
       scale: root.width / PanelStyle.width
       transformOrigin: Item.TopLeft
 
@@ -77,9 +74,7 @@ Item {
       }
     }
 
-    // The divider is part of the card shell, so it remains visible while the
-    // card content fades between its front and backing presentations. Hide it
-    // when the security menu covers the header inside the loaded card.
+    // Hide the divider when a security menu covers the header.
     Rectangle {
       x: 19.5 * root.cardScale
       y: root.dividerY * root.cardScale
