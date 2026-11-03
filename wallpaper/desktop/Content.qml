@@ -28,6 +28,7 @@ Rectangle {
     objectName: "wallpaperImage"
     anchors.fill: parent
     source: root.custom ? root.imageSource : ""
+    sourceSize: Qt.size(Math.ceil(width * Screen.devicePixelRatio), Math.ceil(height * Screen.devicePixelRatio))
     fillMode: Image.PreserveAspectCrop
     asynchronous: true
   }
