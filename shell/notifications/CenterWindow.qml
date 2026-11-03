@@ -84,6 +84,15 @@ PanelWindow {
     onClicked: mouse => mouse.accepted = true
   }
 
+  Shell.Shadow {
+    anchors.fill: panelBackground
+    cornerRadius: panelBackground.radius
+    shadows: Shell.PanelStyle.frontShadows
+    opacity: root.reveal
+    visible: root.itemCount > 0
+    z: 2
+  }
+
   Rectangle {
     id: panelBackground
     x: root.panelLeft - (1 - root.reveal) * 4

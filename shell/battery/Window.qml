@@ -32,6 +32,12 @@ PanelWindow {
     onClicked: root.bar.popup = ""
   }
 
+  Shell.Shadow {
+    anchors.fill: card
+    cornerRadius: card.radius
+    shadows: Shell.PanelStyle.frontShadows
+  }
+
   Battery.Card {
     id: card
     x: Shell.Theme.sidebarOuterMargin + root.bar.cardWidth + 10

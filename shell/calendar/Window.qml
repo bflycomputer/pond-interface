@@ -39,6 +39,12 @@ PanelWindow {
     onClicked: root.bar.popup = ""
   }
 
+  Shell.Shadow {
+    anchors.fill: calendar
+    cornerRadius: calendar.radius
+    shadows: Shell.PanelStyle.frontShadows
+  }
+
   Calendar.Card {
     id: calendar
     x: root.panelLeft

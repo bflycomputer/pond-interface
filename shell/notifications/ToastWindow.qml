@@ -20,6 +20,9 @@ PanelWindow {
       && bar.collapseProgress > 0.42
   property real reveal: requested ? 1 : 0
   property var displayedNotification: ({})
+  readonly property real cardHeight: toastCard.implicitHeight
+  // Leave room for the panel shadow without moving the card on screen.
+  readonly property int shadowPadding: 55
 
   screen: bar.screen
   visible: requested || reveal > 0.001
@@ -31,8 +34,9 @@ PanelWindow {
     item: root.requested && root.reveal > Shell.PanelStyle.blurRevealOpacity ? toastCard.surface : null
     radius: toastCard.surface.radius
   }
-  implicitWidth: Notifications.Style.interactiveWidth
-  implicitHeight: toastCard.implicitHeight
+  implicitWidth: Notifications.Style.interactiveWidth + shadowPadding * 2
+  implicitHeight: cardHeight + Notifications.Style.desktopMargin + shadowPadding
+  mask: Region { item: toastCard }
 
   anchors {
     left: true
@@ -40,8 +44,8 @@ PanelWindow {
   }
   margins {
     left: Math.round(Shell.Theme.sidebarOuterMargin + bar.cardWidth
-                     + Notifications.Style.desktopMargin)
-    top: Notifications.Style.desktopMargin
+                     + Notifications.Style.desktopMargin) - root.shadowPadding
+    top: 0
   }
 
   WlrLayershell.layer: WlrLayer.Overlay
@@ -66,13 +70,20 @@ PanelWindow {
 
   Notifications.Card {
     id: toastCard
-    x: (1 - root.reveal) * -4
-    y: 0
+    x: root.shadowPadding - (1 - root.reveal) * 4
+    y: Notifications.Style.desktopMargin
     width: Notifications.Style.interactiveWidth
     height: implicitHeight
     opacity: root.reveal
     notification: root.displayedNotification
     onActivated: Notifications.State.activate(root.displayedNotification)
     onDismissed: Notifications.State.remove(root.displayedNotification)
+
+    Shell.Shadow {
+      anchors.fill: toastCard.surface
+      cornerRadius: toastCard.surface.radius
+      shadows: Shell.PanelStyle.frontShadows
+      z: -1
+    }
   }
 }
