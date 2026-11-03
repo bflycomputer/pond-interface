@@ -19,7 +19,7 @@ Item {
   readonly property bool hovered: pointer.containsMouse
   readonly property Region blurRegion: Region {
     item: root.revealed && root.opacity > Shell.PanelStyle.blurRevealOpacity ? root : null
-    radius: Settings.Style.radius
+    radius: Settings.Style.categoryRadius
   }
 
   implicitWidth: 264
@@ -49,7 +49,7 @@ Item {
   Rectangle {
     id: background
     anchors.fill: parent
-    radius: Settings.Style.radius
+    radius: Settings.Style.categoryRadius
     color: root.hovered ? Settings.Style.menuCardHover : Settings.Style.menuCard
     gradient: Settings.Style.menuCardHoverGradient ? hoverGradient : null
     clip: true

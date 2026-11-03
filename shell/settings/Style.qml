@@ -16,6 +16,7 @@ QtObject {
   readonly property color sessionControl: Shell.Theme.colors.sessionControl
   readonly property int sessionSize: 127
   readonly property int radius: 12
+  readonly property int categoryRadius: 16
   readonly property int staggerInterval: 28
   readonly property int revealDuration: 32
   readonly property int closeDuration: 180
