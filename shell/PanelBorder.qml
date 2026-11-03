@@ -7,6 +7,7 @@ Shape {
   property real radius: PanelStyle.radius
   property color color: PanelStyle.panelBorder
   anchors.fill: parent
+  opacity: 0.4
   visible: Theme.translucent
   preferredRendererType: Shape.CurveRenderer
 
