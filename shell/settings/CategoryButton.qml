@@ -92,7 +92,9 @@ Item {
     }
 
     Shell.GradientFill {
-      fill: Settings.Style.menuCardHoverGradient ? hoverGradient : null
+      fill: Settings.Style.menuCardHoverGradient
+          && background.gradientReveal > 0 // Bypass gradient rounding artifacts
+          ? hoverGradient : null
       color: root.hovered ? Settings.Style.menuCardHover : Settings.Style.menuCard
       // Keep this animation: dynamic stops do not notify the gradient to repaint.
       Behavior on color {
