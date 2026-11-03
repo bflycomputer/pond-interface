@@ -21,7 +21,6 @@ QtObject {
   readonly property color drawerHover: Theme.colors.drawerHover
   readonly property color drawerRowHover: Theme.colors.drawerRowHover
   readonly property color drawerSliderTrack: Theme.colors.drawerSliderTrack
-  readonly property color drawerSliderBorder: Theme.colors.drawerSliderBorder
   readonly property color fieldFocus: Theme.colors.fieldFocus
   readonly property color selectFill: Theme.colors.selectFill
   readonly property color checkFill: Theme.colors.checkFill

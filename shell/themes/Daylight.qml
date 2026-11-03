@@ -12,7 +12,6 @@ Unthemed {
   drawerHover: Qt.rgba(1, 1, 1, 0.12)
   drawerRowHover: Qt.rgba(1, 1, 1, 0.10)
   drawerSliderTrack: Qt.alpha("#F9EFFF", 0.1)
-  drawerSliderBorder: Qt.rgba(1, 1, 1, 0.2)
   drawerToggleAlpha: 0.12
   fieldFocus: drawerFill
   selectFill: Qt.rgba(1, 1, 1, 0.12)

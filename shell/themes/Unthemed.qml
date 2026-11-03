@@ -37,7 +37,6 @@ QtObject {
   property color drawerHover: controlHover
   property color drawerRowHover: rowHover
   property color drawerSliderTrack: sliderTrack
-  property color drawerSliderBorder: border
   property real drawerToggleAlpha: 0.06
   property color fieldFocus: controlHover
   property color selectFill: controlHover

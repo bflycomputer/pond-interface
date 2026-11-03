@@ -20,7 +20,6 @@ Daylight {
   drawerFill: Qt.alpha("#FFF0C5", 0.08)
   drawerHover: Qt.alpha("#FFF0C5", 0.3)
   selectFill: Qt.alpha("#FFF0C5", 0.15)
-  drawerSliderBorder: Qt.rgba(0, 0, 0, 0.6)
   menuSurface: "#221B15"
   menuBorder: "#45372B"
   closeFill: "#3D3322"
