@@ -96,7 +96,7 @@ Item {
     property real cross: 0
     property real thickness: 1
     property color tailColor: "transparent"
-    property color headColor: "white"
+    property color headColor: Shell.Theme.colors.text
     readonly property bool reversed: head < tail
     readonly property real length: Math.abs(head - tail)
     x: vertical ? Math.round(cross - thickness / 2) : Math.min(tail, head)
@@ -253,7 +253,7 @@ Item {
           horizontalAlignment: Text.AlignHCenter
           text: tab.modelData.label
           font.pixelSize: 13; font.weight: Font.Medium; font.letterSpacing: 0
-          color: tab.selected ? root.accent : "white"
+          color: tab.selected ? root.accent : Shell.Theme.colors.text
           opacity: tab.selected || tab.containsMouse ? 1 : 0.6
           Behavior on color { ColorAnimation { duration: 240 } }
           Behavior on opacity { NumberAnimation { duration: Settings.Style.hoverDuration } }

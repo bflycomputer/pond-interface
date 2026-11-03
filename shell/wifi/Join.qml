@@ -31,7 +31,7 @@ Item {
     }
   }
 
-  PanelBackground { anchors.fill: parent }
+  PanelBackground { anchors.fill: parent; stacked: true }
   Item {
     anchors.fill: parent
     enabled: root.interactive && !root.dropdownOpen
@@ -46,7 +46,7 @@ Item {
       width: 260
       elide: Text.ElideRight
       text: "Join “" + String(root.selection.ssid || "Wifi Network") + "”"
-      color: "white"
+      color: Theme.colors.text
       font.family: Theme.titleFontFamily
       font.weight: Font.Normal
       font.pixelSize: 20
@@ -56,7 +56,7 @@ Item {
       y: 79.5
       text: "Password"
       visible: !root.isEnterprise
-      color: "white"
+      color: Theme.colors.text
       font.family: Theme.fontFamily
       font.weight: Font.Medium
       font.pixelSize: 15

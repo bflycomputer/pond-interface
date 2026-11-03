@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import "." as Settings
+import ".." as Shell
 import "appearance" as Appearance
 import "display" as Display
 import "information" as Information
@@ -87,6 +88,14 @@ PanelWindow {
   screen: menuScreen
   visible: presented && !Appearance.State.pickingWallpaper
   color: "transparent"
+  BackgroundEffect.blurRegion: Shell.Theme.translucent ? cardBlur : null
+  onWidthChanged: cardBlur.changed()
+  onHeightChanged: cardBlur.changed()
+  Region {
+    id: cardBlur
+    regions: Array.from(composition.children).concat(profileSelector, tray, modal.item)
+        .filter(Boolean).map(item => item.blurRegion).filter(Boolean)
+  }
 
   anchors {
     left: true
@@ -220,6 +229,7 @@ PanelWindow {
   }
 
   Battery.ProfileSelector {
+    id: profileSelector
     z: 2
     anchors.right: parent.right
     anchors.rightMargin: 10
@@ -234,6 +244,7 @@ PanelWindow {
   }
 
   Tray {
+    id: tray
     z: 3
     anchors.fill: parent
     enabled: root.cardsOpen
@@ -251,7 +262,7 @@ PanelWindow {
     anchors.centerIn: parent
     active: root.presented && (root.modalOpen || opacity > 0)
     sourceComponent: ({
-      information: informationPage, manual: manualPage, display: displayPage, arrange: arrangePage,
+      wallpaper: wallpaperPage, information: informationPage, manual: manualPage, display: displayPage, arrange: arrangePage,
       system: systemPage, mouse: mousePage, lock: lockPage, keyboard: keyboardPage, timezone: timezonePage
     })[root.displayedPage] || appearancePage
     enabled: root.modalOpen
@@ -263,6 +274,9 @@ PanelWindow {
     }
     Behavior on scale { NumberAnimation { duration: Settings.Style.closeDuration; easing.type: Easing.OutCubic } }
     onLoaded: item.forceActiveFocus()
+    onXChanged: cardBlur.changed()
+    onYChanged: cardBlur.changed()
+    onScaleChanged: cardBlur.changed()
   }
   Component {
     id: displayPage
@@ -281,6 +295,13 @@ PanelWindow {
   Component {
     id: appearancePage
     Appearance.Panel {
+      availableHeight: Math.max(200, root.height - 70)
+      scale: Math.min(1, (root.width - 60) / implicitWidth)
+    }
+  }
+  Component {
+    id: wallpaperPage
+    Appearance.WallpaperPicker {
       availableHeight: Math.max(200, root.height - 70)
       scale: Math.min(1, (root.width - 60) / implicitWidth)
     }

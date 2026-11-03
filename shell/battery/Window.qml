@@ -12,6 +12,7 @@ PanelWindow {
   screen: bar.screen
   visible: bar.popup === "battery"
   color: "transparent"
+  BackgroundEffect.blurRegion: Shell.Theme.translucent ? card.blurRegion : null
   anchors { left: true; right: true; top: true; bottom: true }
   WlrLayershell.layer: WlrLayer.Overlay
   WlrLayershell.namespace: "pond-battery-" + (screen ? screen.name : "unknown")
@@ -29,6 +30,12 @@ PanelWindow {
     anchors.fill: parent
     acceptedButtons: Qt.LeftButton | Qt.MiddleButton | Qt.RightButton
     onClicked: root.bar.popup = ""
+  }
+
+  Shell.Shadow {
+    anchors.fill: card
+    cornerRadius: card.radius
+    shadows: Shell.PanelStyle.frontShadows
   }
 
   Battery.Card {

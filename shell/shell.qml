@@ -90,7 +90,7 @@ ShellRoot {
       Wallpaper.Window {
         screen: modelData
         custom: Appearance.State.wallpaperMode === "custom"
-        dimmed: Theme.daylight
+        dimmed: Theme.translucent
         imageSource: Appearance.State.wallpaperUrl
       }
       Sidebar {

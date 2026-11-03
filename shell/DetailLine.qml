@@ -11,7 +11,7 @@ Item {
     x: 0
     y: 0
     text: root.label
-    color: "white"
+    color: Theme.colors.text
     font.family: Theme.fontFamily
     font.weight: Font.Medium
     font.pixelSize: 15
@@ -22,7 +22,7 @@ Item {
     width: parent.width
     elide: Text.ElideRight
     text: root.value
-    color: "white"
+    color: Theme.colors.text
     opacity: 0.7
     font.family: Theme.fontFamily
     font.weight: Font.Normal

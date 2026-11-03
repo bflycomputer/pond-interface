@@ -11,6 +11,13 @@ Rectangle {
   color: "#0b101c"
   layer.enabled: root.dimmed
   layer.format: ShaderEffectSource.RGBA16F
+  // Dither the scrim over custom wallpapers; the sky already includes noise.
+  layer.effect: root.custom ? dither : null
+
+  Component {
+    id: dither
+    ShaderEffect { fragmentShader: Qt.resolvedUrl("dither.frag.qsb") }
+  }
 
   Sky {
     id: sky
@@ -21,6 +28,7 @@ Rectangle {
     objectName: "wallpaperImage"
     anchors.fill: parent
     source: root.custom ? root.imageSource : ""
+    sourceSize: Qt.size(Math.ceil(width * Screen.devicePixelRatio), Math.ceil(height * Screen.devicePixelRatio))
     fillMode: Image.PreserveAspectCrop
     asynchronous: true
   }

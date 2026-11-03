@@ -5,15 +5,15 @@ Rectangle {
   id: root
   default property alias contentData: content.data
   property bool contentClipped: true
-  property color classicColor: Theme.sidebarV3Background
+  property color classicColor: Theme.sidebarBackground
   property bool animateClassicColor: false
   readonly property bool cardHovered: cardHover.hovered
   readonly property Region blurRegion: Region {
     item: root
     radius: root.radius
   }
-  color: Theme.daylight ? (cardHovered ? Theme.sidebarCardHoverFill : Theme.sidebarCardFill) : classicColor
-  border.width: Theme.daylight ? 1 : 0
+  color: Theme.translucent ? (cardHovered ? Theme.sidebarCardHoverFill : Theme.sidebarCardFill) : classicColor
+  border.width: Theme.translucent ? 1 : 0
   border.color: Theme.sidebarCardOutline
   radius: Theme.sidebarCardRadius
   antialiasing: true
@@ -25,7 +25,7 @@ Rectangle {
   }
   HoverHandler { id: cardHover }
   Behavior on color {
-    enabled: Theme.daylight || animateClassicColor
+    enabled: Theme.translucent || animateClassicColor
     ColorAnimation { duration: 120; easing.type: Easing.OutCubic }
   }
 }

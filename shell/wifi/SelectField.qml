@@ -16,14 +16,13 @@ Controls.Button {
 
   background: Rectangle {
     radius: PanelStyle.rowRadius
-    color: root.hovered || root.activeFocus ? PanelStyle.pressed : PanelStyle.hover
-    Behavior on color { ColorAnimation { duration: PanelStyle.controlDuration } }
+    color: PanelStyle.selectFill
   }
   contentItem: Text {
     text: root.text
     verticalAlignment: Text.AlignVCenter
     elide: Text.ElideRight
-    color: "white"
+    color: Theme.colors.text
     font.family: Theme.fontFamily
     font.weight: Font.Medium
     font.pixelSize: 13

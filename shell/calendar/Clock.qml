@@ -13,7 +13,7 @@ Shell.Card {
   readonly property bool battery: Battery.State.present
   readonly property bool low: Battery.State.low
   readonly property color batteryColor: Battery.State.charging ? "#CBE25B"
-      : low ? Battery.State.lowColor : Shell.Theme.sidebarV3Foreground
+      : low ? Battery.State.lowColor : Shell.Theme.sidebarForeground
   Accessible.role: Accessible.Button
   Accessible.name: "Open calendar"
   Accessible.onPressAction: clicked()
@@ -29,7 +29,7 @@ Shell.Card {
   implicitHeight: Shell.Theme.lerp(battery ? (low ? 115 : 75) : Shell.Theme.sidebarTimeExpandedHeight,
       battery ? 155 : 113, Shell.Theme.collapseHeight(collapseProgress))
   radius: Shell.Theme.lerp(12, Shell.Theme.sidebarCardRadius, Shell.Theme.collapseWidth(collapseProgress))
-  color: Shell.Theme.daylight
+  color: Shell.Theme.translucent
       ? (cardHovered && !battery ? Shell.Theme.sidebarCardHoverFill : Shell.Theme.sidebarCardFill)
       : classicColor
 
@@ -73,7 +73,7 @@ Shell.Card {
       height: 42
       // An unpadded hour leaves room for AM/PM beside every possible time.
       text: Qt.formatTime(root.previewTime, "h:mm AP").split(" ")[0]
-      color: Shell.Theme.sidebarV3Foreground
+      color: Shell.Theme.sidebarForeground
       font.family: "Advent Pro"
       font.weight: Font.Normal
       font.variableAxes: ({ "wdth": 100 })
@@ -90,7 +90,7 @@ Shell.Card {
       x: timeText.x + Math.ceil(timeText.implicitWidth - timeText.font.letterSpacing) + 4
       y: 35 + periodMetrics.capitalHeight - baselineOffset
       text: Qt.formatTime(root.previewTime, "AP")
-      color: Shell.Theme.sidebarV3Foreground
+      color: Shell.Theme.sidebarForeground
       opacity: 0.7
       font.family: Shell.Theme.fontFamily
       font.weight: Font.Medium
@@ -108,7 +108,7 @@ Shell.Card {
       radius: 6
       color: "transparent"
       border.width: 1
-      border.color: Shell.Theme.daylight ? Shell.Theme.sidebarInnerOutline : Shell.Theme.sidebarV3Border
+      border.color: Shell.Theme.colors.clockChipBorder
       antialiasing: true
 
       FontMetrics { id: dateMetrics; font: weekdayText.font }
@@ -120,7 +120,7 @@ Shell.Card {
         y: 9 + dateMetrics.capitalHeight - baselineOffset
         width: parent.width - 2
         text: Qt.formatDateTime(root.previewTime, "ddd")
-        color: Shell.Theme.sidebarV3Foreground
+        color: Shell.Theme.sidebarForeground
         font.family: Shell.Theme.fontFamily
         font.weight: Font.Normal
         font.pixelSize: 13
@@ -132,7 +132,7 @@ Shell.Card {
         y: 22 + dateMetrics.capitalHeight - baselineOffset
         width: parent.width - 2
         text: String(root.previewTime.getDate())
-        color: Shell.Theme.sidebarV3Foreground
+        color: Shell.Theme.sidebarForeground
         font.family: Shell.Theme.fontFamily
         font.weight: Font.Normal
         font.pixelSize: 13
@@ -160,7 +160,7 @@ Shell.Card {
       height: 2
       radius: 1
       visible: root.battery
-      color: root.low ? Battery.State.lowColor : Shell.Theme.sidebarV3Foreground
+      color: root.low ? Battery.State.lowColor : Shell.Theme.sidebarForeground
       opacity: 0.2
     }
 
@@ -248,8 +248,7 @@ Shell.Card {
     readonly property real topPadding: 16
     readonly property real lineStep: 13
     readonly property real dateTop: 75
-    readonly property color dividerColor: Shell.Theme.daylight
-        ? Shell.Theme.sidebarCardOutline : Shell.Theme.sidebarV3Divider
+    readonly property color dividerColor: Shell.Theme.sidebarDivider
     FontMetrics {
       id: compactMetrics
       font.family: Shell.Theme.plexFontFamily
@@ -261,7 +260,7 @@ Shell.Card {
       y: collapsedContent.topPadding + compactMetrics.capitalHeight - baselineOffset
       width: parent.width
       text: Qt.formatTime(root.previewTime, "hh AP").split(" ")[0]
-      color: Shell.Theme.sidebarV3Foreground
+      color: Shell.Theme.sidebarForeground
       opacity: Shell.Theme.ramp(root.collapsedProgress, 0.00, 0.32)
       font.family: Shell.Theme.plexFontFamily
       font.weight: Font.Normal
@@ -274,7 +273,7 @@ Shell.Card {
       y: collapsedContent.topPadding + collapsedContent.lineStep + compactMetrics.capitalHeight - baselineOffset
       width: parent.width
       text: Qt.formatTime(root.previewTime, "mm")
-      color: Shell.Theme.sidebarV3Foreground
+      color: Shell.Theme.sidebarForeground
       opacity: Shell.Theme.ramp(root.collapsedProgress, 0.12, 0.44)
       font.family: Shell.Theme.plexFontFamily
       font.weight: Font.Normal
@@ -287,7 +286,7 @@ Shell.Card {
       y: collapsedContent.topPadding + 2 * collapsedContent.lineStep + compactMetrics.capitalHeight - baselineOffset
       width: parent.width
       text: Qt.formatTime(root.previewTime, "AP")
-      color: Shell.Theme.sidebarV3Foreground
+      color: Shell.Theme.sidebarForeground
       opacity: 0.3 * Shell.Theme.ramp(root.collapsedProgress, 0.24, 0.56)
       font.family: Shell.Theme.plexFontFamily
       font.weight: Font.Normal
@@ -310,7 +309,7 @@ Shell.Card {
       y: collapsedContent.dateTop + compactMetrics.capitalHeight - baselineOffset
       width: parent.width
       text: Qt.formatDateTime(root.previewTime, "ddd").slice(0, 2).toUpperCase()
-      color: Shell.Theme.sidebarV3Foreground
+      color: Shell.Theme.sidebarForeground
       opacity: 0.5 * Shell.Theme.ramp(root.collapsedProgress, 0.48, 0.80)
       font.family: Shell.Theme.plexFontFamily
       font.weight: Font.Normal
@@ -323,7 +322,7 @@ Shell.Card {
       y: collapsedContent.dateTop + collapsedContent.lineStep + compactMetrics.capitalHeight - baselineOffset
       width: parent.width
       text: Qt.formatDate(root.previewTime, "dd")
-      color: Shell.Theme.sidebarV3Foreground
+      color: Shell.Theme.sidebarForeground
       opacity: Shell.Theme.ramp(root.collapsedProgress, 0.60, 0.92)
       font.family: Shell.Theme.plexFontFamily
       font.weight: Font.Normal
@@ -354,7 +353,7 @@ Shell.Card {
         y: 8
         percentage: Battery.State.percentage
         charging: Battery.State.charging
-        color: root.low || Battery.State.charging ? root.batteryColor : "white"
+        color: root.low || Battery.State.charging ? root.batteryColor : Shell.Theme.colors.text
       }
 
       MouseArea {

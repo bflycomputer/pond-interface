@@ -14,6 +14,7 @@ PanelWindow {
   screen: bar.screen
   visible: bar.popup === "calendar"
   color: "transparent"
+  BackgroundEffect.blurRegion: Shell.Theme.translucent ? calendar.blurRegion : null
   anchors { left: true; right: true; top: true; bottom: true }
   WlrLayershell.layer: WlrLayer.Overlay
   WlrLayershell.namespace: "pond-calendar-" + (screen ? screen.name : "unknown")
@@ -36,6 +37,12 @@ PanelWindow {
     anchors.fill: parent
     acceptedButtons: Qt.LeftButton | Qt.MiddleButton | Qt.RightButton
     onClicked: root.bar.popup = ""
+  }
+
+  Shell.Shadow {
+    anchors.fill: calendar
+    cornerRadius: calendar.radius
+    shadows: Shell.PanelStyle.frontShadows
   }
 
   Calendar.Card {

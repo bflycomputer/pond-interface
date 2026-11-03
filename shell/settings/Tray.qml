@@ -5,10 +5,16 @@ import Quickshell
 import Quickshell.Services.SystemTray
 import Quickshell.Widgets
 import "." as Settings
+import ".." as Shell
 
 // Status notifier items along the top of the overlay.
 Item {
   id: root
+
+  readonly property Region blurRegion: Region {
+    item: root.enabled && root.opacity > Shell.PanelStyle.blurRevealOpacity && bar.visible ? bar : null
+    radius: bar.radius
+  }
 
   property var menuItem: null
   property var menuPath: []
@@ -79,7 +85,7 @@ Item {
     height: buttons.height + 6
     radius: 8
     color: "transparent"
-    border.color: Settings.Style.card
+    border.color: Settings.Style.menuControl
     visible: items.count > 0
 
     MouseArea { anchors.fill: parent; acceptedButtons: Qt.AllButtons }
@@ -110,7 +116,7 @@ Item {
           width: 36
           height: 36
           radius: 6
-          color: highlighted ? Settings.Style.hover : Qt.alpha(Settings.Style.hover, 0)
+          color: highlighted ? Settings.Style.trayHover : Qt.alpha(Settings.Style.trayHover, 0)
           activeFocusOnTab: true
           Accessible.role: Accessible.Button
           Accessible.name: modelData.tooltipTitle || modelData.title || modelData.id

@@ -41,6 +41,12 @@ PanelWindow {
   screen: bar.screen
   visible: requested || reveal > 0.001
   color: "transparent"
+  BackgroundEffect.blurRegion: Shell.Theme.translucent ? panelBlur : null
+  Region {
+    id: panelBlur
+    item: root.requested && root.reveal > Shell.PanelStyle.blurRevealOpacity ? panelBackground : null
+    radius: panelBackground.radius
+  }
 
   anchors {
     left: true
@@ -78,6 +84,15 @@ PanelWindow {
     onClicked: mouse => mouse.accepted = true
   }
 
+  Shell.Shadow {
+    anchors.fill: panelBackground
+    cornerRadius: panelBackground.radius
+    shadows: Shell.PanelStyle.frontShadows
+    opacity: root.reveal
+    visible: root.itemCount > 0
+    z: 2
+  }
+
   Rectangle {
     id: panelBackground
     x: root.panelLeft - (1 - root.reveal) * 4
@@ -85,11 +100,13 @@ PanelWindow {
     width: Notifications.Style.panelWidth
     height: root.panelHeight
     radius: Notifications.Style.radius
-    color: Shell.Theme.sidebarV3Background
+    color: Shell.PanelStyle.panelGradient ? "transparent" : Shell.PanelStyle.panelSurface
     opacity: root.reveal
     antialiasing: true
     z: 2
     visible: root.listMode
+    Shell.GradientFill { fill: Shell.PanelStyle.panelGradient }
+    Shell.PanelBorder { radius: panelBackground.radius }
   }
 
   Text {
@@ -97,7 +114,7 @@ PanelWindow {
     y: panelBackground.y + Notifications.Style.contentPadding
     height: 28
     text: root.itemCount + " Notifications"
-    color: Notifications.Style.foreground
+    color: Shell.Theme.colors.notificationTitle
     font.family: Shell.Theme.titleFontFamily
     font.weight: Font.Normal
     font.pixelSize: 20
@@ -183,6 +200,7 @@ PanelWindow {
         height: implicitHeight
         notification: modelData
         showDivider: root.listMode && index < root.itemCount - 1
+        panelRow: root.listMode
         closeEnabled: false
         extraHovered: closeOverlay.hoveredCard === row && floatingClose.hovered
         onHoveredChanged: {

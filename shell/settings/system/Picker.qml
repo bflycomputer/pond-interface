@@ -43,7 +43,7 @@ Settings.Modal {
       readonly property bool chosen: root.selected.indexOf(modelData.id) >= 0
       readonly property bool highlighted: hover.hovered || (!!root.query && index === 0)
       width: list.width; height: 50; radius: 12
-      color: highlighted ? "#262626" : "transparent"
+      color: highlighted ? Shell.PanelStyle.rowHover : "transparent"
       Accessible.role: root.multiple ? Accessible.CheckBox : Accessible.RadioButton
       Accessible.name: modelData.label
       Accessible.checked: chosen
@@ -52,7 +52,7 @@ Settings.Modal {
         id: offset
         x: 20; anchors.verticalCenter: parent.verticalCenter
         visible: !!text; text: row.modelData.offset || ""
-        color: "white"; opacity: 0.4
+        color: Shell.Theme.colors.text; opacity: 0.4
         font.family: "JetBrains Mono"; font.pixelSize: 14
       }
       Text {
@@ -60,14 +60,14 @@ Settings.Modal {
         width: parent.width - x - 64
         anchors.verticalCenter: parent.verticalCenter
         text: row.modelData.label; elide: Text.ElideRight
-        color: "white"; opacity: 0.7
+        color: Shell.Theme.colors.text; opacity: 0.7
         font.family: Shell.Theme.fontFamily; font.pixelSize: 15
       }
       Rectangle {
         visible: root.multiple
         x: parent.width - 44; anchors.verticalCenter: parent.verticalCenter
         width: 24; height: 24; radius: 6
-        color: row.highlighted ? "#303030" : "#262626"
+        color: row.highlighted ? Shell.PanelStyle.controlHover : Shell.PanelStyle.controlFill
       }
       Image {
         visible: row.chosen
@@ -84,20 +84,20 @@ Settings.Modal {
     Rectangle {
       objectName: "systemSearch"
       x: 30; y: 82; width: root.width - 60; height: 51; radius: 12
-      color: search.activeFocus && !clearHover.hovered ? "#303030" : "#262626"
+      color: search.activeFocus && !clearHover.hovered ? Shell.PanelStyle.controlHover : Shell.PanelStyle.controlFill
       HoverHandler { cursorShape: Qt.IBeamCursor }
       TapHandler { onTapped: search.forceActiveFocus() }
       Text {
         x: 20; anchors.verticalCenter: parent.verticalCenter
         visible: !search.text; text: root.placeholder
-        color: "white"; opacity: 0.2
+        color: Shell.Theme.colors.text; opacity: 0.2
         font.family: Shell.Theme.fontFamily; font.pixelSize: 15
       }
       TextInput {
         id: search
         x: 20; width: parent.width - 76; anchors.verticalCenter: parent.verticalCenter
-        clip: true; color: "white"
-        selectionColor: Shell.PanelStyle.accentText; selectedTextColor: "white"
+        clip: true; color: Shell.Theme.colors.text
+        selectionColor: Shell.PanelStyle.accentText; selectedTextColor: Shell.Theme.colors.text
         font.family: Shell.Theme.fontFamily; font.pixelSize: 15
         Accessible.role: Accessible.EditableText
         Accessible.name: root.placeholder
@@ -124,7 +124,7 @@ Settings.Modal {
         x: parent.width - 46; anchors.verticalCenter: parent.verticalCenter
         width: 40; height: 40; radius: 4
         visible: !!search.text
-        color: clearHover.hovered ? "#303030" : "transparent"
+        color: clearHover.hovered ? Shell.PanelStyle.rowHover : "transparent"
         Accessible.role: Accessible.Button
         Accessible.name: "Clear search"
         Accessible.onPressAction: search.clear()
@@ -141,13 +141,13 @@ Settings.Modal {
       objectName: "keyboardShortcut"
       visible: root.multiple
       x: root.width - 106; y: 21; width: 76; height: 40; radius: 8
-      color: shortcutHover.hovered ? "#262626" : "transparent"
-      border.width: shortcutHover.hovered ? 0 : 1; border.color: "#303030"
+      color: shortcutHover.hovered ? Shell.PanelStyle.rowHover : "transparent"
+      border.width: shortcutHover.hovered ? 0 : 1; border.color: Shell.PanelStyle.outline
       Accessible.role: Accessible.StaticText
       Accessible.name: "Shortcut: Super+K switches between languages"
       Text {
         anchors.centerIn: parent
-        text: "Shortcut"; color: "white"; opacity: shortcutHover.hovered ? 1 : 0.5
+        text: "Shortcut"; color: Shell.Theme.colors.text; opacity: shortcutHover.hovered ? 1 : 0.5
         font.family: Shell.Theme.fontFamily; font.weight: Font.DemiBold
         font.pixelSize: 10; font.letterSpacing: 0.1
       }
@@ -172,7 +172,7 @@ Settings.Modal {
         color: Settings.Style.card
         Text {
           x: 20; y: 15; width: 120
-          text: "Switch between languages"; color: "white"
+          text: "Switch between languages"; color: Shell.Theme.colors.text
           wrapMode: Text.WordWrap; lineHeight: 21; lineHeightMode: Text.FixedHeight
           font.family: Shell.Theme.fontFamily; font.weight: Font.Medium; font.pixelSize: 15
         }
@@ -184,14 +184,14 @@ Settings.Modal {
               id: key
               required property string modelData
               width: 40; height: 40; radius: 4
-              color: "transparent"; border.color: "#4a4a4a"
+              color: "transparent"; border.color: Qt.rgba(1, 1, 1, 0.15)
               Rectangle {
                 anchors.centerIn: parent; width: 32; height: 32; radius: 16
-                color: "transparent"; border.color: "#4a4a4a"
+                color: "transparent"; border.color: Qt.rgba(1, 1, 1, 0.15)
               }
               Text {
                 anchors.centerIn: parent
-                text: key.modelData; color: "white"
+                text: key.modelData; color: Shell.Theme.colors.text
                 font.family: Shell.Theme.fontFamily
                 font.weight: key.modelData === "k" ? Font.Bold : Font.DemiBold
                 font.pixelSize: key.modelData === "k" ? 12 : 10

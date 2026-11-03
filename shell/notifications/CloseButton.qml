@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Effects
 import "." as Notifications
 import ".." as Shell
 
@@ -13,7 +14,7 @@ Rectangle {
   implicitHeight: implicitWidth
   radius: 4
   color: compact ? "#555555" : pointer.containsMouse
-      ? Notifications.Style.closeHover : Shell.Theme.sidebarV3Control
+      ? Notifications.Style.closeHover : Notifications.Style.closeFill
   antialiasing: true
 
   Behavior on color {
@@ -29,6 +30,11 @@ Rectangle {
     width: root.compact ? 12 : Notifications.Style.closeIconSize
     height: width
     source: Qt.resolvedUrl("../assets/close.svg")
+    layer.enabled: Shell.Theme.translucent && !root.compact
+    layer.effect: MultiEffect {
+      colorization: 1
+      colorizationColor: pointer.containsMouse ? Shell.Theme.colors.dismissHoverGlyph : Shell.Theme.colors.dismissGlyph
+    }
     sourceSize: Qt.size(width * 2, height * 2)
     fillMode: Image.PreserveAspectFit
     smooth: true

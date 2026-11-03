@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Effects
+import Quickshell
 import "." as Settings
 import ".." as Shell
 
@@ -16,22 +17,31 @@ Rectangle {
   property real contentHeight: 0
   property real availableHeight: 900
   property bool roundedContent: false
+  property bool showOutline: true
+  property Gradient fill: Shell.PanelStyle.modalGradient
   property real closeButtonY: -13
   signal backRequested
   implicitWidth: 580
-  implicitHeight: Math.min(contentHeight + bodyTop, availableHeight)
-  radius: 32
-  color: Settings.Style.card
-
   // Accordion heights already animate. Follow them directly so the shell and
   // hit targets stay in step instead of starting another animation each frame.
+  implicitHeight: Math.min(contentHeight + bodyTop, availableHeight)
+  radius: 32
+  color: fill ? "transparent" : Shell.Theme.colors.modalSurface
+  readonly property Region blurRegion: Region {
+    item: root.enabled && root.parent?.opacity > Shell.PanelStyle.blurRevealOpacity
+        && root.color.a < 1 ? root : null
+    radius: root.radius
+  }
+  onScaleChanged: blurRegion.changed()
+
+  Shell.GradientFill { fill: root.fill }
   // Stop dialog clicks from reaching the outside-dismiss area.
   MouseArea { anchors.fill: parent; acceptedButtons: Qt.AllButtons }
   Text {
     x: 30; y: 20
     text: root.title
     opacity: root.titleOpacity
-    color: "white"
+    color: Shell.Theme.colors.text
     font.family: Shell.Theme.titleFontFamily
     font.pixelSize: 32
     font.letterSpacing: -0.64
@@ -58,11 +68,17 @@ Rectangle {
         sourceItem: Rectangle {
           width: body.width; height: body.height
           radius: root.radius
-          color: "white"
+          color: Shell.Theme.colors.text
           antialiasing: true
         }
       }
     }
+  }
+  Shell.PanelBorder {
+    radius: root.radius
+    color: Shell.PanelStyle.modalBorder
+    visible: Shell.Theme.translucent && root.showOutline
+    z: 4
   }
   Item { id: overlays; anchors.fill: parent; z: 6 }
   Shell.PanelCloseButton {

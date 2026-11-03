@@ -12,6 +12,8 @@ Singleton {
   property string wallpaperMode: "dynamic"
   property string wallpaperPath: ""
   property string wallpaperUrl: ""
+  property var wallpapers: []
+  property bool wallpaperRefreshPending: false
   property var display: ({})
   property real brightness: 1
   property real pendingBrightness: -1
@@ -20,10 +22,12 @@ Singleton {
   property string error: ""
   signal keyboardBrightnessChanged(string outputName, real value)
   readonly property bool pickingWallpaper: picker.running
-  readonly property bool busy: action.running
+  readonly property bool busy: action.running || launcherTheme.running || picker.running
   readonly property bool active: Settings.State.opened && Settings.State.page === "appearance"
+  readonly property bool wallpapersActive: Settings.State.opened && Settings.State.page === "wallpaper"
   readonly property bool brightnessAvailable: display.brightness !== undefined && display.brightness !== null
-  readonly property string wallpaperName: wallpaperPath.split("/").pop() || ""
+
+  onWallpapersActiveChanged: if (wallpapersActive) loadWallpapers()
 
   onActiveChanged: {
     if (active) { expandedSection = ""; error = ""; settleDelay.restart(); }
@@ -73,20 +77,30 @@ Singleton {
     stdout: StdioCollector {
       onStreamFinished: root.receive(text, "Could not apply appearance settings")
     }
-    onExited: root.refresh()
+    onExited: {
+      if (root.wallpaperRefreshPending) root.loadWallpapers();
+      else if (root.active) root.refresh();
+    }
+  }
+  Process {
+    id: launcherTheme
+    onExited: exitCode => {
+      if (exitCode !== 0) root.error = "Theme saved, but the launcher theme could not be updated.";
+    }
   }
   FileView {
     path: StandardPaths.writableLocation(StandardPaths.ConfigLocation) + "/background"
     printErrors: false
     watchChanges: true
-    onFileChanged: root.apply(["wallpaper", "custom", decodeURIComponent(path.replace(/^file:\/\//, ""))])
+    onFileChanged: root.selectWallpaper(decodeURIComponent(path.replace(/^file:\/\//, "")))
   }
   Process {
     id: picker
-    command: ["python3", Quickshell.shellDir + "/settings/appearance/control.py", "pick-wallpaper"]
+    command: ["python3", Quickshell.shellDir + "/../wallpaper/control.py", "pick"]
     stdout: StdioCollector {
       onStreamFinished: root.receive(text, "Could not open the image picker")
     }
+    onExited: if (root.wallpaperRefreshPending) root.loadWallpapers()
   }
   Process {
     id: brightnessWriter
@@ -107,8 +121,15 @@ Singleton {
     try {
       const result = JSON.parse(text);
       if (result.error) error = result.error;
-      if (result.theme) Shell.Theme.reload();
+      if (result.theme) {
+        const themed = ["hazel", "wisteria", "north"].includes(result.theme);
+        launcherTheme.command = ["vicinae", "theme", "set", themed ? "pond-" + result.theme : "default"];
+        launcherTheme.running = true;
+        Shell.Theme.reload();
+      }
       if (result.mode) wallpaperFile.reload();
+      if (result.wallpapers && JSON.stringify(result.wallpapers) !== JSON.stringify(wallpapers))
+        wallpapers = result.wallpapers;
     } catch (exception) { error = failure; }
   }
   function refresh() {
@@ -127,17 +148,24 @@ Singleton {
     keyboardBrightnessChanged(output, value);
   }
   function toggleSection(section) { expandedSection = expandedSection === section ? "" : section; }
-  function apply(args) {
-    if (action.running) return;
+  function apply(args, script = "settings/appearance/control.py") {
+    if (action.running || picker.running) return;
     error = "";
-    action.command = ["python3", Quickshell.shellDir + "/settings/appearance/control.py"].concat(args);
+    action.command = ["python3", Quickshell.shellDir + "/" + script].concat(args);
     action.running = true;
   }
+  function applyWallpaper(args) { apply(args, "../wallpaper/control.py"); }
   function selectTheme(theme) {
+    if (busy) return;
     apply(["theme", theme]);
   }
-  function selectDynamic() { apply(["wallpaper", "dynamic"]); }
-  function pickWallpaper() { if (!picker.running) { error = ""; picker.running = true; } }
+  function selectDynamic() { applyWallpaper(["set", "dynamic"]); }
+  function selectWallpaper(path) { applyWallpaper(["set", "custom", path]); }
+  function loadWallpapers() {
+    wallpaperRefreshPending = action.running || picker.running;
+    if (!wallpaperRefreshPending) applyWallpaper(["list"]);
+  }
+  function pickWallpaper() { if (!busy) { error = ""; picker.running = true; } }
   function setBrightness(value) {
     brightness = Math.max(0.01, Math.min(1, value));
     pendingBrightness = brightness;

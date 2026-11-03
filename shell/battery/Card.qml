@@ -77,7 +77,7 @@ Shell.PanelBackground {
       capTop: 53
       visible: root.device.changeRate !== 0
       text: Math.round(Math.abs(root.device.changeRate)) + "W"
-      color: root.charging ? "#CBE25B" : Shell.Theme.sidebarV3Foreground
+      color: root.charging ? "#CBE25B" : Shell.Theme.sidebarForeground
       opacity: root.charging ? 1 : 0.4
     }
     Label {
@@ -103,7 +103,7 @@ Shell.PanelBackground {
       width: parent.width * Battery.State.percentage / 100
       height: parent.height
       radius: 6
-      color: Shell.Theme.sidebarV3Foreground
+      color: Shell.Theme.sidebarForeground
       gradient: Battery.State.charging ? chargeGradient : null
     }
   }
@@ -120,7 +120,7 @@ Shell.PanelBackground {
     x: 260 - width
     capTop: 136
     text: root.hoveredProfile || root.selectedProfile
-    color: "white"
+    color: Shell.Theme.colors.text
   }
 
   Repeater {
@@ -156,7 +156,7 @@ Shell.PanelBackground {
     id: label
     property real capTop
     y: capTop + labelMetrics.capitalHeight - baselineOffset
-    color: Shell.Theme.sidebarV3Foreground
+    color: Shell.Theme.sidebarForeground
     font.family: Shell.Theme.fontFamily
     font.weight: Font.Medium
     font.pixelSize: 13

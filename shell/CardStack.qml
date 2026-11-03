@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import Quickshell
 
 // Keep page instances alive while they move behind the front card, preserving
 // entered text and selections when the user goes back.
@@ -11,6 +12,19 @@ Item {
   signal panelOpened
   signal panelClosed
   signal pagePopping(string page)
+  readonly property Region blurRegion: Region {
+    Region {
+      item: root.opened && root.opacity > PanelStyle.blurRevealOpacity ? frontBounds : null
+      radius: PanelStyle.radius
+    }
+    Region {
+      item: root.opened && root.depth > 1 ? backBounds : null
+      radius: backBounds.radius
+    }
+  }
+  onXChanged: blurRegion.changed()
+  onYChanged: blurRegion.changed()
+  onScaleChanged: blurRegion.changed()
 
   property bool opened: false
   property bool transitionRunning: false
@@ -35,6 +49,9 @@ Item {
       ? Theme.lerp(transitionFromInset, transitionToInset,
                    transitionProgress)
       : insetForDepth(depth)
+  readonly property real frontScale: transitionOperation === "push"
+      ? 0.92 + 0.08 * transitionProgress
+      : transitionOperation === "pop" ? Math.max(0, 1 - 2 * transitionProgress) : 1
 
   width: 336
   height: transitionRunning
@@ -173,6 +190,22 @@ Item {
     }
   }
 
+  Item {
+    id: frontBounds
+    y: root.frontInset
+    width: PanelStyle.width
+    height: root.height - y
+  }
+  Item {
+    id: backBounds
+    readonly property var card: root.depth > 1 ? layerRepeater.itemAt(root.depth - 2) : null
+    readonly property real radius: 14.38
+    x: card ? card.x : 16
+    y: card ? card.y : 16
+    width: card ? card.width : 284
+    height: card ? card.height : 0
+  }
+
   Repeater {
     id: layerRepeater
     model: stackModel
@@ -202,16 +235,21 @@ Item {
       y: Theme.lerp(pushBack ? root.transitionFromInset
           : popBack ? root.transitionToInset : root.frontInset, 16, backingAmount)
       width: Theme.lerp(PanelStyle.width, 284, backingAmount)
-      height: Theme.lerp(naturalHeight, 90, backingAmount)
+      // Keep the rear surface flush with the front card's bottom; clip its contents to fit.
+      height: relativeIndex === 0 ? naturalHeight : root.height - y
       backingAmount: pushBack ? root.transitionProgress
           : popBack ? 1 - root.transitionProgress
           : relativeIndex === 0 ? 0 : 1
-      cardOpacity: popBack ? 1 : 1 - backingAmount
+      frontCardRect: relativeIndex === 1 ? Qt.rect(
+          PanelStyle.width * (1 - root.frontScale) / 2 - x,
+          root.frontInset + root.frontHeight * (1 - root.frontScale) - y,
+          PanelStyle.width * root.frontScale, root.frontHeight * root.frontScale)
+          : Qt.rect(0, 0, 0, 0)
+      frontCardRadius: PanelStyle.radius * root.frontScale
       opacity: pushFront ? root.transitionProgress
           : popFront ? 1
           : relativeIndex <= 1 ? 1 : 0
-      scale: pushFront ? 0.92 + 0.08 * root.transitionProgress
-          : popFront ? Math.max(0, 1 - 2 * root.transitionProgress) : 1
+      scale: relativeIndex === 0 ? root.frontScale : 1
       transformOrigin: Item.Bottom
       visible: opacity > 0.001
       z: index

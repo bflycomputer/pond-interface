@@ -9,6 +9,7 @@ DeviceList {
   viewportHeight: 306
   devices: Wifi.State.wiredNetworks.concat(Wifi.State.enabled ? Wifi.State.networks : [])
   headerControl: Component { Toggle {
+    trackAlpha: PanelStyle.drawerToggleAlpha
     checked: Wifi.State.enabled
     enabled: root.interactive
     onToggled: checked => Wifi.State.setWifiEnabled(checked)
@@ -40,8 +41,8 @@ DeviceList {
     Rectangle {
       anchors.fill: parent
       radius: PanelStyle.rowRadius
-      color: addNetworkPointer.containsMouse ? PanelStyle.hover
-          : Qt.rgba(38 / 255, 38 / 255, 38 / 255, 0)
+      color: addNetworkPointer.containsMouse ? PanelStyle.drawerRowHover
+          : Qt.alpha(PanelStyle.drawerRowHover, 0)
 
       Behavior on color {
         ColorAnimation { duration: PanelStyle.controlDuration }
@@ -61,7 +62,7 @@ DeviceList {
       Text {
         anchors.verticalCenter: parent.verticalCenter
         text: "Add a network"
-        color: "white"
+        color: Theme.colors.text
         font.family: Theme.fontFamily
         font.weight: Font.Medium
         font.pixelSize: 15

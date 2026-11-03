@@ -20,7 +20,7 @@ PanelWindow {
   anchors { left: true; top: true }
   margins {
     left: Math.round(Shell.Theme.sidebarOuterMargin + bar.cardWidth + 20) - card.x
-    top: (above.visible ? 20 + above.implicitHeight : 20) - card.y
+    top: (above.visible ? 20 + above.cardHeight : 20) - card.y
   }
 
   WlrLayershell.layer: WlrLayer.Overlay

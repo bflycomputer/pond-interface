@@ -69,7 +69,7 @@ Shell.Card {
           text: row.name
           textFormat: Text.PlainText
           elide: Text.ElideRight
-          color: "white"
+          color: Shell.Theme.colors.text
           font.family: Shell.Theme.fontFamily
           font.pixelSize: 13
           font.weight: Font.Medium
@@ -120,7 +120,7 @@ Shell.Card {
   component HoverFill: Rectangle {
     property bool active
     radius: root.radius - root.contentPadding
-    color: Shell.Theme.daylight ? Shell.Theme.sidebarHoverFill : "#262626"
+    color: Shell.Theme.colors.installHover
     opacity: active ? 1 : 0
     Behavior on opacity { Shell.HoverAnimation {} }
   }

@@ -66,8 +66,8 @@ Item {
   Rectangle {
     anchors.fill: parent
     radius: 16
-    color: PanelStyle.surface
-    border.color: PanelStyle.border
+    color: PanelStyle.menuSurface
+    border.color: PanelStyle.menuBorder
     border.width: 0.5
     clip: true
 
@@ -103,13 +103,13 @@ Item {
         radius: 12
         color: modelData.mode === root.currentMode || rowHover.hovered
             || (optionList.activeFocus && index === optionList.currentIndex)
-            ? PanelStyle.hover : "transparent"
+            ? PanelStyle.menuRowHover : "transparent"
 
         Text {
           x: 12
           anchors.verticalCenter: parent.verticalCenter
           text: optionRow.modelData.label
-          color: "white"
+          color: Theme.colors.text
           font.family: Theme.fontFamily
           font.weight: Font.Medium
           font.pixelSize: 13

@@ -12,9 +12,8 @@ Rectangle {
   implicitWidth: 54
   implicitHeight: 28
   radius: height / 2
-  color: root.hovered ? PanelStyle.hover : "transparent"
-  border.color: PanelStyle.border
-  border.width: 1
+  property real trackAlpha: 0.06
+  color: Qt.rgba(1, 1, 1, trackAlpha + (root.hovered ? 0.06 : 0))
 
   Behavior on position {
     NumberAnimation {
@@ -59,7 +58,7 @@ Rectangle {
     rotation: Math.max(0, Math.min(rollingDistance,
       travelDistance * root.position - redSideTravel)) / radius * 180 / Math.PI
     antialiasing: true
-    color: root.checked ? PanelStyle.enabledSurface : "#613129"
+    color: root.checked ? PanelStyle.enabledMark : "#FB9B89"
     Behavior on color {
       ColorAnimation {
         duration: root.animationDuration
@@ -74,7 +73,7 @@ Rectangle {
       height: 4
       radius: height / 2
       antialiasing: true
-      color: root.checked ? PanelStyle.enabledMark : "#FB9B89"
+      color: root.checked ? PanelStyle.enabledSurface : "#613129"
       Behavior on color {
         ColorAnimation {
           duration: root.animationDuration

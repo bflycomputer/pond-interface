@@ -48,14 +48,14 @@ FocusScope {
         required property int index
         objectName: "displayOption" + modelData.value
         width: list.width; height: modelData.separator ? 9 : 40; radius: 12
-        color: !modelData.disabled && (hover.hovered || (list.activeFocus && list.currentIndex === index) || String(modelData.value) === root.currentValue) ? "#262626" : "transparent"
+        color: !modelData.disabled && (hover.hovered || (list.activeFocus && list.currentIndex === index) || String(modelData.value) === root.currentValue) ? Shell.PanelStyle.rowHover : "transparent"
         Accessible.role: modelData.separator ? Accessible.Separator : Accessible.MenuItem; Accessible.name: modelData.label
         Accessible.checked: !!modelData.checked
         Accessible.onPressAction: root.pick(modelData)
         Text {
           x: 12; width: parent.width - (trailing.visible ? 52 : 24); anchors.verticalCenter: parent.verticalCenter
           text: option.modelData.label; elide: Text.ElideRight
-          color: "white"; opacity: option.modelData.disabled ? 0.3 : 1
+          color: Shell.Theme.colors.text; opacity: option.modelData.disabled ? 0.3 : 1
           font.family: Shell.Theme.fontFamily; font.pixelSize: 13; font.weight: Font.Medium
         }
         Image {
@@ -70,7 +70,7 @@ FocusScope {
           visible: !!option.modelData.separator
           anchors.centerIn: parent
           width: parent.width - 24; height: 1
-          color: Shell.Theme.sidebarV3Divider
+          color: Shell.Theme.sidebarDivider
         }
         HoverHandler { id: hover; cursorShape: option.modelData.disabled ? Qt.ArrowCursor : Qt.PointingHandCursor }
         TapHandler { onTapped: root.pick(option.modelData) }

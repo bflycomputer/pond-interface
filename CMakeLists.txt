@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.21)
 project(pond-interface LANGUAGES CXX)
-find_package(Qt6 6.11 REQUIRED COMPONENTS Gui Qml DBus)
+find_package(Qt6 6.12 REQUIRED COMPONENTS Gui Qml DBus)
 find_package(KF6NetworkManagerQt REQUIRED)
 qt_standard_project_setup(REQUIRES 6.7)
 qt_add_qml_module(pond_system

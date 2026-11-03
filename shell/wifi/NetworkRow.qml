@@ -15,7 +15,7 @@ Item {
   Rectangle {
     anchors.fill: parent
     radius: PanelStyle.rowRadius
-    color: hover.hovered ? PanelStyle.hover : "transparent"
+    color: hover.hovered ? PanelStyle.drawerRowHover : "transparent"
   }
   MouseArea {
     anchors.fill: parent
@@ -47,7 +47,7 @@ Item {
     width: (root.canDisconnect ? 202 : 264) - x
     elide: Text.ElideRight
     text: String(root.network.wired ? root.network.name : root.network.ssid || "")
-    color: "white"
+    color: Theme.colors.text
     font.family: Theme.fontFamily
     font.weight: Font.Medium
     font.pixelSize: 13
@@ -69,12 +69,12 @@ Item {
     width: 90
     height: 40
     radius: 10
-    color: disconnectHover.hovered ? PanelStyle.pressed : "transparent"
+    color: disconnectHover.hovered ? PanelStyle.controlHover : "transparent"
 
     Text {
       anchors.centerIn: parent
       text: "Disconnect"
-      color: "white"
+      color: Theme.colors.text
       opacity: disconnectHover.hovered ? 1 : 0.8
       font.family: Theme.fontFamily
       font.weight: Font.Medium

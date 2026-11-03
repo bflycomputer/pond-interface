@@ -12,67 +12,69 @@ Settings.Modal {
   onBackRequested: Settings.State.back()
   Keys.onEscapePressed: Settings.State.back()
 
+  property string previewTheme: ""
+  readonly property var themes: [
+    { key: "north", label: "North", x: 247, y: 2, turn: 0, hoverFill: Qt.alpha("#B4C7E8", 0.3),
+      hoverGlyph: "#B4C7E8", activeFill: "#B4C7E8", activeGlyph: "#2F465C", labelColor: "#B4C7E8" },
+    { key: "daylight", label: "Daylight", x: 149, y: 101, turn: 0, hoverFill: "transparent",
+      hoverGlyph: "#F5E4C8", activeFill: "transparent", activeGlyph: "#FFF2DD" },
+    { key: "unthemed", label: "Unthemed", x: 247, y: 101, turn: 90, hoverFill: "#4C4C4C",
+      hoverGlyph: "white", activeFill: Qt.rgba(1, 1, 1, 0.8), activeGlyph: "#282828" },
+    { key: "hazel", label: "Hazel", x: 345, y: 101, turn: 90, hoverFill: Qt.alpha("#D3A95A", 0.3),
+      hoverGlyph: "#EBC98B", activeFill: "#EBC98B", activeGlyph: "#3C2E24", labelColor: "#EBC98B" },
+    { key: "wisteria", label: "Wisteria", x: 247, y: 199, turn: 45, hoverFill: Qt.alpha("#D1C9FF", 0.3),
+      hoverGlyph: "#D1C9FF", activeFill: "#D1C9FF", activeGlyph: "#38224D", labelColor: "#D1C9FF" }
+  ]
+  function themeLabel(key) { return themes.find(theme => theme.key === key)?.label ?? ""; }
+
   Item {
-    width: root.width; height: 241
+    width: root.width; height: 320
     Text {
-      x: 103; y: 83; height: 25
+      x: 60; y: 135; height: 25
       text: "Theme:"; font.family: Shell.Theme.fontFamily; font.pixelSize: 15
-      color: "#b3b3b3"; verticalAlignment: Text.AlignVCenter
+      color: Shell.Theme.colors.text; opacity: 0.7; verticalAlignment: Text.AlignVCenter
     }
     Text {
-      x: 418; y: 83; height: 25
-      text: Shell.Theme.daylight ? "Daylight" : "Unthemed"
+      x: 469; y: 135; height: 25
+      text: root.themeLabel(Shell.Theme.name)
       font.family: Shell.Theme.fontFamily; font.pixelSize: 15
-      color: "#cba6f7"; opacity: 0.7; verticalAlignment: Text.AlignVCenter
+      color: root.themes.find(theme => theme.key === Shell.Theme.name)?.labelColor
+          ?? Qt.alpha(Shell.Theme.colors.selection, 0.7)
+      verticalAlignment: Text.AlignVCenter
     }
     Text {
-      x: 418; y: 107; height: 25
-      text: upcoming.hovered ? "Coming soon" : daylight.hovered && !daylight.selected ? "Daylight"
-          : unthemed.hovered && !unthemed.selected ? "Unthemed" : ""
+      x: 469; y: 159; height: 25
+      text: root.previewTheme !== Shell.Theme.name ? root.themeLabel(root.previewTheme) : ""
       font.family: Shell.Theme.fontFamily; font.pixelSize: 15
-      color: "#b3b3b3"; verticalAlignment: Text.AlignVCenter
+      color: Qt.alpha(Shell.Theme.colors.text, 0.7); verticalAlignment: Text.AlignVCenter
       opacity: text ? 1 : 0
       Behavior on opacity { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
     }
-    ThemeButton {
-      id: daylight; objectName: "themeDaylight"
-      x: 243; y: 12; themeKey: "daylight"; label: "Daylight"
-      selected: Shell.Theme.daylight
-      onClicked: Appearance.State.selectTheme("daylight")
-    }
-    ThemeButton {
-      id: unthemed; objectName: "themeUnthemed"
-      x: 194; y: 103; themeKey: "unthemed"; label: "Unthemed"
-      selected: !Shell.Theme.daylight
-      onClicked: Appearance.State.selectTheme("unthemed")
-    }
-    ThemeButton {
-      id: upcoming; objectName: "themeComingSoon"
-      x: 294; y: 103; available: false; label: "Coming soon"
+    Repeater {
+      model: root.themes
+      delegate: ThemeButton {
+        required property var modelData
+        x: modelData.x; y: modelData.y
+        objectName: "theme" + modelData.label
+        theme: modelData
+        selected: Shell.Theme.name === modelData.key
+        onClicked: Appearance.State.selectTheme(modelData.key)
+        onHoveredChanged: {
+          if (hovered) root.previewTheme = modelData.key;
+          else if (root.previewTheme === modelData.key) root.previewTheme = "";
+        }
+      }
     }
   }
   Column {
     id: fields
-    x: 30; y: 241; width: root.width - 60; spacing: 8
+    x: 30; y: 320; width: root.width - 60; spacing: 8
     Accordion {
       objectName: "wallpaperSection"
       width: parent.width; title: "Wallpaper"
       summary: Appearance.State.wallpaperMode === "dynamic" ? "Dynamic" : "Custom"
-      expanded: Appearance.State.expandedSection === "wallpaper"
-      expandedHeight: 202
-      onToggled: Appearance.State.toggleSection("wallpaper")
-      WallpaperOption {
-        objectName: "dynamicWallpaper"
-        y: 5; width: parent.width; dynamic: true
-        selected: Appearance.State.wallpaperMode === "dynamic"
-        onClicked: Appearance.State.selectDynamic()
-      }
-      WallpaperOption {
-        objectName: "customWallpaper"
-        y: 68; width: parent.width
-        selected: Appearance.State.wallpaperMode === "custom"
-        onClicked: Appearance.State.pickWallpaper()
-      }
+      navigation: true
+      onToggled: Settings.State.openPage("wallpaper")
     }
     Accordion {
       objectName: "brightnessSection"

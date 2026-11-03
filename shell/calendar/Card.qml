@@ -6,6 +6,7 @@ import ".." as Shell
 
 Shell.PanelBackground {
   id: root
+  fill: Shell.Theme.colors.calendarGradient
   property date today: clock.date
   property bool followToday: true
   property date browsedMonth: Dates.monthStart(today)
@@ -16,6 +17,7 @@ Shell.PanelBackground {
   readonly property int weekRow: isCurrentMonth
       ? Dates.currentWeekRow(days, today) : -1
   readonly property real cellWidth: (width - 20 - 12) / 7
+  readonly property color todayFill: Shell.Theme.colors.todayFill
   readonly property real cellHeight: 36
   readonly property real rowPitch: cellHeight + 2
   readonly property string monthTitle: Qt.locale("en_US").standaloneMonthName(
@@ -46,7 +48,7 @@ Shell.PanelBackground {
     x: 18
     y: 20 + metrics.capitalHeight - baselineOffset
     text: root.monthTitle
-    color: "white"
+    color: Shell.Theme.colors.text
     font.family: Shell.Theme.fontFamily
     font.pixelSize: 13
     font.weight: Font.Medium
@@ -87,7 +89,7 @@ Shell.PanelBackground {
       width: root.cellWidth
       text: modelData
       horizontalAlignment: Text.AlignHCenter
-      color: "white"
+      color: Shell.Theme.colors.text
       opacity: 0.5
       font.family: Shell.Theme.fontFamily
       font.pixelSize: 13
@@ -100,7 +102,7 @@ Shell.PanelBackground {
     width: root.width - 20
     height: root.cellHeight
     radius: 8
-    color: Qt.rgba(1, 1, 1, 0.06)
+    color: Shell.Theme.colors.weekFill
     visible: root.weekRow >= 0
   }
 
@@ -117,7 +119,7 @@ Shell.PanelBackground {
       width: root.cellWidth
       height: root.cellHeight
       radius: 8
-      color: isToday && root.isCurrentMonth ? "#D1C9FF" : "transparent"
+      color: isToday && root.isCurrentMonth ? root.todayFill : "transparent"
       Accessible.role: Accessible.StaticText
       Accessible.name: Qt.formatDate(modelData, "dddd, MMMM d, yyyy")
           + (isToday ? ", today" : "")
@@ -158,7 +160,7 @@ Shell.PanelBackground {
         y: (cell.height - 10) / 2 + metrics.capitalHeight - baselineOffset
         text: cell.modelData.getDate()
         horizontalAlignment: Text.AlignHCenter
-        color: cell.isToday && root.isCurrentMonth ? "#643957" : "white"
+        color: cell.isToday && root.isCurrentMonth ? "#643957" : Shell.Theme.colors.text
         opacity: cell.inMonth ? 1 : 0.3
         font.family: Shell.Theme.fontFamily
         font.pixelSize: 13

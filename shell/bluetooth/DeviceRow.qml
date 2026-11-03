@@ -21,12 +21,12 @@ Bluetooth.Row {
     Rectangle {
       x: 264; y: 14; width: 1; height: 16
       visible: root.showBattery || root.hovered
-      color: Shell.PanelStyle.border
+      color: Shell.PanelStyle.outline
     }
     Rectangle {
       x: 203; y: 14; width: 1; height: 16
       visible: root.showBattery && root.hovered
-      color: Shell.PanelStyle.border
+      color: Shell.PanelStyle.outline
     }
     Battery.Indicator { x: 211; y: 14; visible: root.showBattery; percentage: root.device.battery || 0 }
     Text {
@@ -34,7 +34,7 @@ Bluetooth.Row {
       visible: root.showBattery
       text: Math.round(root.device.battery || 0) + "%"
       font.family: Shell.Theme.fontFamily; font.weight: Font.Medium; font.pixelSize: 13
-      color: "white"
+      color: Shell.Theme.colors.text
     }
     MouseArea {
       id: infoPointer
@@ -52,7 +52,7 @@ Bluetooth.Row {
     Rectangle {
       x: 272; y: 14; width: 16; height: 16; radius: 8
       visible: !root.busy && !root.failed
-      color: root.device.connected ? "white" : "transparent"
+      color: root.device.connected ? Shell.Theme.colors.text : "transparent"
       border.width: root.device.connected ? 0 : 1
       border.color: Qt.rgba(1, 1, 1, 0.3)
       Image {

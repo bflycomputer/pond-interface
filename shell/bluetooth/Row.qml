@@ -17,7 +17,7 @@ Item {
 
   Rectangle {
     anchors.fill: parent; radius: Shell.PanelStyle.rowRadius
-    color: root.hovered ? Shell.PanelStyle.hover : "transparent"
+    color: root.hovered ? Shell.PanelStyle.drawerRowHover : "transparent"
   }
   MouseArea {
     anchors.fill: parent; enabled: root.interactive
@@ -33,7 +33,7 @@ Item {
     anchors.verticalCenter: parent.verticalCenter
     width: Math.max(0, root.labelRight - x)
     elide: Text.ElideRight
-    text: root.label; color: "white"; opacity: root.contentOpacity
+    text: root.label; color: Shell.Theme.colors.text; opacity: root.contentOpacity
     font.family: Shell.Theme.fontFamily; font.weight: Font.Medium; font.pixelSize: root.labelSize
   }
   Loader { anchors.fill: parent; sourceComponent: root.trailing }

@@ -50,7 +50,7 @@ Item {
           width: tabButton.modelData.labelWidth
           height: 32
           text: tabButton.modelData.label
-          color: "white"
+          color: Theme.colors.text
           opacity: root.selectedTab === tabButton.modelData.tab ? 1
               : tabButton.containsMouse ? 0.6 : 0.3
           font.family: Theme.titleFontFamily
@@ -70,6 +70,7 @@ Item {
       height: 32
       externalValue: root.selectedVolume
       muted: root.selectedTab === "output" && Audio.State.outputMuted
+      trackColor: PanelStyle.drawerSliderTrack
       interactive: root.interactive && root.selectedAudioAvailable
       onMoved: {
         if (root.selectedTab === "output")
@@ -84,7 +85,7 @@ Item {
       y: 97
       width: 276
       height: 1
-      color: PanelStyle.border
+      color: PanelStyle.outline
       antialiasing: false
     }
 
@@ -130,7 +131,7 @@ Item {
       visible: root.deviceCount === 0
       text: root.selectedTab === "output"
           ? "No output devices" : "No input devices"
-      color: "white"
+      color: Theme.colors.text
       opacity: 0.5
       font.family: Theme.fontFamily
       font.weight: Font.Medium

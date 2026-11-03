@@ -21,8 +21,8 @@ Rectangle {
   implicitWidth: PanelStyle.fieldWidth
   implicitHeight: PanelStyle.fieldHeight
   radius: PanelStyle.rowRadius
-  color: focused || hovered || highlighted
-      ? PanelStyle.pressed : PanelStyle.hover
+  color: hovered || highlighted ? PanelStyle.drawerHover
+      : focused ? PanelStyle.fieldFocus : PanelStyle.drawerFill
   border.width: 0
   antialiasing: true
 
@@ -36,8 +36,8 @@ Rectangle {
     width: parent.width - x - root.rightPadding
     text: root.placeholderText
     visible: editor.text.length === 0
-    color: "white"
-    opacity: 0.5
+    color: Theme.colors.text
+    opacity: root.focused ? 0.3 : 0.5
     font.family: Theme.fontFamily
     font.weight: Font.Medium
     font.pixelSize: 13
@@ -49,9 +49,9 @@ Rectangle {
     anchors.verticalCenter: parent.verticalCenter
     width: parent.width - x - root.rightPadding
     color: root.password && !root.revealed
-        ? PanelStyle.accent : "white"
+        ? PanelStyle.accent : Theme.colors.text
     selectionColor: PanelStyle.accentText
-    selectedTextColor: "white"
+    selectedTextColor: Theme.colors.text
     font.family: Theme.fontFamily
     font.weight: Font.Medium
     font.pixelSize: root.password && !root.revealed ? 12 : 13
@@ -86,7 +86,7 @@ Rectangle {
       anchors.fill: parent
       z: -1
       radius: 4
-      color: eyeButton.hovered ? PanelStyle.pressed : Qt.rgba(48 / 255, 48 / 255, 48 / 255, 0)
+      color: eyeButton.hovered ? PanelStyle.controlHover : Qt.alpha(PanelStyle.controlHover, 0)
       Behavior on color { ColorAnimation { duration: PanelStyle.controlDuration } }
     }
   }

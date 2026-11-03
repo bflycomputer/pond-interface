@@ -10,10 +10,12 @@ Item {
   property bool showDivider: false
   property bool closeEnabled: true
   property bool extraHovered: false
+  property bool panelRow: false
   signal activated
   signal dismissed
   readonly property bool hovered: pointer.containsMouse || closeButton.hovered || extraHovered
   readonly property real surfaceWidth: inlinePreview ? width : 280
+  readonly property alias surface: surface
   readonly property int padding: inlinePreview ? 12 : 16
   readonly property int iconSize: inlinePreview ? 14 : 16
   readonly property int lineHeight: inlinePreview ? 19 : 16
@@ -26,14 +28,18 @@ Item {
   Behavior on animatedHeight { Shell.Motion {} }
 
   Rectangle {
+    id: surface
     width: root.surfaceWidth
     height: root.height
     radius: 16
-    color: root.inlinePreview && Shell.Theme.daylight
-        ? Qt.tint(Shell.Theme.sidebarHoverFill,
-                  root.hovered ? Shell.Theme.sidebarHoverFill : Shell.Theme.sidebarClearFill)
-        : root.inlinePreview ? (root.hovered ? "#313131" : "#242424") : Shell.Theme.sidebarV3Background
+    color: root.inlinePreview
+        ? (root.hovered ? Shell.Theme.colors.inlineHoverFill : Shell.Theme.colors.inlineFill)
+        : root.panelRow && Shell.Theme.translucent ? "transparent" : Shell.PanelStyle.panelSurface
     antialiasing: true
+    Shell.PanelBorder {
+      visible: Shell.Theme.translucent && !root.inlinePreview && !root.panelRow
+      radius: surface.radius
+    }
     Behavior on color {
       enabled: !root.inlinePreview
       ColorAnimation { duration: 120; easing.type: Easing.OutCubic }

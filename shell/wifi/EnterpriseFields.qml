@@ -51,7 +51,7 @@ Column {
     spacing: 5
     Text {
       text: parent.label
-      color: "white"
+      color: Theme.colors.text
       font.family: Theme.fontFamily
       font.weight: Font.Medium
       font.pixelSize: 13

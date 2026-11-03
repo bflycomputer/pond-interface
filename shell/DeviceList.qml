@@ -24,6 +24,7 @@ Item {
 
   PanelBackground {
     anchors.fill: parent
+    stacked: true
     Image {
       x: 19.5; y: 23.5; width: 20; height: 20
       visible: root.titleIcon.toString() !== ""; source: root.titleIcon
@@ -31,7 +32,7 @@ Item {
     Text {
       x: root.titleIcon.toString() !== "" ? 43.5 : 19.5
       y: 19.5
-      text: root.title; color: "white"
+      text: root.title; color: Theme.colors.text
       font.family: Theme.titleFontFamily; font.weight: Font.Normal; font.pixelSize: 20
     }
     Loader { x: 241.5; y: 19.5; width: 54; height: 28; sourceComponent: root.headerControl }
@@ -50,13 +51,13 @@ Item {
     Text {
       x: 20; y: root.listTop + (root.footer ? 52 : 16); width: 276
       text: root.emptyText; visible: deviceList.count === 0
-      wrapMode: Text.Wrap; color: "white"; opacity: 0.5
+      wrapMode: Text.Wrap; color: Theme.colors.text; opacity: 0.5
       font.family: Theme.fontFamily; font.pixelSize: 13
     }
     Text {
       x: 20; y: root.viewportHeight; width: 276; height: 38
       text: root.message; visible: root.message !== ""
-      wrapMode: Text.Wrap; color: PanelStyle.accent
+      wrapMode: Text.Wrap; color: Theme.colors.errorText
       font.family: Theme.fontFamily; font.pixelSize: 12
     }
     ScrollShade {

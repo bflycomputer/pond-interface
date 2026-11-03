@@ -9,7 +9,7 @@ T.Slider {
   property bool showInlineValue: true
   property bool muted: false
   property bool interactive: true
-  property color trackColor: PanelStyle.border
+  property color trackColor: PanelStyle.sliderTrack
   signal dragStarted
   signal dragFinished
   onPressedChanged: pressed ? dragStarted() : dragFinished()

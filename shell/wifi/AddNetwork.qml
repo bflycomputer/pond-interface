@@ -29,7 +29,7 @@ Item {
     }
   }
 
-  PanelBackground { anchors.fill: parent }
+  PanelBackground { anchors.fill: parent; stacked: true }
 
   Item {
     id: cardContent
@@ -44,7 +44,7 @@ Item {
       x: 19.5
       y: 19.5
       text: "Add network"
-      color: "white"
+      color: Theme.colors.text
       font.family: Theme.titleFontFamily
       font.weight: Font.Normal
       font.pixelSize: 20
@@ -60,7 +60,7 @@ Item {
       Text {
         x: 19.5
         text: "Network name (SSID)"
-        color: "white"
+        color: Theme.colors.text
         font.family: Theme.fontFamily
         font.weight: Font.Medium
         font.pixelSize: 13
@@ -76,7 +76,7 @@ Item {
         x: 19.5
         y: 85
         text: "Security"
-        color: "white"
+        color: Theme.colors.text
         font.family: Theme.fontFamily
         font.weight: Font.Medium
         font.pixelSize: 13
@@ -98,7 +98,7 @@ Item {
         y: 170
         text: "Password"
         visible: root.needsPassword
-        color: "white"
+        color: Theme.colors.text
         font.family: Theme.fontFamily
         font.weight: Font.Medium
         font.pixelSize: 13
@@ -133,7 +133,7 @@ Item {
         x: 51.5
         anchors.verticalCenter: hidden.verticalCenter
         text: "Hidden network"
-        color: "white"
+        color: Theme.colors.text
         font.family: Theme.fontFamily
         font.weight: Font.Medium
         font.pixelSize: 13

@@ -1,4 +1,6 @@
 import QtQuick
+import QtQml.Models
+import Quickshell
 import "." as Settings
 import ".." as Shell
 
@@ -15,6 +17,10 @@ Item {
   signal clicked
 
   readonly property bool hovered: pointer.containsMouse
+  readonly property Region blurRegion: Region {
+    item: root.revealed && root.opacity > Shell.PanelStyle.blurRevealOpacity ? root : null
+    radius: Settings.Style.categoryRadius
+  }
 
   implicitWidth: 264
   implicitHeight: 264
@@ -22,6 +28,7 @@ Item {
   opacity: revealed ? 1 : 0
   scale: revealed ? 1 : 0.86
   transformOrigin: Item.Center
+  onScaleChanged: blurRegion.changed()
 
   Behavior on opacity {
     NumberAnimation {
@@ -40,16 +47,72 @@ Item {
   }
 
   Rectangle {
+    id: background
     anchors.fill: parent
-    radius: Settings.Style.radius
-    color: root.hovered ? Settings.Style.hover
-                        : Settings.Style.card
+    radius: Settings.Style.categoryRadius
+    color: "transparent"
     clip: true
 
-    Behavior on color {
-      ColorAnimation {
-        duration: Settings.Style.hoverDuration
+    property real gradientReveal: root.hovered ? 1 : 0
+    Behavior on gradientReveal {
+      NumberAnimation {
+        duration: Settings.Style.categoryHoverDuration
         easing.type: Easing.InOutCubic
+      }
+    }
+    function blendColor(target: color): color {
+      const base = Settings.Style.menuCard;
+      const alpha = base.a + (target.a - base.a) * gradientReveal;
+      // Blend premultiplied colors so translucency stays continuous.
+      const weight = alpha > 0 ? target.a * gradientReveal / alpha : 0;
+      return Qt.rgba(base.r + (target.r - base.r) * weight,
+                     base.g + (target.g - base.g) * weight,
+                     base.b + (target.b - base.b) * weight, alpha);
+    }
+
+    Gradient {
+      id: hoverGradient
+      orientation: Settings.Style.menuCardHoverGradient
+          ? Settings.Style.menuCardHoverGradient.orientation : Gradient.Vertical
+    }
+
+    Instantiator {
+      model: Settings.Style.menuCardHoverGradient
+          ? Settings.Style.menuCardHoverGradient.stops : []
+      delegate: GradientStop {
+        required property var modelData
+        position: modelData.position
+        color: background.blendColor(modelData.color)
+      }
+      onObjectAdded: (index, object) => hoverGradient.stops.push(object)
+      onObjectRemoved: (index, object) => {
+        const stopIndex = hoverGradient.stops.indexOf(object);
+        if (stopIndex >= 0) hoverGradient.stops.splice(stopIndex, 1);
+      }
+    }
+
+    Shell.GradientFill {
+      fill: Settings.Style.menuCardHoverGradient
+          && background.gradientReveal > 0 // Bypass gradient rounding artifacts
+          ? hoverGradient : null
+      color: root.hovered ? Settings.Style.menuCardHover : Settings.Style.menuCard
+      // Keep this animation: dynamic stops do not notify the gradient to repaint.
+      Behavior on color {
+        ColorAnimation {
+          duration: Settings.Style.categoryHoverDuration
+          easing.type: Easing.InOutCubic
+        }
+      }
+    }
+
+    Shell.PanelBorder {
+      color: root.hovered ? Settings.Style.menuCardHoverBorder : Settings.Style.menuCardBorder
+      radius: parent.radius
+      Behavior on color {
+        ColorAnimation {
+          duration: Settings.Style.categoryHoverDuration
+          easing.type: Easing.InOutCubic
+        }
       }
     }
 
@@ -76,7 +139,7 @@ Item {
       x: 30
       y: parent.height - 35 - baselineOffset
       text: root.accessibleName
-      color: "white"
+      color: Shell.Theme.colors.text
       font.family: Shell.Theme.titleFontFamily
       font.weight: Font.Normal
       font.pixelSize: 32
