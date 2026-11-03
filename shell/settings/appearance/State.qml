@@ -20,7 +20,7 @@ Singleton {
   property string error: ""
   signal keyboardBrightnessChanged(string outputName, real value)
   readonly property bool pickingWallpaper: picker.running
-  readonly property bool busy: action.running
+  readonly property bool busy: action.running || launcherTheme.running
   readonly property bool active: Settings.State.opened && Settings.State.page === "appearance"
   readonly property bool brightnessAvailable: display.brightness !== undefined && display.brightness !== null
   readonly property string wallpaperName: wallpaperPath.split("/").pop() || ""
@@ -75,6 +75,12 @@ Singleton {
     }
     onExited: root.refresh()
   }
+  Process {
+    id: launcherTheme
+    onExited: exitCode => {
+      if (exitCode !== 0) root.error = "Theme saved, but the launcher theme could not be updated.";
+    }
+  }
   FileView {
     path: StandardPaths.writableLocation(StandardPaths.ConfigLocation) + "/background"
     printErrors: false
@@ -107,7 +113,12 @@ Singleton {
     try {
       const result = JSON.parse(text);
       if (result.error) error = result.error;
-      if (result.theme) Shell.Theme.reload();
+      if (result.theme) {
+        const themed = ["hazel", "wisteria", "north"].includes(result.theme);
+        launcherTheme.command = ["vicinae", "theme", "set", themed ? "pond-" + result.theme : "default"];
+        launcherTheme.running = true;
+        Shell.Theme.reload();
+      }
       if (result.mode) wallpaperFile.reload();
     } catch (exception) { error = failure; }
   }
@@ -134,6 +145,7 @@ Singleton {
     action.running = true;
   }
   function selectTheme(theme) {
+    if (busy) return;
     apply(["theme", theme]);
   }
   function selectDynamic() { apply(["wallpaper", "dynamic"]); }
