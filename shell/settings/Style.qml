@@ -20,4 +20,5 @@ QtObject {
   readonly property int revealDuration: 32
   readonly property int closeDuration: 180
   readonly property int hoverDuration: 100
+  readonly property int categoryHoverDuration: 250
 }

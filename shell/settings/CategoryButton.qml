@@ -1,4 +1,5 @@
 import QtQuick
+import QtQml.Models
 import Quickshell
 import "." as Settings
 import ".." as Shell
@@ -46,15 +47,54 @@ Item {
   }
 
   Rectangle {
+    id: background
     anchors.fill: parent
     radius: Settings.Style.radius
     color: root.hovered ? Settings.Style.menuCardHover : Settings.Style.menuCard
-    gradient: root.hovered ? Settings.Style.menuCardHoverGradient : null
+    gradient: Settings.Style.menuCardHoverGradient ? hoverGradient : null
     clip: true
+
+    property real gradientReveal: root.hovered ? 1 : 0
+    Behavior on gradientReveal {
+      NumberAnimation {
+        duration: Settings.Style.categoryHoverDuration
+        easing.type: Easing.InOutCubic
+      }
+    }
+    function blendColor(target: color): color {
+      const base = Settings.Style.menuCard;
+      const alpha = base.a + (target.a - base.a) * gradientReveal;
+      // Blend premultiplied colors so translucency stays continuous.
+      const weight = alpha > 0 ? target.a * gradientReveal / alpha : 0;
+      return Qt.rgba(base.r + (target.r - base.r) * weight,
+                     base.g + (target.g - base.g) * weight,
+                     base.b + (target.b - base.b) * weight, alpha);
+    }
+
+    Gradient {
+      id: hoverGradient
+      orientation: Settings.Style.menuCardHoverGradient
+          ? Settings.Style.menuCardHoverGradient.orientation : Gradient.Vertical
+    }
+
+    Instantiator {
+      model: Settings.Style.menuCardHoverGradient
+          ? Settings.Style.menuCardHoverGradient.stops : []
+      delegate: GradientStop {
+        required property var modelData
+        position: modelData.position
+        color: background.blendColor(modelData.color)
+      }
+      onObjectAdded: (index, object) => hoverGradient.stops.push(object)
+      onObjectRemoved: (index, object) => {
+        const stopIndex = hoverGradient.stops.indexOf(object);
+        if (stopIndex >= 0) hoverGradient.stops.splice(stopIndex, 1);
+      }
+    }
 
     Behavior on color {
       ColorAnimation {
-        duration: Settings.Style.hoverDuration
+        duration: Settings.Style.categoryHoverDuration
         easing.type: Easing.InOutCubic
       }
     }
@@ -62,6 +102,12 @@ Item {
     Shell.PanelBorder {
       color: root.hovered ? Settings.Style.menuCardHoverBorder : Settings.Style.menuCardBorder
       radius: parent.radius
+      Behavior on color {
+        ColorAnimation {
+          duration: Settings.Style.categoryHoverDuration
+          easing.type: Easing.InOutCubic
+        }
+      }
     }
 
     Item {
