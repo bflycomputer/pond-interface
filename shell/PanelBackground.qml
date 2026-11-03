@@ -10,12 +10,12 @@ Rectangle {
     item: root
     radius: root.radius
   }
-  color: stacked && Theme.translucent ? "transparent" : PanelStyle.panelSurface
-  gradient: stacked && Theme.translucent ? null : fill
+  color: stacked && Theme.translucent || fill ? "transparent" : PanelStyle.panelSurface
   radius: PanelStyle.radius
   border.color: PanelStyle.panelBorder
   border.width: Theme.translucent ? 0 : 1
   antialiasing: true
   clip: true
+  GradientFill { fill: root.stacked && Theme.translucent ? null : root.fill }
   PanelBorder { visible: Theme.translucent && !root.stacked; radius: root.radius }
 }

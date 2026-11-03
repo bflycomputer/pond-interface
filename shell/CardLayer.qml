@@ -48,7 +48,7 @@ Item {
       anchors.fill: parent
       radius: Theme.lerp(PanelStyle.radius, 14.38,
                          root.backingAmount)
-      color: Theme.translucent ? PanelStyle.panelSurface : Qt.rgba(
+      color: PanelStyle.panelGradient ? "transparent" : Theme.translucent ? PanelStyle.panelSurface : Qt.rgba(
           Theme.lerp(PanelStyle.surface.r, PanelStyle.backSurface.r,
                      root.backingAmount),
           Theme.lerp(PanelStyle.surface.g, PanelStyle.backSurface.g,
@@ -56,10 +56,10 @@ Item {
           Theme.lerp(PanelStyle.surface.b, PanelStyle.backSurface.b,
                      root.backingAmount),
           1)
-      gradient: PanelStyle.panelGradient
       border.color: PanelStyle.panelBorder
       border.width: Theme.translucent ? 0 : 1
       antialiasing: true
+      GradientFill { fill: PanelStyle.panelGradient }
       PanelBorder { radius: parent.radius }
     }
 

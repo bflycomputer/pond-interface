@@ -22,10 +22,11 @@ Rectangle {
   property real closeButtonY: -13
   signal backRequested
   implicitWidth: 580
+  // Accordion heights already animate. Follow them directly so the shell and
+  // hit targets stay in step instead of starting another animation each frame.
   implicitHeight: Math.min(contentHeight + bodyTop, availableHeight)
   radius: 32
-  color: Shell.Theme.colors.modalSurface
-  gradient: fill
+  color: fill ? "transparent" : Shell.Theme.colors.modalSurface
   readonly property Region blurRegion: Region {
     item: root.enabled && root.parent?.opacity > Shell.PanelStyle.blurRevealOpacity
         && root.color.a < 1 ? root : null
@@ -33,8 +34,7 @@ Rectangle {
   }
   onScaleChanged: blurRegion.changed()
 
-  // Accordion heights already animate. Follow them directly so the shell and
-  // hit targets stay in step instead of starting another animation each frame.
+  Shell.GradientFill { fill: root.fill }
   // Stop dialog clicks from reaching the outside-dismiss area.
   MouseArea { anchors.fill: parent; acceptedButtons: Qt.AllButtons }
   Text {

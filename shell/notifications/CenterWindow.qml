@@ -100,12 +100,12 @@ PanelWindow {
     width: Notifications.Style.panelWidth
     height: root.panelHeight
     radius: Notifications.Style.radius
-    color: Shell.PanelStyle.panelSurface
-    gradient: Shell.PanelStyle.panelGradient
+    color: Shell.PanelStyle.panelGradient ? "transparent" : Shell.PanelStyle.panelSurface
     opacity: root.reveal
     antialiasing: true
     z: 2
     visible: root.listMode
+    Shell.GradientFill { fill: Shell.PanelStyle.panelGradient }
     Shell.PanelBorder { radius: panelBackground.radius }
   }
 

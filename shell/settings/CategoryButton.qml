@@ -50,8 +50,7 @@ Item {
     id: background
     anchors.fill: parent
     radius: Settings.Style.categoryRadius
-    color: root.hovered ? Settings.Style.menuCardHover : Settings.Style.menuCard
-    gradient: Settings.Style.menuCardHoverGradient ? hoverGradient : null
+    color: "transparent"
     clip: true
 
     property real gradientReveal: root.hovered ? 1 : 0
@@ -92,10 +91,15 @@ Item {
       }
     }
 
-    Behavior on color {
-      ColorAnimation {
-        duration: Settings.Style.categoryHoverDuration
-        easing.type: Easing.InOutCubic
+    Shell.GradientFill {
+      fill: Settings.Style.menuCardHoverGradient ? hoverGradient : null
+      color: root.hovered ? Settings.Style.menuCardHover : Settings.Style.menuCard
+      // Keep this animation: dynamic stops do not notify the gradient to repaint.
+      Behavior on color {
+        ColorAnimation {
+          duration: Settings.Style.categoryHoverDuration
+          easing.type: Easing.InOutCubic
+        }
       }
     }
 

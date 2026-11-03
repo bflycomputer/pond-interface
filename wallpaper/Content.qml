@@ -11,6 +11,13 @@ Rectangle {
   color: "#0b101c"
   layer.enabled: root.dimmed
   layer.format: ShaderEffectSource.RGBA16F
+  // Dither the scrim over custom wallpapers; the sky already includes noise.
+  layer.effect: root.custom ? dither : null
+
+  Component {
+    id: dither
+    ShaderEffect { fragmentShader: Qt.resolvedUrl("dither.frag.qsb") }
+  }
 
   Sky {
     id: sky
