@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 """Manage wallpaper discovery and saved selection through a JSON command interface."""
+from concurrent.futures import ThreadPoolExecutor
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -8,6 +10,8 @@ import sys
 import tempfile
 
 CONFIG = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config"))
+THUMBNAILS = Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache")) / "pond-interface/wallpapers"
+THUMBNAIL_WIDTH = 800
 INCLUDED_WALLPAPERS = Path(__file__).resolve().parent / "included"
 
 
@@ -56,6 +60,48 @@ def wallpaper_entry(path, title=None, subtitle=None):
         return None
 
 
+def thumbnail(path):
+    """Return a cached downscaled copy of an image, creating it on first use."""
+    from PyQt6.QtCore import QSize
+    from PyQt6.QtGui import QImageReader
+    try:
+        stat = os.stat(path)
+        key = hashlib.sha256(f"{path}:{stat.st_mtime_ns}:{stat.st_size}".encode()).hexdigest()
+        cached = THUMBNAILS / f"{key}.jpg"
+        if cached.exists():
+            return cached
+        reader = QImageReader(path)
+        reader.setAutoTransform(True)
+        size = reader.size()
+        if size.width() > THUMBNAIL_WIDTH:
+            reader.setScaledSize(QSize(THUMBNAIL_WIDTH, round(size.height() * THUMBNAIL_WIDTH / size.width())))
+        scaled = reader.read()
+        if scaled.isNull():
+            return None
+        THUMBNAILS.mkdir(parents=True, exist_ok=True)
+        with tempfile.NamedTemporaryFile(dir=THUMBNAILS, suffix=".tmp", delete=False) as file:
+            temporary = Path(file.name)
+        try:
+            if not scaled.save(str(temporary), "JPG", 90):
+                return None
+            os.replace(temporary, cached)
+        finally:
+            temporary.unlink(missing_ok=True)
+        return cached
+    except OSError:
+        return None
+
+
+def add_thumbnails(entries):
+    """Decode images in parallel and drop thumbnails that no listed wallpaper uses."""
+    with ThreadPoolExecutor() as pool:
+        thumbnails = list(pool.map(thumbnail, [entry["path"] for entry in entries]))
+    for entry, cached in zip(entries, thumbnails):
+        entry["thumbnail"] = cached.as_uri() if cached else ""
+    for stale in set(THUMBNAILS.glob("*.jpg")) - set(thumbnails):
+        stale.unlink(missing_ok=True)
+
+
 def wallpapers():
     state = wallpaper_state()
     original = json.dumps(state)
@@ -84,8 +130,10 @@ def wallpapers():
             state.update(mode="dynamic", path="", url="")
     if json.dumps(state) != original:
         atomic_write(CONFIG / "pond-interface/wallpaper.json", json.dumps(state) + "\n")
+    added = list(imported.values()) + list(discovered.values())
+    add_thumbnails(added + included)
     dynamic = {"dynamic": True, "title": "Daylight (dynamic)", "subtitle": "Changes through the day"}
-    return dict(state, wallpapers=list(imported.values()) + list(discovered.values()) + [dynamic] + included)
+    return dict(state, wallpapers=added + [dynamic] + included)
 
 
 def wallpaper(mode, path=""):
