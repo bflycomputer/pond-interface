@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Effects
 
 // Keep each page alive while scaling and clipping it behind the front card.
 Item {
@@ -9,6 +10,10 @@ Item {
   property var stackController
   property bool interactive: false
   property real backingAmount: 0
+  property rect frontCardRect: Qt.rect(0, 0, 0, 0)
+  property real frontCardRadius: PanelStyle.radius
+  readonly property bool blurCovered: Theme.translucent && backingAmount > 0
+      && frontCardRect.width > 0 && frontCardRect.height > 0
 
   readonly property real naturalHeight: cardLoader.item
       ? cardLoader.item.implicitHeight : 0
@@ -60,30 +65,78 @@ Item {
       PanelBorder { radius: parent.radius }
     }
 
-    Loader {
-      id: cardLoader
-      width: PanelStyle.width
-      height: item ? item.implicitHeight : 0
-      sourceComponent: root.cardComponent
-      enabled: root.interactive
-      scale: root.width / PanelStyle.width
-      transformOrigin: Item.TopLeft
+    Item {
+      id: content
+      anchors.fill: parent
+      visible: !root.blurCovered
+      layer.enabled: root.blurCovered
 
-      onLoaded: {
-        root.configureCard();
+      Loader {
+        id: cardLoader
+        width: PanelStyle.width
+        height: item ? item.implicitHeight : 0
+        sourceComponent: root.cardComponent
+        enabled: root.interactive
+        scale: root.width / PanelStyle.width
+        transformOrigin: Item.TopLeft
+
+        onLoaded: {
+          root.configureCard();
+        }
+      }
+
+      // Hide the divider when a security menu covers the header.
+      Rectangle {
+        x: 19.5 * root.cardScale
+        y: root.dividerY * root.cardScale
+        width: 276 * root.cardScale
+        height: 1
+        z: 2
+        visible: root.hasHeaderDivider
+        color: PanelStyle.outline
+        antialiasing: false
       }
     }
 
-    // Hide the divider when a security menu covers the header.
-    Rectangle {
-      x: 19.5 * root.cardScale
-      y: root.dividerY * root.cardScale
-      width: 276 * root.cardScale
-      height: 1
-      z: 2
-      visible: root.hasHeaderDivider
-      color: PanelStyle.outline
-      antialiasing: false
+    Loader {
+      anchors.fill: parent
+      active: root.blurCovered
+      sourceComponent: Item {
+        Item {
+          id: coverage
+          anchors.fill: parent
+          visible: false
+          layer.enabled: true
+          Rectangle {
+            x: root.frontCardRect.x
+            y: root.frontCardRect.y
+            width: root.frontCardRect.width
+            height: root.frontCardRect.height
+            radius: root.frontCardRadius
+            color: "white"
+          }
+        }
+
+        // Keep exposed content sharp; blur only beneath the front card's shape.
+        MultiEffect {
+          anchors.fill: parent
+          source: content
+          autoPaddingEnabled: false
+          maskEnabled: true
+          maskSource: coverage
+          maskInverted: true
+        }
+        MultiEffect {
+          anchors.fill: parent
+          source: content
+          autoPaddingEnabled: false
+          maskEnabled: true
+          maskSource: coverage
+          blurEnabled: true
+          blurMax: 48
+          blur: root.backingAmount
+        }
+      }
     }
   }
 

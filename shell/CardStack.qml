@@ -49,6 +49,9 @@ Item {
       ? Theme.lerp(transitionFromInset, transitionToInset,
                    transitionProgress)
       : insetForDepth(depth)
+  readonly property real frontScale: transitionOperation === "push"
+      ? 0.92 + 0.08 * transitionProgress
+      : transitionOperation === "pop" ? Math.max(0, 1 - 2 * transitionProgress) : 1
 
   width: 336
   height: transitionRunning
@@ -237,11 +240,16 @@ Item {
       backingAmount: pushBack ? root.transitionProgress
           : popBack ? 1 - root.transitionProgress
           : relativeIndex === 0 ? 0 : 1
+      frontCardRect: relativeIndex === 1 ? Qt.rect(
+          PanelStyle.width * (1 - root.frontScale) / 2 - x,
+          root.frontInset + root.frontHeight * (1 - root.frontScale) - y,
+          PanelStyle.width * root.frontScale, root.frontHeight * root.frontScale)
+          : Qt.rect(0, 0, 0, 0)
+      frontCardRadius: PanelStyle.radius * root.frontScale
       opacity: pushFront ? root.transitionProgress
           : popFront ? 1
           : relativeIndex <= 1 ? 1 : 0
-      scale: pushFront ? 0.92 + 0.08 * root.transitionProgress
-          : popFront ? Math.max(0, 1 - 2 * root.transitionProgress) : 1
+      scale: relativeIndex === 0 ? root.frontScale : 1
       transformOrigin: Item.Bottom
       visible: opacity > 0.001
       z: index
