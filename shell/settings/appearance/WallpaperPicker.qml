@@ -46,7 +46,7 @@ Settings.Modal {
         dynamic: !!modelData.dynamic
         title: modelData.title || ""
         subtitle: modelData.subtitle || ""
-        source: modelData.url || ""
+        source: modelData.thumbnail || modelData.url || ""
         selected: dynamic ? Appearance.State.wallpaperMode === "dynamic"
             : !adding && Appearance.State.wallpaperMode === "custom"
                 && Appearance.State.wallpaperPath === modelData.path
