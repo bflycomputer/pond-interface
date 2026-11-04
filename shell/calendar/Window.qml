@@ -50,9 +50,10 @@ PanelWindow {
     x: root.panelLeft
     y: root.panelTop
     Keys.onPressed: event => {
-      if (event.key === Qt.Key_Escape) root.bar.popup = "";
-      else if (event.key === Qt.Key_PageUp) moveMonth(-1);
-      else if (event.key === Qt.Key_PageDown) moveMonth(1);
+      if (event.key === Qt.Key_Escape) {
+        if (!zoomOut()) root.bar.popup = "";
+      } else if (event.key === Qt.Key_PageUp) moveZoom(-1);
+      else if (event.key === Qt.Key_PageDown) moveZoom(1);
       else if (event.key === Qt.Key_Home) goToday();
       else return;
       event.accepted = true;

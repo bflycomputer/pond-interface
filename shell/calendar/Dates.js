@@ -31,3 +31,21 @@ function currentWeekRow(days, today) {
   const index = days.findIndex(day => sameDay(day, today));
   return index < 0 ? -1 : Math.floor(index / 7);
 }
+
+function decadeStart(year) {
+  return Math.floor(year / 10) * 10;
+}
+
+// Sixteen years, with the decade centered the way the Windows calendar does.
+function yearPage(year) {
+  const start = decadeStart(year) - 2;
+  const years = [];
+  for (let i = 0; i < 16; i++)
+    years.push(start + i);
+  return years;
+}
+
+function inDecade(year, anchorYear) {
+  const start = decadeStart(anchorYear);
+  return year >= start && year < start + 10;
+}
