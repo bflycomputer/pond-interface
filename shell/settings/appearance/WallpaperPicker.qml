@@ -18,6 +18,31 @@ Settings.Modal {
   onBackRequested: Settings.State.back()
   Keys.onEscapePressed: Settings.State.back()
 
+  property bool viewportReady: false
+  property bool prefetchReady: false
+  function viewportChanged() {
+    prefetchReady = false;
+    prefetchDelay.restart();
+  }
+  Component.onCompleted: Qt.callLater(function() {
+    root.viewportReady = true;
+    root.viewportChanged();
+  })
+  Timer {
+    id: prefetchDelay
+    interval: 120
+    onTriggered: root.prefetchReady = true
+  }
+  Connections {
+    target: root.scrollItem
+    function onContentYChanged() { root.viewportChanged(); }
+    function onHeightChanged() { root.viewportChanged(); }
+  }
+  Connections {
+    target: Appearance.State
+    function onWallpapersChanged() { root.viewportChanged(); }
+  }
+
   function focusTile(index) {
     const tile = tiles.itemAt(index);
     if (tile) tile.forceActiveFocus(Qt.TabFocusReason);
@@ -46,7 +71,18 @@ Settings.Modal {
         dynamic: !!modelData.dynamic
         title: modelData.title || ""
         subtitle: modelData.subtitle || ""
-        source: modelData.url || ""
+        originalPath: modelData.path || ""
+        thumbnail: modelData.thumbnail || ""
+        // Grid positions are not settled when delegates are created. Derive the
+        // row from the index so offscreen delegates never briefly appear visible.
+        property real rowTop: grid.y + Math.floor(index / grid.columns) * (implicitHeight + grid.spacing)
+        property bool inViewport: root.viewportReady && root.scrollItem.height > 0
+            && rowTop + implicitHeight > root.scrollItem.contentY
+            && rowTop < root.scrollItem.contentY + root.scrollItem.height
+        property bool nearViewport: root.viewportReady && root.prefetchReady && root.scrollItem.height > 0
+            && rowTop + implicitHeight > root.scrollItem.contentY - (implicitHeight + grid.spacing)
+            && rowTop < root.scrollItem.contentY + root.scrollItem.height + implicitHeight + grid.spacing
+        loadingAllowed: inViewport || nearViewport
         selected: dynamic ? Appearance.State.wallpaperMode === "dynamic"
             : !adding && Appearance.State.wallpaperMode === "custom"
                 && Appearance.State.wallpaperPath === modelData.path

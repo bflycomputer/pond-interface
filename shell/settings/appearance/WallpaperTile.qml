@@ -1,4 +1,6 @@
 import QtQuick
+import Quickshell
+import Quickshell.Io
 import Quickshell.Widgets
 import Pond.Daylight as Daylight
 import "../.." as Shell
@@ -10,7 +12,59 @@ Item {
   property bool selected: false
   property string title
   property string subtitle
-  property url source
+  property string originalPath: ""
+  property url thumbnail
+  property bool loadingAllowed: false
+  property bool previewResident: false
+  property string generatedPath: ""
+  property url generatedThumbnail
+  property string attemptedPath: ""
+  readonly property url previewSource: previewResident
+      ? (thumbnail.toString() !== "" ? thumbnail
+          : generatedPath === originalPath ? generatedThumbnail : "") : ""
+  function schedulePreview() {
+    Qt.callLater(updatePreview);
+  }
+  function updatePreview() {
+    if (!loadingAllowed) return;
+    previewResident = true;
+    if (adding || dynamic || !originalPath || thumbnail.toString() !== ""
+        || generatedPath === originalPath || thumbnailProcess.running
+        || attemptedPath === originalPath) return;
+    attemptedPath = originalPath;
+    thumbnailProcess.requestPath = originalPath;
+    thumbnailProcess.command = ["python3", Quickshell.shellDir + "/../wallpaper/control.py",
+                                "thumbnail", originalPath];
+    thumbnailProcess.running = true;
+  }
+  onOriginalPathChanged: {
+    previewResident = false;
+    schedulePreview();
+  }
+  onThumbnailChanged: schedulePreview()
+  onLoadingAllowedChanged: if (loadingAllowed) schedulePreview()
+  Component.onCompleted: schedulePreview()
+  Process {
+    id: thumbnailProcess
+    objectName: "wallpaperThumbnailProcess"
+    property string requestPath
+    stdout: StdioCollector {
+      onStreamFinished: {
+        try {
+          const result = JSON.parse(text);
+          if (result.thumbnail) {
+            root.generatedPath = thumbnailProcess.requestPath;
+            root.generatedThumbnail = result.thumbnail;
+          } else {
+            console.warn("Wallpaper thumbnail:", thumbnailProcess.requestPath, result.error);
+          }
+        } catch (e) {
+          console.warn("Wallpaper thumbnail:", thumbnailProcess.requestPath, e);
+        }
+      }
+    }
+    onExited: root.schedulePreview()
+  }
   readonly property bool highlighted: hover.hovered || activeFocus
   signal clicked
   implicitWidth: 276
@@ -29,7 +83,8 @@ Item {
     color: root.adding && root.highlighted ? Shell.PanelStyle.controlHover : Shell.PanelStyle.controlFill
     Image {
       anchors.fill: parent
-      source: root.source
+      objectName: "wallpaperPreview"
+      source: root.previewSource
       sourceSize: Qt.size(Math.ceil(width * Screen.devicePixelRatio), Math.ceil(height * Screen.devicePixelRatio))
       fillMode: Image.PreserveAspectCrop
       asynchronous: true
@@ -37,7 +92,7 @@ Item {
     }
     Loader {
       anchors.fill: parent
-      active: root.dynamic
+      active: root.dynamic && root.previewResident
       sourceComponent: Daylight.Sky {}
     }
     Image {
