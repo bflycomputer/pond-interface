@@ -37,6 +37,12 @@ gestures {
     }
 }
 
+// Apps that restore a maximized state would otherwise fill the screen edge to
+// edge, flush against the sidebar cards. Open them as columns with gaps instead.
+window-rule {
+    open-maximized-to-edges false
+}
+
 // Keep the wallpaper stationary behind workspaces and the overview.
 layer-rule {
     match namespace="^pond-wallpaper$"
