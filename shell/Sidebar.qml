@@ -200,9 +200,8 @@ PanelWindow {
     onTapped: eventPoint => {
       const panel = root.activePanel;
       if (!panel || panel !== panelAtPress) return;
-      const x = eventPoint.position.x - panel.x;
-      const y = eventPoint.position.y - panel.y;
-      if (x < 0 || x > panel.width || y < 0 || y > panel.height)
+      const point = panel.mapFromItem(null, eventPoint.scenePosition);
+      if (!panel.childAt(point.x, point.y))
         root.dismissPanels();
     }
   }
