@@ -26,6 +26,21 @@ Settings.Modal {
       hoverGlyph: "#D1C9FF", activeFill: "#D1C9FF", activeGlyph: "#38224D", labelColor: "#D1C9FF" }
   ]
   function themeLabel(key) { return themes.find(theme => theme.key === key)?.label ?? ""; }
+  function focusTheme(from, dx, dy) {
+    let next = null, nextDistance = Infinity;
+    for (let i = 0; i < themeButtons.count; i++) {
+      const button = themeButtons.itemAt(i);
+      const along = (button.x - from.x) * dx + (button.y - from.y) * dy;
+      const across = Math.abs((button.x - from.x) * dy - (button.y - from.y) * dx);
+      if (along > 0 && along + 2 * across < nextDistance) {
+        next = button;
+        nextDistance = along + 2 * across;
+      }
+    }
+    next?.forceActiveFocus();
+  }
+  onActiveFocusChanged: if (activeFocus)
+    themeButtons.itemAt(themes.findIndex(theme => theme.key === Shell.Theme.name))?.forceActiveFocus()
 
   Item {
     width: root.width; height: 320
@@ -51,14 +66,20 @@ Settings.Modal {
       Behavior on opacity { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
     }
     Repeater {
+      id: themeButtons
       model: root.themes
       delegate: ThemeButton {
+        id: button
         required property var modelData
         x: modelData.x; y: modelData.y
         objectName: "theme" + modelData.label
         theme: modelData
         selected: Shell.Theme.name === modelData.key
         onClicked: Appearance.State.selectTheme(modelData.key)
+        Keys.onLeftPressed: root.focusTheme(button, -1, 0)
+        Keys.onRightPressed: root.focusTheme(button, 1, 0)
+        Keys.onUpPressed: root.focusTheme(button, 0, -1)
+        Keys.onDownPressed: root.focusTheme(button, 0, 1)
         onHoveredChanged: {
           if (hovered) root.previewTheme = modelData.key;
           else if (root.previewTheme === modelData.key) root.previewTheme = "";
