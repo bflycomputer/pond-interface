@@ -37,6 +37,7 @@ Card {
   signal wifiClicked
   signal settingsClicked
   signal soundClicked
+  signal soundRightClicked
 
   property bool wifiButtonHovered: false
   property bool soundButtonHovered: false
@@ -308,6 +309,8 @@ Card {
         else if (slot === 2) root.settingsClicked();
         else root.collapseClicked();
       }
+      // Right-click on sound opens the per-app mixer.
+      onRightClicked: if (slot === 1) root.soundRightClicked()
       Accessible.role: Accessible.Button
       Accessible.name: slot === 0 ? "Wi-Fi" : slot === 1 ? "Sound"
           : slot === 2 ? "Settings" : root.collapseProgress < 0.5 ? "Collapse sidebar" : "Expand sidebar"

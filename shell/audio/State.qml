@@ -21,6 +21,17 @@ Singleton {
   readonly property var inputDevices: deviceNodes.filter(node =>
       !node.isSink && node.audio && !unpluggedDevices[node.name])
 
+  // Per-application streams, read straight from PipeWire like the devices.
+  // Monitoring streams (peak meters, the shell's own) are not apps.
+  readonly property var streamNodes: Pipewire.ready ? Pipewire.nodes.values.filter(node =>
+      node.isStream && node.audio && node.name !== "quickshell"
+      && node.properties["media.name"] !== "quickshell"
+      && node.properties["stream.monitor"] !== "true") : []
+  readonly property var playbackStreams: streamNodes.filter(node =>
+      node.properties["media.class"] === "Stream/Output/Audio")
+  readonly property var recordingStreams: streamNodes.filter(node =>
+      node.properties["media.class"] === "Stream/Input/Audio")
+
   readonly property real outputVolume: clampVolume(
       sink && sink.audio ? sink.audio.volume : 0)
   readonly property real inputVolume: clampVolume(
@@ -47,6 +58,37 @@ Singleton {
       return "Unknown device";
     return String(node.description || node.nickname || node.name
                   || "Unknown device");
+  }
+
+  function appName(node) {
+    if (!node)
+      return "Unknown app";
+    const props = node.properties || {};
+    return String(props["application.name"] || node.description
+                  || node.nickname || node.name || "Unknown app");
+  }
+
+  function streamTitle(node) {
+    if (!node)
+      return "";
+    const title = String((node.properties || {})["media.name"] || "");
+    return title === appName(node) ? "" : title;
+  }
+
+  function streamVolume(node) {
+    return clampVolume(node && node.audio ? node.audio.volume : 0);
+  }
+
+  function setStreamVolume(node, value) {
+    if (!node || !node.audio)
+      return;
+    node.audio.muted = false;
+    node.audio.volume = clampVolume(value);
+  }
+
+  function toggleStreamMute(node) {
+    if (node && node.audio)
+      node.audio.muted = !node.audio.muted;
   }
 
   function suppressExternalChanges(duration) {
@@ -132,6 +174,36 @@ Singleton {
   }
 
   PwObjectTracker { objects: [root.sink, root.source].filter(node => node !== null) }
+  // Bind app streams only while the mixer is open; volume is unavailable otherwise.
+  property bool streamsTracked: false
+  PwObjectTracker { objects: root.streamsTracked ? root.streamNodes : [] }
+
+  // Which device a stream is attached to, and how to send it elsewhere. The
+  // QML bindings expose links read-only, so the move goes through pactl,
+  // which addresses streams by their object.serial.
+  function streamDevice(node) {
+    if (!node || !Pipewire.ready)
+      return null;
+    const id = Number(node.id);
+    const group = Pipewire.linkGroups.values.find(link => link.source && link.target
+        && (Number(link.source.id) === id || Number(link.target.id) === id));
+    if (!group)
+      return null;
+    return Number(group.source.id) === id ? group.target : group.source;
+  }
+
+  function moveStream(node, device) {
+    const serial = node && node.properties ? node.properties["object.serial"] : undefined;
+    if (serial === undefined || !device)
+      return;
+    moveStreamProcess.command = ["pactl",
+        node.properties["media.class"] === "Stream/Input/Audio"
+            ? "move-source-output" : "move-sink-input",
+        String(serial), String(device.name)];
+    moveStreamProcess.running = true;
+  }
+
+  Process { id: moveStreamProcess }
 
   Process {
     id: portQuery

@@ -23,10 +23,10 @@ PanelWindow {
   readonly property real notificationCardCenterY: mainStack.y + notificationCard.y + 24
 
   readonly property real panelX: Theme.sidebarOuterMargin + cardWidth + Theme.sidebarCardGap
-  readonly property bool panelOpen: wifiPanel.opened || audioPanel.opened || bluetoothPanel.opened
-  readonly property var activePanel: wifiPanel.opened ? wifiPanel : audioPanel.opened ? audioPanel : bluetoothPanel.opened ? bluetoothPanel : null
+  readonly property bool panelOpen: wifiPanel.opened || audioPanel.opened || appsPanel.opened || bluetoothPanel.opened
+  readonly property var activePanel: wifiPanel.opened ? wifiPanel : audioPanel.opened ? audioPanel : appsPanel.opened ? appsPanel : bluetoothPanel.opened ? bluetoothPanel : null
   property string pendingPanel: ""
-  readonly property var panels: ({wifi: wifiPanel, audio: audioPanel, bluetooth: bluetoothPanel})
+  readonly property var panels: ({wifi: wifiPanel, audio: audioPanel, apps: appsPanel, bluetooth: bluetoothPanel})
 
   function dismissPanels() {
     panelSwitchDelay.stop();
@@ -101,12 +101,13 @@ PanelWindow {
     id: cardBlur
     regions: [timeCard.blurRegion, workspacesCard.blurRegion, mediaCard.blurRegion,
       notificationCard.blurRegion, installsCard.blurRegion, controls.blurRegion,
-      wifiPanel.blurRegion, audioPanel.blurRegion, bluetoothPanel.blurRegion]
+      wifiPanel.blurRegion, audioPanel.blurRegion, appsPanel.blurRegion, bluetoothPanel.blurRegion]
   }
   // Keep compositor resizes out of the card animation; only the input area shrinks.
   implicitWidth: Math.ceil(Math.max(Theme.sidebarOuterMargin + Theme.sidebarCardExpandedWidth + Theme.sidebarFadeWidth,
       wifiPanel.visible ? panelX + wifiPanel.width + 67 : 0,
       audioPanel.visible ? panelX + audioPanel.width + 67 : 0,
+      appsPanel.visible ? panelX + appsPanel.width + 67 : 0,
       bluetoothPanel.visible ? panelX + bluetoothPanel.width + 67 : 0))
   mask: Region {
     width: root.panelOpen ? root.implicitWidth : Math.ceil(Theme.sidebarOuterMargin + Math.max(root.cardWidth,
@@ -222,6 +223,14 @@ PanelWindow {
     anchors.bottomMargin: Theme.sidebarOuterMargin
   }
 
+  Audio.AppPanel {
+    id: appsPanel
+    x: root.panelX
+    z: 80
+    anchors.bottom: parent.bottom
+    anchors.bottomMargin: Theme.sidebarOuterMargin
+  }
+
   Bluetooth.Panel {
     id: bluetoothPanel
     x: root.panelX
@@ -252,10 +261,11 @@ PanelWindow {
       id: controls
       collapseProgress: root.collapseProgress
       wifiOpen: wifiPanel.opened
-      soundOpen: audioPanel.opened
+      soundOpen: audioPanel.opened || appsPanel.opened
       settingsOpen: Settings.State.opened && Settings.State.outputName === root.screen.name
       onWifiClicked: root.togglePanel("wifi")
       onSoundClicked: root.togglePanel("audio")
+      onSoundRightClicked: root.togglePanel("apps")
       onSettingsClicked: Settings.State.toggle(root.screen.name)
       onCollapseClicked: root.toggleRequested()
     }

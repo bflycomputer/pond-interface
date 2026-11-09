@@ -14,6 +14,7 @@ Item {
   readonly property bool hovered: pointer.containsMouse
   property real glyphOpacity: hovered ? 1 : restingOpacity
   signal clicked
+  signal rightClicked
 
   implicitWidth: 24
   implicitHeight: 24
@@ -40,6 +41,7 @@ Item {
     anchors.fill: parent
     hoverEnabled: true
     cursorShape: Qt.PointingHandCursor
-    onClicked: root.clicked()
+    acceptedButtons: Qt.LeftButton | Qt.RightButton
+    onClicked: mouse => mouse.button === Qt.RightButton ? root.rightClicked() : root.clicked()
   }
 }

@@ -73,6 +73,7 @@ QtObject {
   readonly property color sliderFill: Theme.colors.sliderFill
   readonly property color sliderBubble: Theme.colors.sliderBubble
   readonly property int audioRowHeight: 40
+  readonly property int appRowHeight: 66
   readonly property int hoverExitDuration: 60
   readonly property int hoverCollapseDelay: 76
 }
