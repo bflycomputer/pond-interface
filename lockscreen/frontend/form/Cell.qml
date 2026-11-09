@@ -39,24 +39,28 @@ Item {
         border.width: 0
     }
 
-    VectorImage {
+    Loader {
         anchors.centerIn: parent
-        width: root.visual.shape === 0 ? 36 : 80
-        height: root.visual.shape === 0 ? 36 : 80
-        source: root.shapeSource(root.visual.shape)
-        fillMode: VectorImage.PreserveAspectFit
-        preferredRendererType: VectorImage.CurveRenderer
-        visible: root.isShapeMode()
+        active: root.isShapeMode()
+        sourceComponent: VectorImage {
+            width: root.visual.shape === 0 ? 36 : 80
+            height: root.visual.shape === 0 ? 36 : 80
+            source: root.shapeSource(root.visual.shape)
+            fillMode: VectorImage.PreserveAspectFit
+            preferredRendererType: VectorImage.CurveRenderer
+        }
     }
 
-    VectorImage {
-        objectName: "enterBlinker"
+    Loader {
         anchors.centerIn: parent
-        width: 27
-        height: 27
-        source: Qt.resolvedUrl("../assets/blinker-enter-glyph.svg")
-        preferredRendererType: VectorImage.CurveRenderer
-        visible: root.visual.mode === "caretEnter"
+        active: root.visual.mode === "caretEnter"
+        sourceComponent: VectorImage {
+            objectName: "enterBlinker"
+            width: 27
+            height: 27
+            source: Qt.resolvedUrl("../assets/blinker-enter-glyph.svg")
+            preferredRendererType: VectorImage.CurveRenderer
+        }
     }
 
     Rectangle {

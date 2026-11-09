@@ -98,25 +98,18 @@ Item {
                 active: root.backgroundComponent !== null
                 sourceComponent: root.backgroundComponent
             }
-            Image {
+            Moon {
                 id: moon
                 objectName: "moon"
                 x: (parent.width - width) / 2
                 y: 704
-                width: 1226
-                height: 1532
-                source: Qt.resolvedUrl("assets/moon.png")
-                fillMode: Image.PreserveAspectFit
-                asynchronous: false
                 opacity: root.exitTransition.moonVisible ? 1 : 0
 
                 Behavior on opacity { NumberAnimation { duration: 65 } }
             }
         }
-        Image {
-            x: (canvas.width - 1226) / 2; y: 704
-            width: 1226; height: 1532
-            source: Qt.resolvedUrl("assets/moon.png")
+        Moon {
+            x: (canvas.width - width) / 2; y: 704
             visible: root.exitTransition.revealedQuadrantCount > 0 && root.exitTransition.moonVisible
         }
 

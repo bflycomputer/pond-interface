@@ -3,6 +3,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import Pond.System
+import "../frontend" as Frontend
 
 ShellRoot {
     id: root
@@ -22,6 +23,7 @@ ShellRoot {
             lock();
     }
 
+    Frontend.Moon { visible: false }
     SessionInfo { id: info }
     NetworkStatus { id: network }
     QtObject {
