@@ -104,7 +104,7 @@ Item {
                 x: (parent.width - width) / 2
                 y: 704
                 width: 1226
-                height: 1532
+                height: 376
                 source: Qt.resolvedUrl("assets/moon.png")
                 fillMode: Image.PreserveAspectFit
                 asynchronous: false
@@ -115,7 +115,7 @@ Item {
         }
         Image {
             x: (canvas.width - 1226) / 2; y: 704
-            width: 1226; height: 1532
+            width: 1226; height: 376
             source: Qt.resolvedUrl("assets/moon.png")
             fillMode: Image.PreserveAspectFit
             visible: root.exitTransition.revealedQuadrantCount > 0 && root.exitTransition.moonVisible
