@@ -117,6 +117,7 @@ Item {
             x: (canvas.width - 1226) / 2; y: 704
             width: 1226; height: 1532
             source: Qt.resolvedUrl("assets/moon.png")
+            fillMode: Image.PreserveAspectFit
             visible: root.exitTransition.revealedQuadrantCount > 0 && root.exitTransition.moonVisible
         }
 
