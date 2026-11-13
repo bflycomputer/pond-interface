@@ -29,7 +29,6 @@ Card {
   // Wi-Fi metrics and the compact sound control share the same staged exit:
   // fade the content, hold the shell, then collapse its height.
   property bool hoverHeightRetained: false
-  property bool instantReveal: false
   property string displayedReveal: ""
   readonly property bool wifiContentVisible: displayedReveal === "wifi"
   readonly property bool soundSliderContentVisible: displayedReveal === "sound"
@@ -90,11 +89,7 @@ Card {
     }
     revealExit.stop();
     hoverHeightRetained = true;
-    const outgoingOpacity = requestedReveal === "wifi" ? compactSoundSlider.opacity
-        : Math.max(wifiMetrics.opacity, noInternetLabel.opacity);
-    instantReveal = outgoingOpacity > 0.001;
     displayedReveal = requestedReveal;
-    instantReveal = false;
   }
 
   HoverHandler {
@@ -117,9 +112,8 @@ Card {
     trackColor: Theme.colors.sidebarSliderTrack
     interactive: root.soundSliderRequested
     hoverEnabled: root.soundSliderContentVisible
-    visible: opacity > 0.001 && root.collapseProgress <= 0.001
+    visible: opacity > 0.001
     opacity: root.soundSliderContentVisible ? 1 : 0
-    RevealFade on opacity { enabled: !root.instantReveal }
     onMoved: Audio.State.setOutputVolume(compactSoundSlider.value)
 
   }
@@ -196,8 +190,7 @@ Card {
     font.pixelSize: 13
     opacity: root.noInternet && root.wifiContentVisible
         && root.collapseProgress <= 0.001 ? 0.6 : 0
-    RevealFade on opacity { enabled: !root.instantReveal }
-    visible: opacity > 0 && root.collapseProgress <= 0.001
+    visible: opacity > 0
     FontMetrics { id: noInternetMetrics; font: noInternetLabel.font }
   }
 
@@ -209,8 +202,7 @@ Card {
     spacing: 8
     opacity: root.wifiContentVisible && !root.noInternet
         && root.collapseProgress <= 0.001 ? 1 : 0
-    RevealFade on opacity { enabled: !root.instantReveal }
-    visible: opacity > 0 && root.collapseProgress <= 0.001
+    visible: opacity > 0
 
 
     Row {
