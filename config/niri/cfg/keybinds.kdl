@@ -17,10 +17,12 @@ binds {
 
     // ─── Shell ───
     // Optional: uncomment to enable.
-    // Settings pages: appearance, display, system, mouse, keyboard, timezone, information, manual
+    // Settings pages: appearance, wallpaper, display, arrange, system, mouse, keyboard, timezone, lock, information, manual
     // Mod+B                               repeat=false hotkey-overlay-title="Toggle Sidebar" { spawn "qs" "-c" "pond-shell" "ipc" "call" "sidebar" "toggle"; }
     // Mod+Comma                           repeat=false hotkey-overlay-title="Toggle Settings" { spawn "qs" "-c" "pond-shell" "ipc" "call" "settings" "toggle"; }
     // Mod+Shift+Comma                     repeat=false hotkey-overlay-title="Open Display Settings" { spawn "qs" "-c" "pond-shell" "ipc" "call" "settings" "open" "display"; }
+    // Mod+Shift+A                         repeat=false hotkey-overlay-title="Open Appearance Settings" { spawn "qs" "-c" "pond-shell" "ipc" "call" "settings" "open" "appearance"; }
+    // Mod+Shift+W                         repeat=false hotkey-overlay-title="Open Wallpaper Settings" { spawn "qs" "-c" "pond-shell" "ipc" "call" "settings" "open" "wallpaper"; }
 
     // ─── Media Controls ───
     // XF86AudioRaiseVolume                allow-when-locked=true { spawn "qs" "-c" "pond-shell" "ipc" "call" "volume" "increase"; }
