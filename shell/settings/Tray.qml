@@ -63,7 +63,6 @@ Item {
     } else {
       entry.triggered();
       closeMenu();
-      Settings.State.close();
     }
   }
 
