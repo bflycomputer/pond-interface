@@ -55,16 +55,10 @@ Card {
   Component.onCompleted: Wifi.State.setRateConsumer(root, wifiMetricsVisible)
   Component.onDestruction: Wifi.State.setRateConsumer(root, false)
   readonly property bool soundSliderRequested: !soundOpen && !wifiPresentationRequested
-      && collapseProgress < 0.5
+      && collapseProgress <= 0.001
       && (soundHovered || keyboardVolumeVisible)
   readonly property int openExpandedHeight:
       hoverHeightRetained ? 80 : 48
-  // While the expanded card grows for Wi-Fi metrics or the sound slider, use
-  // its rendered height rather than the final 80px target. Because this card
-  // is bottom-anchored, that keeps the four controls fixed on the baseline
-  // instead of moving down once and then riding back up with the card.
-  readonly property real expandedControlsY: collapseProgress <= 0.001
-      ? height - 44 : openExpandedHeight - 44
 
   onWifiButtonHoveredChanged: {
     if (wifiButtonHovered) {
@@ -88,7 +82,6 @@ Card {
   // Moving controls can transfer hover twice in one event; use the final target.
   onRequestedRevealChanged: Qt.callLater(syncReveal)
   function syncReveal() {
-    revealEnter.stop();
     if (requestedReveal === "") {
       displayedReveal = "";
       revealExit.restart();
@@ -96,12 +89,7 @@ Card {
     }
     revealExit.stop();
     hoverHeightRetained = true;
-    const outgoingOpacity = requestedReveal === "wifi" ? compactSoundSlider.opacity
-        : Math.max(wifiMetrics.opacity, noInternetLabel.opacity);
-    if (outgoingOpacity > 0.001) {
-      displayedReveal = "";
-      revealEnter.restart();
-    } else displayedReveal = requestedReveal;
+    displayedReveal = requestedReveal;
   }
 
   HoverHandler {
@@ -201,7 +189,7 @@ Card {
     font.weight: Font.Medium
     font.pixelSize: 13
     opacity: root.noInternet && root.wifiContentVisible
-        && root.collapseProgress < 0.22 ? 0.6 : 0
+        && root.collapseProgress <= 0.001 ? 0.6 : 0
     visible: opacity > 0
     FontMetrics { id: noInternetMetrics; font: noInternetLabel.font }
   }
@@ -213,7 +201,7 @@ Card {
     height: 19
     spacing: 8
     opacity: root.wifiContentVisible && !root.noInternet
-        && root.collapseProgress < 0.22 ? 1 : 0
+        && root.collapseProgress <= 0.001 ? 1 : 0
     visible: opacity > 0
 
 
@@ -282,13 +270,14 @@ Card {
       id: action
       required property int index
       readonly property bool vertical: index > 3
-      readonly property int slot: vertical ? index - 3 : index
+      readonly property int slot: vertical ? index - 4 : index
       readonly property var modelData: root.icons[slot]
-      opacity: slot === 0 || (vertical ? root.collapseProgress >= 0.56
-          : root.collapseProgress < 0.56) ? 1 : 0
+      opacity: !vertical && slot === 3 ? 1
+          : vertical ? (root.collapsed ? Theme.clamp01((y + 8) / 12) : 0)
+          : Theme.clamp01((x + 8) / 12)
       visible: opacity > 0.001
-      x: vertical ? 4 : Theme.lerp([4, 42, 78, 114][slot], 4, root.widthProgress)
-      y: vertical ? 4 + slot * 40 : Theme.lerp(root.expandedControlsY, 4, root.widthProgress)
+      x: vertical ? 4 : [4, 42, 78, 114][slot] - 110 * root.widthProgress
+      y: vertical ? root.height - 44 - (3 - slot) * 40 : root.height - 44
       width: vertical ? 40 : Theme.lerp(slot === 0 || slot === 3 ? 38 : 36, 40, root.widthProgress)
       height: 40
       enabled: opacity > 0.5
@@ -351,11 +340,6 @@ Card {
     id: revealExit
     interval: PanelStyle.hoverCollapseDelay
     onTriggered: if (root.requestedReveal === "") root.hoverHeightRetained = false
-  }
-  Timer {
-    id: revealEnter
-    interval: PanelStyle.hoverExitDuration
-    onTriggered: root.displayedReveal = root.requestedReveal
   }
 
   Timer {
