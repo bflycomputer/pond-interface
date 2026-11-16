@@ -46,6 +46,16 @@ Item {
         grid.authenticationSucceeded();
     }
 
+    // A fingerprint is accepted over whatever the form is doing: idle, a
+    // half-typed password, a rejection still playing or a password being checked.
+    function fingerprintSucceeded() {
+        if (grid.animationPhase !== "authenticating")
+            grid.beginAuthentication(currentText.length);
+        authenticationPending = true;
+        currentText = "";
+        authenticationSucceeded();
+    }
+
     function requestPower(action) {
         if (!active)
             return;

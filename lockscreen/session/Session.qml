@@ -21,7 +21,12 @@ Item {
         return !configuredOutputPresent || presentationOutputs.includes(screen.name);
     }
 
-    Authentication { id: auth }
+    Authentication {
+        id: auth
+        // Read fingers once the compositor confirms the lock, until an unlock starts.
+        fingerprintWanted: lockSession.secure
+            && (flow.phase === "editing" || flow.phase === "authenticating")
+    }
     Session.Transition {
         id: handoff
         controller: ui.controller
