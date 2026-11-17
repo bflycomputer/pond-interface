@@ -13,6 +13,7 @@ Item {
     property bool wifiConnected: false
     property list<string> presentationOutputs: []
     readonly property bool secure: lockSession.secure
+    function holdsLock() { return lockSession.locked; }
     readonly property bool configuredOutputPresent: Quickshell.screens.some(screen => presentationOutputs.includes(screen.name))
 
     signal finished
