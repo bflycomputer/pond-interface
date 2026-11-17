@@ -94,29 +94,115 @@ PanelWindow {
     }
   }
 
+  // Fullscreen windows. niri draws them above the Top layer and stops sending
+  // frame callbacks to the surfaces they cover, so a covered sidebar can't
+  // render or even change layer until much later. Instead the cards slide out
+  // on the Overlay layer and the window shrinks to a 1px strip on the screen
+  // edge, which stays above the fullscreen window and keeps rendering. Holding
+  // the pointer on that strip slides the cards back in over the fullscreen
+  // window; they also slide back in when fullscreen ends.
+  readonly property var activeWorkspace: NiriMsg.workspaces.find(
+      w => w.output === root.screen.name && w.isActive) || null
+  readonly property var fullscreenNow: {
+    if (NiriMsg.overviewOpen || !activeWorkspace || activeWorkspace.activeWindowId == null)
+      return false;
+    const toplevel = ToplevelManager.activeToplevel;
+    // Focus is on a layer surface such as the launcher, or on another output.
+    if (!toplevel || !toplevel.screens.some(s => s.name === root.screen.name)) return null;
+    return toplevel.fullscreen;
+  }
+  property bool fullscreen: false
+  property bool revealed: false
+  readonly property bool revealHeld: panelOpen || popup !== "" || workspacesCard.dragSession.active
+      || (Notifications.State.panelOpen && Notifications.State.panelOutputName === screen.name)
+      || (Settings.State.opened && Settings.State.outputName === screen.name)
+  readonly property bool fullscreenHidden: fullscreen && !revealed
+  property real hideProgress: 0
+  readonly property real hideOffset: -hideProgress
+      * (Theme.sidebarOuterMargin * 2 + Theme.sidebarCardExpandedWidth)
+  property bool hideSettled: false
+  property bool raised: false
+
+  onFullscreenNowChanged: fullscreenDelay.restart()
+  onFullscreenChanged: if (!fullscreen) revealed = false
+  onRevealedChanged: if (!revealed && !fullscreen && !showAnimation.running) raised = false
+  onFullscreenHiddenChanged: {
+    if (fullscreenHidden) {
+      dismissPanels();
+      popup = "";
+      if (Notifications.State.panelOutputName === screen.name) Notifications.State.closePanel();
+      showAnimation.stop();
+      raised = true;
+      hideAnimation.start();
+    } else {
+      hideAnimation.stop();
+      hideSettled = false;
+      if (revealed) raised = true;
+      showAnimation.start();
+    }
+  }
+
+  Timer {
+    id: fullscreenDelay
+    // Switching between fullscreen apps briefly passes focus through other states.
+    interval: root.fullscreenNow === false ? 150 : 30
+    onTriggered: if (root.fullscreenNow !== null) root.fullscreen = root.fullscreenNow
+  }
+  NumberAnimation {
+    id: hideAnimation
+    target: root
+    property: "hideProgress"
+    to: 1
+    duration: 220
+    easing.type: Easing.InCubic
+    onFinished: root.hideSettled = true
+  }
+  Motion {
+    id: showAnimation
+    target: root
+    property: "hideProgress"
+    to: 0
+    onFinished: if (!root.revealed) root.raised = false
+  }
+  Timer {
+    interval: 300
+    running: sidebarHover.hovered && root.hideSettled
+    onTriggered: root.revealed = true
+  }
+  Timer {
+    interval: 400
+    running: root.revealed && !root.revealHeld && !sidebarHover.hovered
+    onTriggered: root.revealed = false
+  }
+  HoverHandler { id: sidebarHover }
+
   color: "transparent"
   BackgroundEffect.blurRegion: Theme.translucent ? cardBlur : null
   onHeightChanged: cardBlur.changed()
   Region {
     id: cardBlur
+    // Region only remaps its items when one of its own properties changes, and
+    // moving the stacks doesn't count. This empty rect follows the slide so the
+    // card regions are remapped on every step of it.
+    x: root.hideOffset
     regions: [timeCard.blurRegion, workspacesCard.blurRegion, mediaCard.blurRegion,
       notificationCard.blurRegion, installsCard.blurRegion, controls.blurRegion,
       wifiPanel.blurRegion, audioPanel.blurRegion, bluetoothPanel.blurRegion]
   }
   // Keep compositor resizes out of the card animation; only the input area shrinks.
-  implicitWidth: Math.ceil(Math.max(Theme.sidebarOuterMargin + Theme.sidebarCardExpandedWidth + Theme.sidebarFadeWidth,
+  implicitWidth: hideSettled ? 1 : Math.ceil(Math.max(Theme.sidebarOuterMargin + Theme.sidebarCardExpandedWidth + Theme.sidebarFadeWidth,
       wifiPanel.visible ? panelX + wifiPanel.width + 67 : 0,
       audioPanel.visible ? panelX + audioPanel.width + 67 : 0,
       bluetoothPanel.visible ? panelX + bluetoothPanel.width + 67 : 0))
   mask: Region {
-    width: root.panelOpen ? root.implicitWidth : Math.ceil(Theme.sidebarOuterMargin + Math.max(root.cardWidth,
+    width: root.hideSettled ? 1 : root.panelOpen ? root.implicitWidth : Math.ceil(Theme.sidebarOuterMargin + Math.max(root.cardWidth,
         workspacesCard.width, mediaCard.width, controls.width) + 8)
     height: root.height
     // Let the background receive clicks between the card stacks.
     Region {
       y: Math.ceil(mainStack.y + mainStack.height)
       width: root.width
-      height: Math.max(0, Math.floor(bottomStack.y) - y)
+      height: root.hideSettled ? 0 : Math.max(0, Math.floor(bottomStack.y) - y)
       intersection: Intersection.Subtract
     }
     // Region.item can retain the opening animation's scaled bounds and leave
@@ -129,7 +215,7 @@ PanelWindow {
     }
   }
   anchors { left: true; top: true; bottom: true }
-  WlrLayershell.layer: WlrLayer.Top
+  WlrLayershell.layer: raised ? WlrLayer.Overlay : WlrLayer.Top
   WlrLayershell.namespace: "pond-sidebar"
   WlrLayershell.keyboardFocus: workspacesCard.dragSession.active
       ? WlrKeyboardFocus.Exclusive : panelOpen ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
@@ -140,7 +226,7 @@ PanelWindow {
 
   Column {
     id: mainStack
-    x: Theme.sidebarOuterMargin
+    x: Theme.sidebarOuterMargin + root.hideOffset
     y: Theme.sidebarOuterMargin
     spacing: Theme.sidebarCardGap
 
@@ -208,7 +294,7 @@ PanelWindow {
 
   Wifi.Panel {
     id: wifiPanel
-    x: root.panelX
+    x: root.panelX + root.hideOffset
     z: 80
     anchors.bottom: parent.bottom
     anchors.bottomMargin: Theme.sidebarOuterMargin
@@ -216,7 +302,7 @@ PanelWindow {
 
   Audio.Panel {
     id: audioPanel
-    x: root.panelX
+    x: root.panelX + root.hideOffset
     z: 80
     anchors.bottom: parent.bottom
     anchors.bottomMargin: Theme.sidebarOuterMargin
@@ -224,7 +310,7 @@ PanelWindow {
 
   Bluetooth.Panel {
     id: bluetoothPanel
-    x: root.panelX
+    x: root.panelX + root.hideOffset
     z: 80
     anchors.bottom: parent.bottom
     anchors.bottomMargin: Theme.sidebarOuterMargin
@@ -233,7 +319,7 @@ PanelWindow {
   Column {
     id: bottomStack
     onYChanged: cardBlur.changed()
-    x: Theme.sidebarOuterMargin
+    x: Theme.sidebarOuterMargin + root.hideOffset
     anchors.bottom: parent.bottom
     anchors.bottomMargin: Theme.sidebarOuterMargin
     width: controls.width
@@ -260,4 +346,5 @@ PanelWindow {
       onCollapseClicked: root.toggleRequested()
     }
   }
+
 }
