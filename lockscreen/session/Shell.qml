@@ -9,7 +9,11 @@ ShellRoot {
 
     readonly property Session session: locker.item as Session
 
-    function lock() { locker.active = true; }
+    function lock() {
+        if (session && !session.holdsLock())
+            locker.active = false;
+        locker.active = true;
+    }
     function lockAndSuspend() {
         lock();
         suspendWait.checks = 0;
