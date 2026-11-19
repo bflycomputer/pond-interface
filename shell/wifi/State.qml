@@ -37,7 +37,8 @@ Singleton {
       .filter(n => n.connected || n.signalStrength > 0)
       .map(n => ({ssid: n.name, signal: n.signalStrength * 100,
                  bars: n.signalStrength >= 0.6 ? 3 : n.signalStrength >= 0.35 ? 2 : 1,
-                 locked: n.security !== WifiSecurityType.Open, connected: n.connected,
+                 locked: n.security !== WifiSecurityType.Open
+                     && n.security !== WifiSecurityType.Owe, connected: n.connected,
                  enterprise: n.security === WifiSecurityType.WpaEap
                      || n.security === WifiSecurityType.Wpa2Eap,
                  known: n.known, uuids: n.nmSettings.filter(s => s).map(s => s.uuid)}))
