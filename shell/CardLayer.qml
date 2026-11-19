@@ -14,6 +14,7 @@ Item {
   property real frontCardRadius: PanelStyle.radius
   readonly property bool blurCovered: Theme.translucent && backingAmount > 0
       && frontCardRect.width > 0 && frontCardRect.height > 0
+  readonly property int blurMax: 48
 
   readonly property real naturalHeight: cardLoader.item
       ? cardLoader.item.implicitHeight : 0
@@ -43,33 +44,36 @@ Item {
   }
 
   Item {
+    id: content
     anchors.fill: parent
-    clip: true
-
-    Rectangle {
-      anchors.fill: parent
-      radius: Theme.lerp(PanelStyle.radius, 14.38,
-                         root.backingAmount)
-      color: PanelStyle.panelGradient ? "transparent" : Theme.translucent ? PanelStyle.panelSurface : Qt.rgba(
-          Theme.lerp(PanelStyle.surface.r, PanelStyle.backSurface.r,
-                     root.backingAmount),
-          Theme.lerp(PanelStyle.surface.g, PanelStyle.backSurface.g,
-                     root.backingAmount),
-          Theme.lerp(PanelStyle.surface.b, PanelStyle.backSurface.b,
-                     root.backingAmount),
-          1)
-      border.color: PanelStyle.panelBorder
-      border.width: Theme.translucent ? 0 : 1
-      antialiasing: true
-      GradientFill { fill: PanelStyle.panelGradient }
-      PanelBorder { radius: parent.radius }
-    }
+    anchors.margins: -root.blurMax
+    // Hiding it instead would also hide the gradient fill's own layer.
+    opacity: root.blurCovered ? 0 : 1
+    layer.enabled: root.blurCovered
 
     Item {
-      id: content
       anchors.fill: parent
-      visible: !root.blurCovered
-      layer.enabled: root.blurCovered
+      anchors.margins: root.blurMax
+      clip: true
+
+      Rectangle {
+        anchors.fill: parent
+        radius: Theme.lerp(PanelStyle.radius, 14.38,
+                           root.backingAmount)
+        color: PanelStyle.panelGradient ? "transparent" : Theme.translucent ? PanelStyle.panelSurface : Qt.rgba(
+            Theme.lerp(PanelStyle.surface.r, PanelStyle.backSurface.r,
+                       root.backingAmount),
+            Theme.lerp(PanelStyle.surface.g, PanelStyle.backSurface.g,
+                       root.backingAmount),
+            Theme.lerp(PanelStyle.surface.b, PanelStyle.backSurface.b,
+                       root.backingAmount),
+            1)
+        border.color: PanelStyle.panelBorder
+        border.width: Theme.translucent ? 0 : 1
+        antialiasing: true
+        GradientFill { fill: PanelStyle.panelGradient }
+        PanelBorder { radius: parent.radius }
+      }
 
       Loader {
         id: cardLoader
@@ -98,44 +102,45 @@ Item {
       }
     }
 
-    Loader {
-      anchors.fill: parent
-      active: root.blurCovered
-      sourceComponent: Item {
-        Item {
-          id: coverage
-          anchors.fill: parent
-          visible: false
-          layer.enabled: true
-          Rectangle {
-            x: root.frontCardRect.x
-            y: root.frontCardRect.y
-            width: root.frontCardRect.width
-            height: root.frontCardRect.height
-            radius: root.frontCardRadius
-            color: "white"
-          }
-        }
+  }
 
-        // Keep exposed content sharp; blur only beneath the front card's shape.
-        MultiEffect {
-          anchors.fill: parent
-          source: content
-          autoPaddingEnabled: false
-          maskEnabled: true
-          maskSource: coverage
-          maskInverted: true
+  Loader {
+    anchors.fill: content
+    active: root.blurCovered
+    sourceComponent: Item {
+      Item {
+        id: coverage
+        anchors.fill: parent
+        visible: false
+        layer.enabled: true
+        Rectangle {
+          x: root.frontCardRect.x + root.blurMax
+          y: root.frontCardRect.y + root.blurMax
+          width: root.frontCardRect.width
+          height: root.frontCardRect.height
+          radius: root.frontCardRadius
+          color: "white"
         }
-        MultiEffect {
-          anchors.fill: parent
-          source: content
-          autoPaddingEnabled: false
-          maskEnabled: true
-          maskSource: coverage
-          blurEnabled: true
-          blurMax: 48
-          blur: root.backingAmount
-        }
+      }
+
+      // Keep the exposed card sharp; blur only beneath the front card's shape.
+      MultiEffect {
+        anchors.fill: parent
+        source: content
+        autoPaddingEnabled: false
+        maskEnabled: true
+        maskSource: coverage
+        maskInverted: true
+      }
+      MultiEffect {
+        anchors.fill: parent
+        source: content
+        autoPaddingEnabled: false
+        maskEnabled: true
+        maskSource: coverage
+        blurEnabled: true
+        blurMax: root.blurMax
+        blur: root.backingAmount
       }
     }
   }
