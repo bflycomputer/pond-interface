@@ -1,4 +1,5 @@
 import QtQuick
+import Quickshell
 
 Item {
     id: root
@@ -25,6 +26,14 @@ Item {
             return;
         phase = "editing";
         frontend.authenticationFailed();
+    }
+
+    function approve() {
+        phase = "approving";
+        authentication.pamReady = false;
+        transitionFailed = false;
+        successDeadline.restart();
+        transition.active = true;
     }
 
     function tryHandoff() {
@@ -78,12 +87,19 @@ Item {
         function onSucceeded() {
             if (root.phase !== "authenticating")
                 return;
-            root.phase = "approving";
-            root.authentication.pamReady = false;
-            root.transitionFailed = false;
             root.frontend.authenticationSucceeded();
-            successDeadline.restart();
-            root.transition.active = true;
+            root.approve();
+        }
+        function onFingerprintMatched() {
+            // A finger also unlocks while a password is still being checked.
+            if (root.phase === "authenticating")
+                root.authentication.reset();
+            else if (root.phase !== "editing")
+                return;
+            root.frontend.fingerprintSucceeded();
+            // Touching the reader is not input, so the screens would stay off.
+            Quickshell.execDetached(["niri", "msg", "action", "power-on-monitors"]);
+            root.approve();
         }
         function onRejected(result) { root.reject(); }
         function onAuthenticationError(message) {
