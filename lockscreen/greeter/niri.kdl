@@ -1,7 +1,9 @@
 prefer-no-csd
 hotkey-overlay { skip-at-startup; }
 animations { off; }
+input { focus-follows-mouse; }
 window-rule {
     match app-id="^sddm-greeter"
     open-fullscreen true
+    open-focused false
 }
