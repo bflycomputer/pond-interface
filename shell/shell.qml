@@ -9,6 +9,7 @@ import "settings" as Settings
 import "settings/appearance" as Appearance
 import "settings/system" as System
 import "notifications" as Notifications
+import "polkit" as Polkit
 import Pond.Wallpaper as Wallpaper
 import Pond.System
 
@@ -107,6 +108,7 @@ ShellRoot {
       Battery.Notification { bar: sidebar; above: toast }
       PanelDismissWindow { bar: sidebar }
       Settings.Window { menuScreen: modelData }
+      Polkit.Window { screen: modelData }
     }
   }
 }
