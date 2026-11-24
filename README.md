@@ -6,7 +6,7 @@ The interface for [Pond](https://www.butterfly.so/pond), a Linux operating syste
 
 This repo features the core interface elements of Pond:
 - Dynamic sidebar that adapts to context and brings useful information into one place. 
-- Unique components such as the Minimap for managing easily managing your Niri windows. 
+- Unique components such as the Minimap for easily managing your Niri windows. 
 - Custom lock screen
 - Boot menu
 - Dialogs and modals
