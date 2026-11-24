@@ -2,9 +2,9 @@
 
 # Pond Interface
 
-The interface for [Pond](https://www.butterfly.so/pond), a linux operating system by Butterfly Interaction, Inc.
+The interface for [Pond](https://www.butterfly.so/pond), a Linux operating system by Butterfly Interaction, Inc.
 
-This repo features the core interface elements of pond:
+This repo features the core interface elements of Pond:
 - Dynamic sidebar that adapts to context and brings useful information into one place. 
 - Unique components such as the Minimap for managing easily managing your Niri windows. 
 - Custom lock screen
@@ -14,7 +14,7 @@ This repo features the core interface elements of pond:
 
 ---
 
-https://github.com/user-attachments/assets/6d87a79b-8249-433d-ad22-6a12b61d30fb
+<video src="./Lockscreen.mp4" controls preload="metadata" aria-label="Pond lock screen demo"></video>
 
 ![Pond clipboard and system information](./Pond-example-2.png)
 
