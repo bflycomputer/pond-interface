@@ -123,7 +123,15 @@ PanelWindow {
   property bool hideSettled: false
   property bool raised: false
 
-  onFullscreenNowChanged: fullscreenDelay.restart()
+  property var fullscreenToplevel: null
+  onFullscreenNowChanged: {
+    // The same window leaving fullscreen: follow its animation right away.
+    // Switching between fullscreen apps briefly passes focus through other
+    // states, so wait a moment when focus moved to another window.
+    fullscreenDelay.interval = fullscreenNow === false
+        && ToplevelManager.activeToplevel !== fullscreenToplevel ? 150 : 0;
+    fullscreenDelay.restart();
+  }
   onFullscreenChanged: if (!fullscreen) revealed = false
   onRevealedChanged: if (!revealed && !fullscreen && !showAnimation.running) raised = false
   onFullscreenHiddenChanged: {
@@ -144,9 +152,11 @@ PanelWindow {
 
   Timer {
     id: fullscreenDelay
-    // Switching between fullscreen apps briefly passes focus through other states.
-    interval: root.fullscreenNow === false ? 150 : 30
-    onTriggered: if (root.fullscreenNow !== null) root.fullscreen = root.fullscreenNow
+    onTriggered: {
+      if (root.fullscreenNow === null) return;
+      root.fullscreen = root.fullscreenNow;
+      root.fullscreenToplevel = root.fullscreen ? ToplevelManager.activeToplevel : null;
+    }
   }
   NumberAnimation {
     id: hideAnimation
@@ -154,7 +164,7 @@ PanelWindow {
     property: "hideProgress"
     to: 1
     duration: 220
-    easing.type: Easing.InCubic
+    easing.type: Easing.OutCubic
     onFinished: root.hideSettled = true
   }
   Motion {
