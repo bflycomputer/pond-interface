@@ -260,11 +260,6 @@ Singleton {
       _windows = wins;
     } else if (ev.WindowOpenedOrChanged) {
       const w = _mapWindow(ev.WindowOpenedOrChanged.window);
-      const old = _windows[w.id];
-      if (w.isFocused)
-        delete _unread[w.id];
-      else if (_isAgent(w) && old && _isWorking(old.title) && !_isWorking(w.title))
-        _unread[w.id] = true;
       const wins = Object.assign({}, _windows);
       if (w.isFocused)
         for (const id in wins) wins[id] = Object.assign({}, wins[id], { isFocused: false });
@@ -272,11 +267,14 @@ Singleton {
       _windows = wins;
     } else if (ev.WindowClosed) {
       const wins = Object.assign({}, _windows);
+      delete _agents[wins[ev.WindowClosed.id]?.pid];
       delete wins[ev.WindowClosed.id];
       _windows = wins;
     } else if (ev.WindowFocusChanged) {
       const focused = ev.WindowFocusChanged.id;
-      delete _unread[focused];
+      const agent = _agents[_windows[focused]?.pid];
+      if (agent)
+        agent.unread = false;
       const wins = {};
       for (const id in _windows)
         wins[id] = Object.assign({}, _windows[id], { isFocused: _windows[id].id === focused });
@@ -303,25 +301,26 @@ Singleton {
 
   function _mapWindow(w) {
     return {
-      id: w.id, workspaceId: w.workspace_id, title: w.title || "",
-      isFocused: !!w.is_focused,
+      id: w.id, pid: w.pid, workspaceId: w.workspace_id, isFocused: !!w.is_focused,
       isFloating: w.is_floating, layout: w.layout, appId: w.app_id || ""
     };
   }
 
-  property var _unread: ({})
+  property var _agents: ({})
 
-  // Claude Code titles are "◐ "/"◑ " while working, "✳ " idle; Codex prefixes a
-  // braille spinner while working. Fish on Pond has " - ", bash/zsh has "@"
-  // & every other kitty title is considered idle Codex.
-  // This is obviously a dumb hack. Should fix & add support for more stuff.
-  function _isWorking(title) { return /^[\u2800-\u28ff\u25d0\u25d1] /.test(title); }
-  // Codex blinks between these markers while input or approval is pending.
-  function _needsAttention(title) { return /^\[\s*[!.]\s*\](?:\s|$)/.test(title); }
-  function _isAgent(w) {
-    return w.appId === "kitty" && w.title !== ""
-        && (_needsAttention(w.title) || /^[\u2800-\u28ff\u25d0\u25d1\u2733] /.test(w.title)
-            || !/ - \S+$|@/.test(w.title));
+  IpcHandler {
+    target: "agents"
+    function status(pid: int, state: string, time: real): void {
+      const old = root._agents[pid] || {};
+      if (old.time > time)
+        return;
+      root._agents[pid] = {
+        state: state, time: time,
+        unread: state !== "" && (old.state === "working" && state !== "working"
+            ? !Object.values(root._windows).some(w => w.pid === pid && w.isFocused) : !!old.unread)
+      };
+      root._recompute();
+    }
   }
 
   function _appInfo(appId) {
@@ -467,13 +466,14 @@ Singleton {
 
       for (const w of wsWindows) {
         const info = _appInfo(w.appId);
-        const agent = _isAgent(w);
+        const agent = _agents[w.pid];
+        const dotState = !agent?.state ? "" : agent.state === "blocked" ? "attention"
+            : agent.state === "working" ? "working" : agent.unread ? "unread" : "read";
         windowRecords.push({
           winId: w.id,
           iconName: info.iconName,
-          iconSource: agent ? "" : info.iconSource,
-          dotState: !agent ? "" : _needsAttention(w.title) ? "attention"
-              : _isWorking(w.title) ? "working" : _unread[w.id] ? "unread" : "read",
+          iconSource: dotState ? "" : info.iconSource,
+          dotState: dotState,
           loaderVariant: w.id % 4 + 1
         });
       }
