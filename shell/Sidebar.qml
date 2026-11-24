@@ -212,7 +212,7 @@ PanelWindow {
     Region {
       y: Math.ceil(mainStack.y + mainStack.height)
       width: root.width
-      height: root.hideSettled ? 0 : Math.max(0, Math.floor(bottomStack.y) - y)
+      height: root.hideSettled || root.revealed ? 0 : Math.max(0, Math.floor(bottomStack.y) - y)
       intersection: Intersection.Subtract
     }
     // Region.item can retain the opening animation's scaled bounds and leave
