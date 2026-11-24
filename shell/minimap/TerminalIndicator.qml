@@ -1,7 +1,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Shapes
-import QtQuick.VectorImage
+import "loaders" as Loaders
 
 Item {
   id: root
@@ -47,10 +47,28 @@ Item {
     }
   }
 
+  // Loader frames are svgtoqml -c output of assets/terminal-loaders. VectorImage
+  // converts its SVG at runtime, and Qt keeps that memory after the item is
+  // destroyed, so every window icon that came and went leaked.
+  readonly property Component frameFlowerRead: Component { Loaders.FlowerRead {} }
+  readonly property Component frameFlowerUnread: Component { Loaders.FlowerUnread {} }
+  readonly property Component frameFlowerWorking1: Component { Loaders.FlowerWorking1 {} }
+  readonly property Component frameFlowerWorking2: Component { Loaders.FlowerWorking2 {} }
+  readonly property Component frameHourglassRead: Component { Loaders.HourglassRead {} }
+  readonly property Component frameHourglassUnread: Component { Loaders.HourglassUnread {} }
+  readonly property Component frameHourglassWorking1: Component { Loaders.HourglassWorking1 {} }
+  readonly property Component frameHourglassWorking2: Component { Loaders.HourglassWorking2 {} }
+  readonly property Component frameSproutRead: Component { Loaders.SproutRead {} }
+  readonly property Component frameSproutUnread: Component { Loaders.SproutUnread {} }
+  readonly property Component frameSproutWorking1: Component { Loaders.SproutWorking1 {} }
+  readonly property Component frameSproutWorking2: Component { Loaders.SproutWorking2 {} }
+  readonly property Component frameSproutWorking3: Component { Loaders.SproutWorking3 {} }
+  readonly property Component frameSproutWorking4: Component { Loaders.SproutWorking4 {} }
+
   Repeater {
     // Keep SVG frames loaded so animation only changes visibility.
     model: root.variant === 1 ? 0 : root.workingFrameCount + 2
-    delegate: VectorImage {
+    delegate: Loader {
       required property int index
       anchors.centerIn: parent
       visible: root.dotState === "working" ? index === root.animationFrame
@@ -58,10 +76,9 @@ Item {
       // Scale the hourglass artwork from 20px to 18px.
       width: root.variant === 2 ? 36 : 40
       height: width
-      source: "../assets/terminal-loaders/" + ["square", "hourglass", "sprout", "flower"][root.variant - 1]
-          + "-" + (index < root.workingFrameCount ? "working-" + (index + 1)
-              : index === root.workingFrameCount ? "unread" : "read") + ".svg"
-      preferredRendererType: VectorImage.CurveRenderer
+      sourceComponent: root["frame" + ["Square", "Hourglass", "Sprout", "Flower"][root.variant - 1]
+          + (index < root.workingFrameCount ? "Working" + (index + 1)
+              : index === root.workingFrameCount ? "Unread" : "Read")]
     }
   }
 }
