@@ -14,7 +14,7 @@ This repo features the core interface elements of Pond:
 
 ---
 
-<video src="./docs/media/lock-screen.mp4" controls preload="metadata" aria-label="Pond lock screen demo"></video>
+![Pond lock screen](./docs/media/lock-screen.gif)
 
 ![Pond clipboard and system information](./docs/media/clipboard-and-system-info.png)
 
