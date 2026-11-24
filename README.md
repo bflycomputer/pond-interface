@@ -1,4 +1,4 @@
-![Pond Interface](./Pond-interface.png)
+![Pond Interface](./docs/media/banner.png)
 
 # Pond Interface
 
@@ -14,11 +14,11 @@ This repo features the core interface elements of Pond:
 
 ---
 
-<video src="./Lockscreen.mp4" controls preload="metadata" aria-label="Pond lock screen demo"></video>
+<video src="./docs/media/lock-screen.mp4" controls preload="metadata" aria-label="Pond lock screen demo"></video>
 
-![Pond clipboard and system information](./Pond-example-2.png)
+![Pond clipboard and system information](./docs/media/clipboard-and-system-info.png)
 
-![Pond sidebar, launcher, and Wi-Fi controls](./Pond-interface-example-3.png)
+![Pond sidebar, launcher, and Wi-Fi controls](./docs/media/sidebar-launcher-and-wifi.png)
 
 # License
 
