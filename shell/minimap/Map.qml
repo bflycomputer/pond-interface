@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import QtQuick.Effects
 import QtQuick.Shapes
 import Quickshell
 import "." as Minimap
@@ -533,18 +534,44 @@ Shell.Card {
     }
   }
 
-  Item {
+  Flickable {
     id: collapsedLayer
     width: Shell.Theme.sidebarCardCollapsedWidth
-    height: collapsedColumn.height
+    height: root.height
+    contentHeight: collapsedColumn.height
+    boundsBehavior: Flickable.StopAtBounds
+    interactive: root.maximumHeight < root.naturalHeight
     opacity: root.collapsedOpacity
     visible: opacity > 0.001
     enabled: root.collapseProgress >= 0.56
+    onHeightChanged: reveal()
+    onInteractiveChanged: reveal()
+    function reveal() {
+      const row = collapsedColumn.children.find(row => row.active && row.matchesOutput);
+      if (interactive && row)
+        contentY = Math.round(Math.min(row.y, Math.max(contentY, row.y + row.height - height)));
+    }
+    Shell.ScrollWheel { view: collapsedLayer }
+    layer.enabled: interactive
+    layer.smooth: true
+    layer.effect: MultiEffect {
+      autoPaddingEnabled: false
+      maskEnabled: true
+      maskThresholdMin: 0.5
+      maskSpreadAtMin: 1.0
+      maskSource: ShaderEffectSource {
+        sourceItem: Item {
+          width: collapsedLayer.width; height: collapsedLayer.height
+          Rectangle { anchors.fill: parent; anchors.margins: 1; radius: root.radius - 1; antialiasing: true }
+        }
+      }
+    }
 
     Column {
       id: collapsedColumn
       y: Shell.Theme.lerp(Shell.Theme.workspaceContentPadding, 4, root.heightProgress)
       width: Shell.Theme.sidebarCardCollapsedWidth
+      onPositioningComplete: collapsedLayer.reveal()
 
       Repeater {
         model: Shell.NiriMsg.workspaceRows
@@ -582,6 +609,8 @@ Shell.Card {
               : (active && windowItems.length > 0 ? activeHeight : 41) + Shell.Theme.workspaceCollapsedControlGap
           height: matchesOutput ? Shell.Theme.lerp(Shell.Theme.workspaceRowPitch,
               targetHeight, root.heightProgress) : 0
+
+          onActiveChanged: collapsedLayer.reveal()
 
           Behavior on targetHeight {
             enabled: root.collapseProgress === 1
