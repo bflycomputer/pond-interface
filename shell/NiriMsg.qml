@@ -272,9 +272,6 @@ Singleton {
       _windows = wins;
     } else if (ev.WindowFocusChanged) {
       const focused = ev.WindowFocusChanged.id;
-      const agent = _agents[_windows[focused]?.pid];
-      if (agent)
-        agent.unread = false;
       const wins = {};
       for (const id in _windows)
         wins[id] = Object.assign({}, _windows[id], { isFocused: _windows[id].id === focused });
@@ -314,11 +311,7 @@ Singleton {
       const old = root._agents[pid] || {};
       if (old.time > time)
         return;
-      root._agents[pid] = {
-        state: state, time: time,
-        unread: state !== "" && (old.state === "working" && state !== "working"
-            ? !Object.values(root._windows).some(w => w.pid === pid && w.isFocused) : !!old.unread)
-      };
+      root._agents[pid] = { state: state, time: time };
       root._recompute();
     }
   }
@@ -468,7 +461,7 @@ Singleton {
         const info = _appInfo(w.appId);
         const agent = _agents[w.pid];
         const dotState = !agent?.state ? "" : agent.state === "blocked" ? "attention"
-            : agent.state === "working" ? "working" : agent.unread ? "unread" : "read";
+            : agent.state === "working" || agent.state === "unread" ? agent.state : "read";
         windowRecords.push({
           winId: w.id,
           iconName: info.iconName,
