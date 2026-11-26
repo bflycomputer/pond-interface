@@ -10,9 +10,18 @@ Settings.Modal {
   objectName: "mousePanel"
   title: "Mouse sensitivity"; closeLabel: "Back to System"; bodyTop: 92
   contentHeight: fields.height + 30
-  property string naturalKey: "naturalTouchpad"
+  property string device: "touchpad"
+  readonly property var preferences: System.State.pointers[device]
   onBackRequested: Settings.State.back()
   Keys.onEscapePressed: Settings.State.back()
+  overlay: Settings.Switcher {
+    objectName: "pointerDevice"
+    anchors.right: parent.right; anchors.rightMargin: 30
+    y: 21; radius: 8
+    model: [{key: "touchpad", label: "Trackpad", width: 80}, {key: "mouse", label: "Mouse", width: 84}]
+    current: root.device
+    onSelected: key => root.device = key
+  }
   Column {
     id: fields
     x: 30; width: root.width - 60; spacing: 6
@@ -46,9 +55,9 @@ Settings.Modal {
           objectName: "mouse" + field.modelData.key
           x: 20; y: 55; width: 480; height: 24
           leftPadding: 2; rightPadding: 2
-          to: field.modelData.to; value: System.State.mouse[field.modelData.key]
+          to: field.modelData.to; value: root.preferences[field.modelData.key]
           Accessible.name: field.modelData.title
-          onMoved: System.State.setMouse(field.modelData.key, value)
+          onMoved: System.State.setPointer(root.device, field.modelData.key, value)
           background: Rectangle {
             y: 4; width: slider.width; height: 16; radius: 8
             color: Shell.PanelStyle.sliderTrack
@@ -70,36 +79,14 @@ Settings.Modal {
     Settings.Field {
       objectName: "mouseAcceleration"
       width: parent.width; toggle: true
-      title: "Pointer acceleration"; checked: System.State.mouse.acceleration
-      onToggled: checked => System.State.setMouse("acceleration", checked)
+      title: "Pointer acceleration"; checked: root.preferences.acceleration
+      onToggled: checked => System.State.setPointer(root.device, "acceleration", checked)
     }
-    Rectangle {
-      width: parent.width; height: 108; radius: 12
-      color: Shell.Theme.colors.settingsRow
-      Text {
-        x: 20; y: (51 - height) / 2
-        text: "Natural scrolling"; color: Qt.alpha(Shell.Theme.colors.text, 0.7)
-        font.family: Shell.Theme.fontFamily; font.pixelSize: 15
-      }
-      Settings.Switcher {
-        objectName: "mouseNatural"
-        x: 20; y: 47; radius: 8
-        model: [{key: "naturalTouchpad", label: "Trackpad", width: 80}, {key: "naturalMouse", label: "Mouse", width: 84}]
-        current: root.naturalKey
-        onSelected: key => root.naturalKey = key
-      }
-      Shell.Toggle {
-        objectName: "mouseNaturalToggle"
-        x: parent.width - width - 20; y: 54
-        activeFocusOnTab: true
-        Accessible.role: Accessible.CheckBox
-        Accessible.name: "Natural scrolling"
-        Accessible.checked: checked
-        Keys.onReturnPressed: toggled(!checked)
-        Keys.onSpacePressed: toggled(!checked)
-        checked: System.State.mouse[root.naturalKey]
-        onToggled: checked => System.State.setMouse(root.naturalKey, checked)
-      }
+    Settings.Field {
+      objectName: "mouseNaturalToggle"
+      width: parent.width; toggle: true
+      title: "Natural scrolling"; checked: root.preferences.natural
+      onToggled: checked => System.State.setPointer(root.device, "natural", checked)
     }
     Text {
       width: parent.width; visible: !!System.State.error

@@ -16,7 +16,7 @@ Settings.Modal {
     Settings.Field {
       objectName: "systemMouse"
       width: parent.width; navigation: true
-      title: "Mouse sensitivity"; value: Math.round(System.State.mouse.speed * 100) + "%"
+      title: "Mouse sensitivity"; value: Math.round(System.State.pointers.mouse.speed * 100) + "%"
       onClicked: Settings.State.openPage("mouse")
     }
     Settings.Field {

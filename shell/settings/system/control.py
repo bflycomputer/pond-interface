@@ -68,22 +68,21 @@ def timezones(current):
     return sorted(groups.values(), key=lambda z: (z['minutes'], z['label']))
 
 
-def mouse():
-    text = INPUT.read_text()
-    values = get_properties(text, ('input', 'mouse'))
+def pointer_settings(text, device):
+    values = get_properties(text, ('input', device))
     return {'speed': (values.get('accel-speed', 0) + 1) / 2, 'scroll': values.get('scroll-factor', 1),
             'acceleration': values.get('accel-profile') != 'flat',
-            'naturalTouchpad': 'natural-scroll' in get_properties(text, ('input', 'touchpad')),
-            'naturalMouse': 'natural-scroll' in values}
+            'natural': 'natural-scroll' in values}
 
 
 def status():
     ids = {item['label']: item['id'] for item in layouts()}
     names = keyboard()['names']
     timezone = bytes(QTimeZone.systemTimeZoneId()).decode()
+    text = INPUT.read_text()
     return {'selectedLanguages': [ids.get(name, name) for name in names], 'languageNames': names,
             'timezone': timezone, 'timezoneLabel': zone(timezone, QDateTime.currentDateTimeUtc())['label'],
-            'mouse': mouse()}
+            'pointers': {device: pointer_settings(text, device) for device in ('mouse', 'touchpad')}}
 
 
 def load():
@@ -130,13 +129,15 @@ def set_timezone(identifier):
     return status()
 
 
-def set_mouse(speed, scroll, acceleration, natural_touchpad, natural_mouse):
+def set_mouse(pointers):
     text = INPUT.read_text()
-    for device, natural in (('mouse', natural_mouse), ('touchpad', natural_touchpad)):
+    pointers = json.loads(pointers)
+    for device in ('mouse', 'touchpad'):
+        values = pointers[device]
         text = set_properties(text, ('input', device), {
-            'accel-speed': round(float(speed) * 2 - 1, 2), 'scroll-factor': round(max(float(scroll), .1), 2),
-            'accel-profile': 'adaptive' if acceleration == 'true' else 'flat',
-            'natural-scroll': natural == 'true'})
+            'accel-speed': round(values['speed'] * 2 - 1, 2), 'scroll-factor': round(max(values['scroll'], .1), 2),
+            'accel-profile': 'adaptive' if values['acceleration'] else 'flat',
+            'natural-scroll': values['natural']})
     atomic_write(INPUT, text)
     run('niri', 'msg', 'action', 'load-config-file')
     return status()

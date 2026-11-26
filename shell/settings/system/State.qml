@@ -14,7 +14,10 @@ Singleton {
   property string timezone: ""
   property string timezoneLabel: ""
   property string error: ""
-  property var mouse: ({speed: 0.5, scroll: 1, acceleration: true, naturalTouchpad: true, naturalMouse: false})
+  property var pointers: ({
+    mouse: {speed: 0.5, scroll: 1, acceleration: true, natural: false},
+    touchpad: {speed: 0.5, scroll: 1, acceleration: true, natural: true}
+  })
   readonly property bool busy: action.running
   readonly property bool active: Settings.State.opened && ["system", "mouse", "keyboard", "timezone"].indexOf(Settings.State.page) >= 0
   onActiveChanged: if (active) { error = ""; query.running = true; }
@@ -30,7 +33,7 @@ Singleton {
   Timer {
     id: mouseCommit
     interval: 300
-    onTriggered: if (root.busy) restart(); else root.apply(["mouse", root.mouse.speed, root.mouse.scroll, root.mouse.acceleration, root.mouse.naturalTouchpad, root.mouse.naturalMouse].map(String))
+    onTriggered: if (root.busy) restart(); else root.apply(["mouse", JSON.stringify(root.pointers)])
   }
   function accept(text) {
     try {
@@ -43,7 +46,7 @@ Singleton {
       languageNames = result.languageNames;
       timezone = result.timezone;
       timezoneLabel = result.timezoneLabel;
-      if (!mouseCommit.running) mouse = result.mouse;
+      if (!mouseCommit.running) pointers = result.pointers;
       error = "";
     } catch (e) { error = "Could not read system settings"; }
   }
@@ -55,5 +58,8 @@ Singleton {
   }
   function toggleLanguage(id) { apply(["keyboard", id]); }
   function setTimezone(id) { if (id !== timezone) apply(["timezone", id]); }
-  function setMouse(key, value) { mouse = Object.assign({}, mouse, {[key]: value}); mouseCommit.restart(); }
+  function setPointer(device, key, value) {
+    pointers = Object.assign({}, pointers, {[device]: Object.assign({}, pointers[device], {[key]: value})});
+    mouseCommit.restart();
+  }
 }
