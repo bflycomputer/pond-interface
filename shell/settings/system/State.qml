@@ -18,6 +18,7 @@ Singleton {
     mouse: {speed: 0.5, scroll: 1, acceleration: true, natural: false},
     touchpad: {speed: 0.5, scroll: 1, acceleration: true, natural: true}
   })
+  property string pointerDevice: "touchpad"
   readonly property bool busy: action.running
   readonly property bool active: Settings.State.opened && ["system", "mouse", "keyboard", "timezone"].indexOf(Settings.State.page) >= 0
   onActiveChanged: if (active) { error = ""; query.running = true; }
@@ -47,6 +48,7 @@ Singleton {
       timezone = result.timezone;
       timezoneLabel = result.timezoneLabel;
       if (!mouseCommit.running) pointers = result.pointers;
+      pointerDevice = result.pointerDevice;
       error = "";
     } catch (e) { error = "Could not read system settings"; }
   }

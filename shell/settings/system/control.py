@@ -80,9 +80,11 @@ def status():
     names = keyboard()['names']
     timezone = bytes(QTimeZone.systemTimeZoneId()).decode()
     text = INPUT.read_text()
+    devices = subprocess.run(['udevadm', 'info', '--export-db', '--subsystem-match=input'], capture_output=True, text=True).stdout
     return {'selectedLanguages': [ids.get(name, name) for name in names], 'languageNames': names,
             'timezone': timezone, 'timezoneLabel': zone(timezone, QDateTime.currentDateTimeUtc())['label'],
-            'pointers': {device: pointer_settings(text, device) for device in ('mouse', 'touchpad')}}
+            'pointers': {device: pointer_settings(text, device) for device in ('mouse', 'touchpad')},
+            'pointerDevice': 'touchpad' if 'ID_INPUT_TOUCHPAD=1' in devices else 'mouse'}
 
 
 def load():

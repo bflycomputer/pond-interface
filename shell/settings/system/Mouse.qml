@@ -10,7 +10,7 @@ Settings.Modal {
   objectName: "mousePanel"
   title: "Mouse sensitivity"; closeLabel: "Back to System"; bodyTop: 92
   contentHeight: fields.height + 30
-  property string device: "touchpad"
+  property string device: System.State.pointerDevice
   readonly property var preferences: System.State.pointers[device]
   onBackRequested: Settings.State.back()
   Keys.onEscapePressed: Settings.State.back()
