@@ -1,0 +1,6 @@
+#%PAM-1.0
+# Fingerprint-only service for the session lock, run beside the password
+# service (see ../Authentication.qml), which counts the failed reads. A round
+# ends on a finger that doesn't match, or after five minutes so a reader that
+# stopped answering is picked up again.
+auth  required  pam_fprintd.so max-tries=1 timeout=300
