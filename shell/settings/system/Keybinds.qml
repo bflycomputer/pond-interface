@@ -158,6 +158,7 @@ Settings.Modal {
 
   overlay: [
     Search { id: search; placeholder: "Search keybinds"; enabled: !root.popup },
+    Settings.ModalScrollBar { view: list; enabled: !root.popup },
     Rectangle {
       objectName: "keybindsReset"
       x: root.width - 106; y: 21; width: 76; height: 40; radius: 8

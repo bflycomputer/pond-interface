@@ -87,34 +87,37 @@ Settings.Modal {
     }
   }
 
-  // Keep the visualizer outside the rounded, scrolling document clip.
-  overlay: Item {
-    objectName: "manualSuperKeyTip"
-    x: root.width + 10; y: note.y - 33 - root.scrollItem.contentY
-    width: 231; height: 144
-    visible: noteHover.hovered
-    Accessible.role: Accessible.ToolTip
-    Accessible.name: "The Super key is between Ctrl and Alt."
-
+  overlay: [
+    Settings.ModalScrollBar { view: root.scrollItem },
+    // Keep the visualizer outside the rounded, scrolling document clip.
     Item {
-      anchors { fill: parent; margins: -90; bottomMargin: -180 }
-      layer.enabled: true
-      layer.format: ShaderEffectSource.RGBA16F
-      Shell.Shadow {
-        anchors { fill: parent; margins: 90; bottomMargin: 180 }
-        cornerRadius: 24
-        shadows: Shell.PanelStyle.controlShadows.map(s => Object.assign({}, s, { blur: s.blur * 2.4 }))
+      objectName: "manualSuperKeyTip"
+      x: root.width + 10; y: note.y - 33 - root.scrollItem.contentY
+      width: 231; height: 144
+      visible: noteHover.hovered
+      Accessible.role: Accessible.ToolTip
+      Accessible.name: "The Super key is between Ctrl and Alt."
+
+      Item {
+        anchors { fill: parent; margins: -90; bottomMargin: -180 }
+        layer.enabled: true
+        layer.format: ShaderEffectSource.RGBA16F
+        Shell.Shadow {
+          anchors { fill: parent; margins: 90; bottomMargin: 180 }
+          cornerRadius: 24
+          shadows: Shell.PanelStyle.controlShadows.map(s => Object.assign({}, s, { blur: s.blur * 2.4 }))
+        }
       }
-    }
-    ClippingRectangle {
-      anchors.fill: parent
-      radius: 24
-      color: Settings.Style.card
-      Image {
+      ClippingRectangle {
         anchors.fill: parent
-        source: Qt.resolvedUrl("../../assets/manual/super-tip.svg")
-        sourceSize.width: width * Screen.devicePixelRatio
+        radius: 24
+        color: Settings.Style.card
+        Image {
+          anchors.fill: parent
+          source: Qt.resolvedUrl("../../assets/manual/super-tip.svg")
+          sourceSize.width: width * Screen.devicePixelRatio
+        }
       }
     }
-  }
+  ]
 }
