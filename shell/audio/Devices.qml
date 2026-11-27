@@ -8,6 +8,7 @@ import ".."
 Item {
   id: root
 
+  property var stackController
   property bool interactive: true
   property string selectedTab: "output"
 
@@ -21,11 +22,22 @@ Item {
   readonly property bool selectedAudioAvailable: selectedTab === "output"
       ? Audio.State.hasOutput : Audio.State.hasInput
 
+  readonly property real headerDividerY: 97
+
   implicitWidth: PanelStyle.width
   implicitHeight: 114 + visibleDeviceRows * PanelStyle.audioRowHeight
 
+  Behavior on implicitHeight {
+    NumberAnimation {
+      duration: 350
+      easing.type: Easing.Bezier
+      easing.bezierCurve: [0.19, 1, 0.22, 1, 1, 1]
+    }
+  }
+
   PanelBackground {
     anchors.fill: parent
+    stacked: true
 
     Repeater {
       model: [
@@ -78,15 +90,6 @@ Item {
         else
           Audio.State.setInputVolume(volumeSlider.value);
       }
-    }
-
-    Rectangle {
-      x: 20
-      y: 97
-      width: 276
-      height: 1
-      color: PanelStyle.outline
-      antialiasing: false
     }
 
     ListView {
