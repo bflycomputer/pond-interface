@@ -39,7 +39,7 @@ Item {
   }
   Image {
     anchors.fill: parent
-    visible: root.status === "installed"
+    visible: root.status === "installed" || root.status === "uninstalled"
     source: Qt.resolvedUrl("../assets/installs/check.svg")
     sourceSize: Qt.size(32, 32)
   }

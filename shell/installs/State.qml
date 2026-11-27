@@ -16,14 +16,17 @@ Singleton {
     return -1;
   }
 
+  function active(status) { return status === "installing" || status === "uninstalling"; }
+  function finished(status) { return status === "installed" || status === "uninstalled"; }
+
   function update(id, name, status, percentage, message, icon = "") {
-    if (!id || !name || !["installing", "installed", "failed"].includes(status)
+    if (!id || !name || !(active(status) || finished(status) || status === "failed")
         || percentage < -1 || percentage > 100) return;
     const index = indexOf(id);
     const entry = {
       jobId: id, name: name, status: status,
       progress: percentage < 0 ? -1 : percentage / 100,
-      message: message, icon: icon, finishedAt: status === "installed" ? Date.now() : 0
+      message: message, icon: icon, finishedAt: finished(status) ? Date.now() : 0
     };
     if (index < 0) jobs.append(entry);
     else jobs.set(index, entry);
@@ -31,7 +34,7 @@ Singleton {
 
   function dismiss(id) {
     const index = indexOf(id);
-    if (index >= 0 && jobs.get(index).status !== "installing") jobs.remove(index);
+    if (index >= 0 && !active(jobs.get(index).status)) jobs.remove(index);
   }
 
   function findApp(name) {
@@ -71,7 +74,7 @@ Singleton {
     onTriggered: {
       for (let i = root.jobs.count - 1; i >= 0; --i) {
         const job = root.jobs.get(i);
-        if (job.status === "installed"
+        if (root.finished(job.status)
             && Date.now() - Math.max(job.finishedAt, root.lastResumeAt) >= 30000) root.jobs.remove(i);
       }
     }

@@ -13,105 +13,115 @@ Shell.Card {
   implicitWidth: Shell.Theme.lerp(Shell.Theme.sidebarCardExpandedWidth,
       Shell.Theme.sidebarCardCollapsedWidth, widthProgress)
   implicitHeight: count === 0 ? 0
-      : 2 * contentPadding + count * rowHeight
+      : 2 * contentPadding + rows.implicitHeight
   visible: count > 0
   radius: Shell.Theme.lerp(12, Shell.Theme.sidebarCardRadius, widthProgress)
 
-  Repeater {
-    model: Installs.State.jobs
-    delegate: Item {
-      id: row
-      required property int index
-      required property string jobId
-      required property string name
-      required property string status
-      required property real progress
-      required property string icon
-      readonly property bool canLaunch: status === "installed" && jobId !== "system-update"
-          && Installs.State.findApp(name) !== null
-      readonly property bool showDismiss: dismiss.visible && (rowHover.hovered || dismiss.hovered)
-      readonly property string summary: status === "installed" ? "Installed"
-          : status === "failed" ? "Failed" : progress < 0 ? "Installing"
-          : "Installing " + Math.round(progress * 100) + "%"
-      y: root.contentPadding + index * root.rowHeight
-      width: root.width
-      height: root.rowHeight
-      Accessible.role: Accessible.ListItem
-      Accessible.name: jobId === "system-update" ? name : name + ": " + summary
-      Accessible.onPressAction: Installs.State.dismiss(jobId)
+  Column {
+    id: rows
+    y: root.contentPadding
+    width: root.width
+    Repeater {
+      model: Installs.State.jobs
+      delegate: Item {
+        id: row
+        required property int index
+        required property string jobId
+        required property string name
+        required property string status
+        required property real progress
+        required property string icon
+        readonly property bool canLaunch: status === "installed" && jobId !== "system-update"
+            && Installs.State.findApp(name) !== null
+        readonly property bool showDismiss: dismiss.visible && (rowHover.hovered || dismiss.hovered)
+        readonly property bool uninstall: status === "uninstalling" || status === "uninstalled"
+        readonly property string summary: status === "installed" ? "Installed"
+            : status === "uninstalling" ? "Uninstalling" : status === "uninstalled" ? "Uninstalled"
+            : status === "failed" ? "Failed" : progress < 0 ? "Installing"
+            : "Installing " + Math.round(progress * 100) + "%"
+        width: root.width
+        height: uninstall ? Shell.Theme.lerp(52, root.rowHeight, root.widthProgress) : root.rowHeight
+        Accessible.role: Accessible.ListItem
+        Accessible.name: jobId === "system-update" ? name : name + ": " + summary
+        Accessible.onPressAction: Installs.State.dismiss(jobId)
 
-      HoverHandler { id: rowHover }
-      Item {
-        x: root.contentPadding
-        width: Math.max(0, parent.width - root.rowHeight - 2 * root.contentPadding)
-        height: parent.height
-        opacity: 1 - Shell.Theme.ramp(root.collapseProgress, 0, 0.3)
-        HoverFill {
-          anchors.fill: parent
-          active: row.canLaunch && nameHover.hovered
+        HoverHandler { id: rowHover }
+        Item {
+          x: root.contentPadding
+          width: Math.max(0, parent.width - root.rowHeight - 2 * root.contentPadding)
+          height: parent.height
+          opacity: 1 - Shell.Theme.ramp(root.collapseProgress, 0, 0.3)
+          HoverFill {
+            anchors.fill: parent
+            active: row.canLaunch && nameHover.hovered
+          }
+          Image {
+            id: appIcon
+            x: 12
+            anchors.verticalCenter: parent.verticalCenter
+            width: 16
+            height: 16
+            visible: status === Image.Ready
+            source: row.icon
+            sourceSize: Qt.size(32, 32)
+            fillMode: Image.PreserveAspectFit
+          }
+          Text {
+            x: appIcon.visible ? 36 : 12
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.verticalCenterOffset: 1
+            width: Math.max(0, parent.width - 12 - x)
+            text: row.uninstall ? row.summary + "\n" + row.name : row.name
+            textFormat: Text.PlainText
+            elide: Text.ElideRight
+            wrapMode: row.uninstall ? Text.WordWrap : Text.NoWrap
+            maximumLineCount: row.uninstall ? 2 : 1
+            lineHeightMode: row.uninstall ? Text.FixedHeight : Text.ProportionalHeight
+            lineHeight: row.uninstall ? 19 : 1
+            color: Shell.Theme.colors.text
+            font.family: Shell.Theme.fontFamily
+            font.pixelSize: 13
+            font.weight: Font.Medium
+          }
+          HoverHandler {
+            id: nameHover
+            cursorShape: row.canLaunch ? Qt.PointingHandCursor : Qt.ArrowCursor
+          }
+          TapHandler {
+            enabled: row.canLaunch
+            onTapped: Installs.State.launch(row.jobId)
+          }
         }
-        Image {
-          id: appIcon
-          x: 12
-          anchors.verticalCenter: parent.verticalCenter
-          width: 16
-          height: 16
-          visible: status === Image.Ready
-          source: row.icon
-          sourceSize: Qt.size(32, 32)
-          fillMode: Image.PreserveAspectFit
+        Installs.Indicator {
+          id: indicator
+          visible: (row.jobId !== "system-update" || row.status !== "installing") && !row.showDismiss
+          x: dismiss.x + (dismiss.width - width) / 2
+          y: (parent.height - height) / 2
+          progress: row.progress
+          status: row.status
         }
-        Text {
-          x: appIcon.visible ? 36 : 12
-          anchors.verticalCenter: parent.verticalCenter
-          anchors.verticalCenterOffset: 1
-          width: Math.max(0, parent.width - 12 - x)
-          text: row.name
-          textFormat: Text.PlainText
-          elide: Text.ElideRight
-          color: Shell.Theme.colors.text
-          font.family: Shell.Theme.fontFamily
-          font.pixelSize: 13
-          font.weight: Font.Medium
+        Updates.Indicator {
+          id: updateIndicator
+          visible: row.jobId === "system-update" && row.status === "installing"
+          x: indicator.x
+          y: indicator.y
         }
-        HoverHandler {
-          id: nameHover
-          cursorShape: row.canLaunch ? Qt.PointingHandCursor : Qt.ArrowCursor
-        }
-        TapHandler {
-          enabled: row.canLaunch
-          onTapped: Installs.State.launch(row.jobId)
-        }
-      }
-      Installs.Indicator {
-        id: indicator
-        visible: (row.jobId !== "system-update" || row.status !== "installing") && !row.showDismiss
-        x: dismiss.x + (dismiss.width - width) / 2
-        y: (parent.height - height) / 2
-        progress: row.progress
-        status: row.status
-      }
-      Updates.Indicator {
-        id: updateIndicator
-        visible: row.jobId === "system-update" && row.status === "installing"
-        x: indicator.x
-        y: indicator.y
-      }
-      Shell.IconButton {
-        id: dismiss
-        visible: row.status !== "installing"
-        opacity: row.showDismiss ? 1 : 0
-        x: parent.width - width - root.contentPadding
-        width: root.rowHeight
-        height: parent.height
-        iconSource: Qt.resolvedUrl("../assets/installs/cross.svg")
-        iconWidth: 16
-        iconHeight: 16
-        onClicked: Installs.State.dismiss(row.jobId)
-        HoverFill {
-          anchors.fill: parent
-          z: -1
-          active: dismiss.hovered
+        Shell.IconButton {
+          id: dismiss
+          visible: !Installs.State.active(row.status)
+          opacity: row.showDismiss ? 1 : 0
+          x: parent.width - width - root.contentPadding
+          width: root.rowHeight
+          height: parent.height
+          iconSource: Qt.resolvedUrl("../assets/installs/cross.svg")
+          iconWidth: 16
+          iconHeight: 16
+          onClicked: Installs.State.dismiss(row.jobId)
+          HoverFill {
+            anchors.fill: parent
+            z: -1
+            active: dismiss.hovered
+          }
         }
       }
     }
