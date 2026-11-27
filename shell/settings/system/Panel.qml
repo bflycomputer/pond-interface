@@ -20,6 +20,12 @@ Settings.Modal {
       onClicked: Settings.State.openPage("mouse")
     }
     Settings.Field {
+      objectName: "systemKeybinds"
+      width: parent.width; navigation: true
+      title: "Keybinds"
+      onClicked: Settings.State.openPage("keybinds")
+    }
+    Settings.Field {
       objectName: "systemLock"
       width: parent.width; navigation: true
       title: "Lock & sleep"; value: System.Idle.label(System.Idle.current.lock)

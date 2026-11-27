@@ -36,7 +36,7 @@ def tokens(text):
     return result
 
 
-def nodes(ts, start=0, end=None):
+def nodes(ts, start=0, end=None, skipped=False):
     end = len(ts) if end is None else end
     i = start
     while i < end:
@@ -55,7 +55,7 @@ def nodes(ts, start=0, end=None):
                 if depth == 0: closing = i; i += 1; break
             i += 1
         if i == first: raise ValueError('Unexpected KDL token')
-        if not disabled: yield first, i, opening, closing
+        if skipped or not disabled: yield first, i, opening, closing
         if i < end and ts[i][0] in ('\n', ';'): i += 1
 
 
