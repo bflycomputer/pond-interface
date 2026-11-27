@@ -14,6 +14,7 @@ Item {
     property bool released: false
     property string displayName: ""
     property bool wifiConnected: false
+    property bool hour24: false
     property list<string> presentationOutputs: []
     property var readyOutputs: ({})
     property string releasedTopology: ""
@@ -98,6 +99,7 @@ Item {
                     exitTransition: overlayExit
                     interactive: false
                     wifiConnected: root.wifiConnected
+                    hour24: root.hour24
                     displayName: root.displayName
                     visible: overlay.showPresentation
                 }

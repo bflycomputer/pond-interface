@@ -11,6 +11,7 @@ Item {
     required property var powerBackend
     property string displayName: ""
     property bool wifiConnected: false
+    property bool hour24: false
     property list<string> presentationOutputs: []
     readonly property bool secure: lockSession.secure
     function holdsLock() { return lockSession.locked; }
@@ -30,6 +31,7 @@ Item {
         released: flow.phase === "exiting"
         displayName: root.displayName
         wifiConnected: root.wifiConnected
+        hour24: root.hour24
         presentationOutputs: Quickshell.screens.filter(screen => root.showsPresentation(screen)).map(screen => screen.name)
     }
     Frontend.Controller {
@@ -61,6 +63,7 @@ Item {
                 showPresentation: surface.showPresentation
                 displayName: root.displayName
                 wifiConnected: root.wifiConnected
+                hour24: root.hour24
             }
         }
     }

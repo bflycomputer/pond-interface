@@ -9,6 +9,7 @@ Item {
     property int maximumLength: 32767
     property alias displayName: view.displayName
     property alias wifiConnected: view.wifiConnected
+    property alias hour24: view.hour24
     property alias multipleUsers: view.multipleUsers
     property alias compositors: view.compositors
     property alias compositorIndex: view.compositorIndex

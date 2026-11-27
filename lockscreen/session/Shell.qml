@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import QtCore
 import Quickshell
 import Quickshell.Io
 import Pond.System
@@ -28,6 +29,18 @@ ShellRoot {
 
     SessionInfo { id: info }
     NetworkStatus { id: network }
+    FileView {
+        id: dateTime
+        property bool hour24: false
+        path: StandardPaths.writableLocation(StandardPaths.ConfigLocation) + "/pond-interface/datetime.json"
+        printErrors: false
+        watchChanges: true
+        onFileChanged: reload()
+        onLoaded: {
+            try { hour24 = JSON.parse(text()).timeFormat === "24"; }
+            catch (e) { console.warn("Date and time format:", e); }
+        }
+    }
     QtObject {
         id: power
         function shutdown() { Quickshell.execDetached(["/usr/bin/systemctl", "poweroff"]); }
@@ -40,6 +53,7 @@ ShellRoot {
         sourceComponent: Session {
             displayName: info.displayName
             wifiConnected: network.wifiConnected
+            hour24: dateTime.hour24
             powerBackend: power
             presentationOutputs: (Quickshell.env("POND_LOCK_OUTPUTS") || "").split(",").filter(name => name.length > 0)
             onFinished: locker.active = false

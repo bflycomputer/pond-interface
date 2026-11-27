@@ -26,6 +26,7 @@ Item {
     property var compositors: []
     property int compositorIndex: -1
     property date now: new Date()
+    property bool hour24: false
     property Component backgroundComponent: Component {
         Daylight.Sky {
             live: false
@@ -206,7 +207,7 @@ Item {
                 Behavior on opacity { NumberAnimation { duration: 150 } }
                 x: ((canvas.width + 400) / 2 + canvas.width - 80) / 2 - 24 - width / 2
                 y: 506
-                text: Qt.formatTime(root.now, "h:mm AP")
+                text: Qt.formatTime(root.now, root.hour24 ? "HH:mm" : "h:mm AP")
                 color: theme.text
                 font.family: theme.displayFont
                 font.styleName: "Book"
