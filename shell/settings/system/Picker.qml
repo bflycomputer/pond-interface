@@ -10,7 +10,7 @@ Settings.Modal {
   property bool multiple: false
   property string placeholder
   signal picked(string id)
-  readonly property string query: search.text.trim().toLowerCase()
+  readonly property string query: search.input.text.trim().toLowerCase()
   readonly property var rows: {
     const pinned = selected.map(id => options.find(option => option.id === id)).filter(Boolean);
     const ordered = pinned.concat(options.filter(option => selected.indexOf(option.id) < 0));
@@ -20,12 +20,12 @@ Settings.Modal {
   bodyTop: 143
   roundedContent: true
   onBackRequested: Settings.State.back()
-  Keys.onEscapePressed: { if (search.text) search.clear(); else Settings.State.back(); }
+  Keys.onEscapePressed: { if (search.input.text) search.input.clear(); else Settings.State.back(); }
 
   function choose(id) {
     picked(id);
-    search.clear();
-    search.forceActiveFocus();
+    search.input.clear();
+    search.input.forceActiveFocus();
   }
 
   ListView {
@@ -81,61 +81,10 @@ Settings.Modal {
   }
 
   overlay: [
-    Rectangle {
-      objectName: "systemSearch"
-      x: 30; y: 82; width: root.width - 60; height: 51; radius: 12
-      color: search.activeFocus && !clearHover.hovered ? Shell.PanelStyle.controlHover : Shell.PanelStyle.controlFill
-      HoverHandler { cursorShape: Qt.IBeamCursor }
-      TapHandler { onTapped: search.forceActiveFocus() }
-      Text {
-        x: 20; anchors.verticalCenter: parent.verticalCenter
-        visible: !search.text; text: root.placeholder
-        color: Shell.Theme.colors.text; opacity: 0.2
-        font.family: Shell.Theme.fontFamily; font.pixelSize: 15
-      }
-      TextInput {
-        id: search
-        x: 20; width: parent.width - 76; anchors.verticalCenter: parent.verticalCenter
-        clip: true; color: Shell.Theme.colors.text
-        selectionColor: Shell.PanelStyle.accentText; selectedTextColor: Shell.Theme.colors.text
-        font.family: Shell.Theme.fontFamily; font.pixelSize: 15
-        Accessible.role: Accessible.EditableText
-        Accessible.name: root.placeholder
-        cursorDelegate: Rectangle {
-          id: caret
-          width: 1; color: Shell.PanelStyle.accent
-          Timer {
-            running: search.cursorVisible; repeat: true
-            interval: Qt.styleHints.cursorFlashTime / 2
-            onRunningChanged: caret.opacity = 1
-            onTriggered: caret.opacity = 1 - caret.opacity
-          }
-        }
-        onAccepted: if (root.query && root.rows.length) root.choose(root.rows[0].id)
-      }
-      Image {
-        x: parent.width - 36; anchors.verticalCenter: parent.verticalCenter
-        width: 20; height: 20; sourceSize: Qt.size(40, 40)
-        visible: !search.text
-        source: Qt.resolvedUrl("../../assets/search.svg")
-      }
-      Rectangle {
-        objectName: "systemSearchClear"
-        x: parent.width - 46; anchors.verticalCenter: parent.verticalCenter
-        width: 40; height: 40; radius: 4
-        visible: !!search.text
-        color: clearHover.hovered ? Shell.PanelStyle.rowHover : "transparent"
-        Accessible.role: Accessible.Button
-        Accessible.name: "Clear search"
-        Accessible.onPressAction: search.clear()
-        Image {
-          anchors.centerIn: parent
-          width: 20; height: 20; sourceSize: Qt.size(40, 40)
-          source: Qt.resolvedUrl("../../assets/wifi/close.svg")
-        }
-        HoverHandler { id: clearHover; cursorShape: Qt.PointingHandCursor }
-        TapHandler { onTapped: { search.clear(); search.forceActiveFocus(); } }
-      }
+    Search {
+      id: search
+      placeholder: root.placeholder
+      onAccepted: if (root.query && root.rows.length) root.choose(root.rows[0].id)
     },
     Rectangle {
       objectName: "keyboardShortcut"
@@ -179,24 +128,8 @@ Settings.Modal {
         Row {
           x: 20; y: 82; spacing: 6
           Repeater {
-            model: ["spr", "k"]
-            delegate: Rectangle {
-              id: key
-              required property string modelData
-              width: 40; height: 40; radius: 4
-              color: "transparent"; border.color: Qt.rgba(1, 1, 1, 0.15)
-              Rectangle {
-                anchors.centerIn: parent; width: 32; height: 32; radius: 16
-                color: "transparent"; border.color: Qt.rgba(1, 1, 1, 0.15)
-              }
-              Text {
-                anchors.centerIn: parent
-                text: key.modelData; color: Shell.Theme.colors.text
-                font.family: Shell.Theme.fontFamily
-                font.weight: key.modelData === "k" ? Font.Bold : Font.DemiBold
-                font.pixelSize: key.modelData === "k" ? 12 : 10
-              }
-            }
+            model: ["Mod", "K"]
+            delegate: Key { required property string modelData; name: modelData }
           }
         }
       }
