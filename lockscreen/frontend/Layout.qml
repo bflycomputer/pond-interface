@@ -226,6 +226,52 @@ Item {
             }
 
             Item {
+                objectName: "batteryStatus"
+                x: canvas.width - 76
+                y: 15
+                width: 66
+                height: 13
+                visible: Battery.present
+
+                Rectangle {
+                    y: 6
+                    width: parent.width
+                    height: 2
+                    radius: 1
+                    color: "#f8f9f9"
+                    opacity: 0.2
+                }
+                Rectangle {
+                    id: batteryFill
+                    y: 6
+                    width: parent.width * Battery.percentage / 100
+                    height: 2
+                    radius: 1
+                    color: theme.lavender
+                }
+                Rectangle {
+                    x: Math.max(0, batteryFill.width - width)
+                    width: batteryLabel.implicitWidth + 8
+                    height: parent.height
+                    radius: height / 2
+                    color: theme.lavender
+
+                    Text {
+                        id: batteryLabel
+                        renderType: Text.CurveRendering
+                        x: 4
+                        y: (parent.height + batteryMetrics.capitalHeight) / 2 - baselineOffset
+                        text: Battery.percentage + "%"
+                        color: "#1d1d1d"
+                        font.family: theme.uiFont
+                        font.styleName: "Bold"
+                        font.pixelSize: 11
+                        FontMetrics { id: batteryMetrics; font: batteryLabel.font }
+                    }
+                }
+            }
+
+            Item {
                 objectName: "revealButton"
                 x: 0
                 y: 480
