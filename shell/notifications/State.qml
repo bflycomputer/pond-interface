@@ -4,6 +4,7 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Services.Notifications
 import ".." as Shell
+import "../settings/system" as System
 
 Singleton {
   id: root
@@ -226,14 +227,7 @@ Singleton {
   }
 
   function timeLabel(timestamp) {
-    const date = new Date(Number(timestamp));
-    let hours = date.getHours();
-    const suffix = hours >= 12 ? "PM" : "AM";
-    hours = hours % 12;
-    if (hours === 0)
-      hours = 12;
-    const minutes = String(date.getMinutes()).padStart(2, "0");
-    return hours + ":" + minutes + " " + suffix;
+    return System.DateTime.time(new Date(Number(timestamp)));
   }
 
   function togglePanel(outputName) {

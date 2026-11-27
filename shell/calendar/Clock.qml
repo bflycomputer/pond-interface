@@ -2,6 +2,7 @@ import QtQuick
 import Quickshell
 import ".." as Shell
 import "../battery" as Battery
+import "../settings/system" as System
 
 Shell.Card {
   id: root
@@ -72,7 +73,7 @@ Shell.Card {
       y: 8
       height: 42
       // An unpadded hour leaves room for AM/PM beside every possible time.
-      text: Qt.formatTime(root.previewTime, "h:mm AP").split(" ")[0]
+      text: System.DateTime.time(root.previewTime).split(" ")[0]
       color: Shell.Theme.sidebarForeground
       font.family: "Advent Pro"
       font.weight: Font.Normal
@@ -89,6 +90,7 @@ Shell.Card {
 
       x: timeText.x + Math.ceil(timeText.implicitWidth - timeText.font.letterSpacing) + 4
       y: 35 + periodMetrics.capitalHeight - baselineOffset
+      visible: !System.DateTime.hour24
       text: Qt.formatTime(root.previewTime, "AP")
       color: Shell.Theme.sidebarForeground
       opacity: 0.7
@@ -259,7 +261,7 @@ Shell.Card {
       x: 0
       y: collapsedContent.topPadding + compactMetrics.capitalHeight - baselineOffset
       width: parent.width
-      text: Qt.formatTime(root.previewTime, "hh AP").split(" ")[0]
+      text: Qt.formatTime(root.previewTime, System.DateTime.hour24 ? "HH" : "hh AP").split(" ")[0]
       color: Shell.Theme.sidebarForeground
       opacity: Shell.Theme.ramp(root.collapsedProgress, 0.00, 0.32)
       font.family: Shell.Theme.plexFontFamily
@@ -285,6 +287,7 @@ Shell.Card {
       x: 0
       y: collapsedContent.topPadding + 2 * collapsedContent.lineStep + compactMetrics.capitalHeight - baselineOffset
       width: parent.width
+      visible: !System.DateTime.hour24
       text: Qt.formatTime(root.previewTime, "AP")
       color: Shell.Theme.sidebarForeground
       opacity: 0.3 * Shell.Theme.ramp(root.collapsedProgress, 0.24, 0.56)

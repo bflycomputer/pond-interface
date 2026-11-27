@@ -13,6 +13,7 @@ Singleton {
   property var languageNames: []
   property string timezone: ""
   property string timezoneLabel: ""
+  readonly property string timezoneCity: timezone.split("/").pop().replace(/_/g, " ")
   property string error: ""
   property var pointers: ({
     mouse: {speed: 0.5, scroll: 1, acceleration: true, natural: false},
@@ -20,7 +21,7 @@ Singleton {
   })
   property string pointerDevice: "touchpad"
   readonly property bool busy: action.running
-  readonly property bool active: Settings.State.opened && ["system", "mouse", "keyboard", "timezone"].indexOf(Settings.State.page) >= 0
+  readonly property bool active: Settings.State.opened && ["system", "mouse", "keyboard", "time", "timezone"].indexOf(Settings.State.page) >= 0
   onActiveChanged: if (active) { error = ""; query.running = true; }
   Process {
     id: query

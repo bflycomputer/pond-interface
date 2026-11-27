@@ -38,10 +38,11 @@ Settings.Modal {
       onClicked: Settings.State.openPage("keyboard")
     }
     Settings.Field {
-      objectName: "systemTimezone"
+      objectName: "systemTime"
       width: parent.width; navigation: true
-      title: "Timezone"; value: System.State.timezoneLabel
-      onClicked: Settings.State.openPage("timezone")
+      title: "Time & Date"
+      value: [System.State.timezoneCity, System.DateTime.timeFormat + "-hour"].filter(Boolean).join(", ")
+      onClicked: Settings.State.openPage("time")
     }
     Text {
       width: parent.width; visible: !!System.State.error

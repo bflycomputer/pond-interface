@@ -263,7 +263,7 @@ PanelWindow {
     active: root.presented && (root.modalOpen || opacity > 0)
     sourceComponent: ({
       wallpaper: wallpaperPage, information: informationPage, manual: manualPage, display: displayPage, arrange: arrangePage,
-      system: systemPage, mouse: mousePage, keybinds: keybindsPage, lock: lockPage, keyboard: keyboardPage, timezone: timezonePage
+      system: systemPage, mouse: mousePage, keybinds: keybindsPage, lock: lockPage, keyboard: keyboardPage, time: timePage, timezone: timezonePage
     })[root.displayedPage] || appearancePage
     enabled: root.modalOpen
     opacity: root.modalOpen ? 1 : 0
@@ -347,6 +347,13 @@ PanelWindow {
       title: "Keyboard language"; placeholder: "Search languages"; multiple: true
       options: System.State.languages; selected: System.State.selectedLanguages
       onPicked: id => System.State.toggleLanguage(id)
+      availableHeight: Math.max(200, root.height - 70)
+      scale: Math.min(1, (root.width - 60) / implicitWidth)
+    }
+  }
+  Component {
+    id: timePage
+    System.Time {
       availableHeight: Math.max(200, root.height - 70)
       scale: Math.min(1, (root.width - 60) / implicitWidth)
     }

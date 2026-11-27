@@ -2,16 +2,20 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import ".." as Shell
 
-// Two-option switcher. Model entries are {key, label, width}.
+// Option switcher. Model entries are {key, label, width}.
 Rectangle {
   id: root
   property var model: []
   property string current
+  property bool framed: true
+  readonly property int inset: framed ? 2 : 0
   signal selected(string key)
-  width: 168; height: 41; radius: 12
-  color: "transparent"; border.width: 1; border.color: Shell.PanelStyle.outline
+  width: options.width + 2 * inset; height: 37 + 2 * inset; radius: 12
+  color: framed ? "transparent" : Shell.PanelStyle.controlFill
+  border.width: framed ? 1 : 0; border.color: Shell.PanelStyle.outline
   Row {
-    x: 2; y: 2
+    id: options
+    x: root.inset; y: root.inset
     Repeater {
       model: root.model
       delegate: Rectangle {
@@ -22,8 +26,8 @@ Rectangle {
         objectName: root.objectName + modelData.key
         width: modelData.width; height: 37
         radius: 2
-        topLeftRadius: index === 0 ? root.radius - 2 : 2; bottomLeftRadius: topLeftRadius
-        topRightRadius: index === 1 ? root.radius - 2 : 2; bottomRightRadius: topRightRadius
+        topLeftRadius: index === 0 ? root.radius - root.inset : 2; bottomLeftRadius: topLeftRadius
+        topRightRadius: index === root.model.length - 1 ? root.radius - root.inset : 2; bottomRightRadius: topRightRadius
         color: chosen ? Shell.PanelStyle.controlHover : hover.hovered || activeFocus ? Shell.PanelStyle.rowHover : "transparent"
         activeFocusOnTab: true
         Accessible.role: Accessible.RadioButton
