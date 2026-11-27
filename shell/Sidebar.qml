@@ -21,6 +21,7 @@ PanelWindow {
   readonly property real cardWidth: Theme.lerp(Theme.sidebarCardExpandedWidth,
       Theme.sidebarCardCollapsedWidth, Theme.collapseWidth(collapseProgress))
   readonly property real notificationCardCenterY: mainStack.y + notificationCard.y + 24
+  readonly property bool fullscreenCovered: controls.fullscreenCovered
 
   readonly property real panelX: Theme.sidebarOuterMargin + cardWidth + Theme.sidebarCardGap
   readonly property bool panelOpen: wifiPanel.opened || audioPanel.opened || bluetoothPanel.opened

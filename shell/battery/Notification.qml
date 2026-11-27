@@ -9,17 +9,19 @@ PanelWindow {
   id: root
   required property var bar
   required property var above
+  readonly property bool fullscreen: bar.fullscreenCovered
 
   screen: bar.screen
-  visible: Battery.State.alert > 0 && bar.collapseProgress > 0.42
+  visible: Battery.State.alert > 0 && (fullscreen || bar.collapseProgress > 0.42)
   color: "transparent"
   implicitWidth: card.width + 68
-  implicitHeight: card.height + 145
+  implicitHeight: card.height + (fullscreen ? 54 : 145)
   mask: Region { item: card }
 
-  anchors { left: true; top: true }
+  anchors { left: true; top: !root.fullscreen; bottom: root.fullscreen }
   margins {
-    left: Math.round(Shell.Theme.sidebarOuterMargin + bar.cardWidth + 20) - card.x
+    left: Math.round(fullscreen ? (screen.width - card.width) / 2
+        : Shell.Theme.sidebarOuterMargin + bar.cardWidth + 20) - card.x
     top: (above.visible ? 20 + above.cardHeight : 20) - card.y
   }
 
@@ -31,18 +33,19 @@ PanelWindow {
     id: card
     x: 34
     y: 14
-    width: 140
-    height: 34
+    width: root.fullscreen ? Math.ceil(label.implicitWidth) + 46 : 140
+    height: root.fullscreen ? 32 : 34
 
     Shell.Shadow {
       anchors.fill: parent
-      cornerRadius: 8
+      cornerRadius: surface.radius
       shadows: Shell.PanelStyle.controlShadows
     }
 
     Rectangle {
+      id: surface
       anchors.fill: parent
-      radius: 8
+      radius: root.fullscreen ? 4 : 8
       color: Battery.State.lowSurface
     }
 
@@ -60,22 +63,19 @@ PanelWindow {
     }
 
     Rectangle {
-      x: 111
-      y: 5
-      width: 24
-      height: 24
-      radius: 4
+      anchors.fill: dismiss
+      radius: root.fullscreen ? 2 : 4
       color: dismiss.hovered ? Qt.alpha(Battery.State.lowColor, 0.1) : "transparent"
     }
 
     Shell.IconButton {
       id: dismiss
-      x: 111
-      y: 5
+      x: parent.width - (root.fullscreen ? 28 : 29)
+      y: (parent.height - 24) / 2
       iconSource: Qt.resolvedUrl("../assets/battery/dismiss.svg")
       iconWidth: 24
       iconHeight: 24
-      restingOpacity: 0.3
+      restingOpacity: root.fullscreen ? 1 : 0.3
       animateGlyphOpacity: false
       layer.enabled: true
       layer.effect: MultiEffect { colorization: 1; colorizationColor: Battery.State.lowColor }
