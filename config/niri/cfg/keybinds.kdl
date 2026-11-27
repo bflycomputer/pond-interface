@@ -117,6 +117,7 @@ binds {
     Mod+T                               { toggle-window-floating; }
     Mod+F                               { fullscreen-window; }
     Mod+W                               { toggle-column-tabbed-display; }
+    Mod+O                               repeat=false { toggle-overview; }
 
     // ─── Screenshots ───
     Mod+S                               { screenshot; }
@@ -130,5 +131,4 @@ binds {
     // ─── Exit / Power ───
     CTRL+ALT+Delete                     { quit; } // Also quits Niri
     Mod+Shift+P                         { power-off-monitors; } // Turn off screens (useful for OLED or privacy)
-    Mod+O                               repeat=false { toggle-overview; }
 }
