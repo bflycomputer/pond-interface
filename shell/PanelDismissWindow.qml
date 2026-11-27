@@ -22,7 +22,7 @@ PanelWindow {
     bottom: true
   }
 
-  WlrLayershell.layer: WlrLayer.Top
+  WlrLayershell.layer: bar.raised ? WlrLayer.Overlay : WlrLayer.Top
   WlrLayershell.namespace: "pond-controls-dismiss-"
       + (screen ? screen.name : "unknown")
   WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
