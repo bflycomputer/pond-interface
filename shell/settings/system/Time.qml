@@ -7,7 +7,7 @@ import "../.." as Shell
 Settings.Modal {
   id: root
   objectName: "timePanel"
-  title: "Time & Date"; closeLabel: "Back to System"; bodyTop: 92
+  title: "Time"; closeLabel: "Back to System"; bodyTop: 92
   contentHeight: fields.height + 30
   onBackRequested: Settings.State.back()
   Keys.onEscapePressed: Settings.State.back()

@@ -40,7 +40,7 @@ Settings.Modal {
     Settings.Field {
       objectName: "systemTime"
       width: parent.width; navigation: true
-      title: "Time & Date"
+      title: "Time"
       value: [System.State.timezoneCity, System.DateTime.timeFormat + "-hour"].filter(Boolean).join(", ")
       onClicked: Settings.State.openPage("time")
     }
