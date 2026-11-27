@@ -26,7 +26,9 @@ Singleton {
     const entry = {
       jobId: id, name: name, status: status,
       progress: percentage < 0 ? -1 : percentage / 100,
-      message: message, icon: icon, finishedAt: finished(status) ? Date.now() : 0
+      message: message, icon: icon, finishedAt: finished(status) ? Date.now() : 0,
+      removal: status === "failed" ? index >= 0 && jobs.get(index).removal
+          : status.startsWith("uninstall")
     };
     if (index < 0) jobs.append(entry);
     else jobs.set(index, entry);

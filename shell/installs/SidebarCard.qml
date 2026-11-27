@@ -31,25 +31,32 @@ Shell.Card {
         required property string status
         required property real progress
         required property string icon
+        required property bool removal
         readonly property bool canLaunch: status === "installed" && jobId !== "system-update"
             && Installs.State.findApp(name) !== null
         readonly property bool showDismiss: dismiss.visible && (rowHover.hovered || dismiss.hovered)
         readonly property bool uninstall: status === "uninstalling" || status === "uninstalled"
+        readonly property bool installFailed: status === "failed" && !removal
+            && jobId !== "system-update"
         readonly property string summary: status === "installed" ? "Installed"
             : status === "uninstalling" ? "Uninstalling" : status === "uninstalled" ? "Uninstalled"
-            : status === "failed" ? "Failed" : progress < 0 ? "Installing"
+            : installFailed ? "Failed to install." : status === "failed" ? "Failed"
+            : progress < 0 ? "Installing"
             : "Installing " + Math.round(progress * 100) + "%"
         width: root.width
-        height: uninstall ? Shell.Theme.lerp(52, root.rowHeight, root.widthProgress) : root.rowHeight
+        height: Shell.Theme.lerp(installFailed ? 59 : uninstall ? 52 : root.rowHeight,
+            root.rowHeight, root.widthProgress)
         Accessible.role: Accessible.ListItem
         Accessible.name: jobId === "system-update" ? name : name + ": " + summary
         Accessible.onPressAction: Installs.State.dismiss(jobId)
 
         HoverHandler { id: rowHover }
         Item {
+          id: line
+          z: 1
           x: root.contentPadding
           width: Math.max(0, parent.width - root.rowHeight - 2 * root.contentPadding)
-          height: parent.height
+          height: row.installFailed ? root.rowHeight : parent.height
           opacity: 1 - Shell.Theme.ramp(root.collapseProgress, 0, 0.3)
           HoverFill {
             anchors.fill: parent
@@ -67,6 +74,7 @@ Shell.Card {
             fillMode: Image.PreserveAspectFit
           }
           Text {
+            id: label
             x: appIcon.visible ? 36 : 12
             anchors.verticalCenter: parent.verticalCenter
             anchors.verticalCenterOffset: 1
@@ -83,6 +91,16 @@ Shell.Card {
             font.pixelSize: 13
             font.weight: Font.Medium
           }
+          Text {
+            visible: row.installFailed
+            x: label.x
+            anchors.baseline: parent.top
+            anchors.baselineOffset: 47
+            text: row.summary
+            color: Shell.Theme.colors.text
+            opacity: 0.7
+            font: label.font
+          }
           HoverHandler {
             id: nameHover
             cursorShape: row.canLaunch ? Qt.PointingHandCursor : Qt.ArrowCursor
@@ -96,7 +114,7 @@ Shell.Card {
           id: indicator
           visible: (row.jobId !== "system-update" || row.status !== "installing") && !row.showDismiss
           x: dismiss.x + (dismiss.width - width) / 2
-          y: (parent.height - height) / 2
+          y: (line.height - height) / 2
           progress: row.progress
           status: row.status
         }
@@ -112,7 +130,7 @@ Shell.Card {
           opacity: row.showDismiss ? 1 : 0
           x: parent.width - width - root.contentPadding
           width: root.rowHeight
-          height: parent.height
+          height: line.height
           iconSource: Qt.resolvedUrl("../assets/installs/cross.svg")
           iconWidth: 16
           iconHeight: 16
