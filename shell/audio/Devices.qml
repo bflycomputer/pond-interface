@@ -74,6 +74,19 @@ Item {
       }
     }
 
+    IconButton {
+      x: 264
+      y: 18
+      width: 32
+      height: 32
+      rotation: -90
+      iconSource: Qt.resolvedUrl("../assets/audio/mixer.svg")
+      iconWidth: 18
+      iconHeight: 16.5
+      restingOpacity: 0.7
+      onClicked: root.stackController.push("mixer", null)
+    }
+
     Slider {
       id: volumeSlider
       x: 20

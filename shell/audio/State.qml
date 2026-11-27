@@ -4,6 +4,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import Quickshell.Services.Pipewire
+import ".."
 
 // Shared PipeWire authority for the sidebar sound controls. The UI consumes
 // real device nodes directly, so device names, selection and volume stay in
@@ -28,6 +29,22 @@ Singleton {
   readonly property bool hasOutput: !!(sink && sink.audio)
   readonly property bool hasInput: !!(source && source.audio)
   readonly property bool outputMuted: hasOutput && sink.audio.muted
+
+  readonly property var streams: Pipewire.ready ? Pipewire.nodes.values.filter(node =>
+      node.isStream && node.isSink && node.audio) : []
+  readonly property var apps: {
+    const groups = new Map();
+    for (const node of [...streams].sort((a, b) => b.id - a.id)) {
+      const name = node.properties["application.name"] || node.name;
+      if (!groups.has(name))
+        groups.set(name, { name: name, nodes: [] });
+      groups.get(name).nodes.push(node);
+    }
+    const apps = Array.from(groups.values());
+    for (const app of apps)
+      app.icon = appIcon(app.nodes);
+    return apps;
+  }
 
   property var unpluggedDevices: ({})
   property int observedSinkId: -1
@@ -85,6 +102,25 @@ Singleton {
     if (hasInput) source.audio.muted = !source.audio.muted;
   }
 
+  function appIcon(nodes) {
+    const names = [];
+    for (const node of nodes)
+      names.push(node.properties["application.icon-name"],
+                 node.properties["application.process.binary"],
+                 node.properties["application.name"], node.name);
+    const known = names.filter(name => name);
+    const entry = known.map(name => DesktopEntries.heuristicLookup(name)).find(entry => entry)
+        || DesktopEntries.applications.values.find(entry => known.includes(entry.name));
+    return NiriMsg._appInfo(entry ? entry.id : known[0] || "").iconSource;
+  }
+
+  function setAppVolume(app, value) {
+    for (const node of app.nodes) {
+      node.audio.muted = false;
+      node.audio.volume = Math.max(0, Math.min(2, value));
+    }
+  }
+
   function setOutputDevice(node) {
     if (!node || !Pipewire.ready)
       return;
@@ -131,7 +167,7 @@ Singleton {
     }
   }
 
-  PwObjectTracker { objects: [root.sink, root.source].filter(node => node !== null) }
+  PwObjectTracker { objects: [root.sink, root.source].filter(node => node !== null).concat(root.streams) }
 
   Process {
     id: portQuery
