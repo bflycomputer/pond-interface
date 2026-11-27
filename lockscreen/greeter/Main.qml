@@ -24,7 +24,7 @@ Item {
     }
 
     function selectUser(direction) {
-        if (!ui.acceptingInput || users.count < 2)
+        if (!ui.acceptingInput || requestPending || users.count < 2)
             return;
         userIndex = (userIndex + direction + users.count) % users.count;
         ui.resetInput();

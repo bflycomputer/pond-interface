@@ -7,6 +7,7 @@ Item {
     required property var powerBackend
     property string currentText: ""
     property bool authenticationPending: false
+    property bool resultPending: false
     property bool inputBlocked: false
     property bool active: true
     readonly property bool acceptingInput: active && !authenticationPending && !inputBlocked && grid.acceptingInput
@@ -20,10 +21,12 @@ Item {
     signal inputReset
 
     function submit() {
-        if (!acceptingInput || !currentText.length)
+        if (!acceptingInput || resultPending || !currentText.length)
             return;
         const credential = currentText;
         authenticationPending = true;
+        resultPending = true;
+        presumedRejection.restart();
         grid.beginAuthentication(credential.length);
         currentText = "";
         submitRequested(credential);
@@ -31,6 +34,7 @@ Item {
 
     function resetInput() {
         currentText = "";
+        resultPending = false;
         grid.reset();
         authenticationPending = false;
         inputReset();
@@ -39,10 +43,14 @@ Item {
     }
 
     function authenticationFailed() {
+        resultPending = false;
         grid.authenticationFailed();
     }
 
     function authenticationSucceeded() {
+        if (resultPending)
+            grid.authResultHandled = false;
+        resultPending = false;
         grid.authenticationSucceeded();
     }
 
@@ -55,6 +63,12 @@ Item {
             powerBackend.reboot();
     }
 
+    Timer {
+        id: presumedRejection
+        // Success answers in ~0.1s; PAM holds a failure back for 1-3s.
+        interval: 500
+        onTriggered: if (root.resultPending) grid.authenticationFailed()
+    }
     Form.AnimationController {
         id: grid
         onSuccessAnimationFinished: root.successAnimationFinished()
