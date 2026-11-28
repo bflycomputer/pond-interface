@@ -44,7 +44,7 @@ layer-rule {
 }
 
 layer-rule {
-    match namespace="^pond-((sidebar|volume|brightness|keyboard)$|calendar-|battery-|notification-|settings-)"
+    match namespace="^pond-((sidebar|volume|brightness|keyboard)$|calendar-|battery-|notification-|settings-|polkit-)"
     match namespace="^vicinae$"
     background-effect {
         xray false
